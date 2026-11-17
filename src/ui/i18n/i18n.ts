@@ -1,27 +1,34 @@
 import i18next, { type i18n as I18nInstance } from 'i18next';
 import { initReactI18next } from 'react-i18next';
-import esCommon from './locales/es/common.json';
-import esErrors from './locales/es/errors.json';
 
 /** Idiomas de la interfaz. `es` va en el chunk inicial; `en` se carga bajo demanda (ADR-0007). */
 export const SUPPORTED_LANGUAGES = ['es', 'en'] as const;
 export type Language = (typeof SUPPORTED_LANGUAGES)[number];
 export const DEFAULT_LANGUAGE: Language = 'es';
-export const NAMESPACES = ['common', 'errors'] as const;
+/** Un namespace por pantalla para que cada feature tenga sus propios textos (sin conflictos). */
+export const NAMESPACES = [
+  'common', 'errors', 'dashboard', 'transactions', 'import', 'budgets', 'rules', 'settings',
+] as const;
+export type Namespace = (typeof NAMESPACES)[number];
 
 const LANGUAGE_STORAGE_KEY = 'cc.language';
 
-type LocaleBundle = Readonly<Record<(typeof NAMESPACES)[number], Record<string, unknown>>>;
+type Messages = Record<string, unknown>;
+type LocaleBundle = Readonly<Record<Namespace, Messages>>;
+
+// es va en el chunk inicial (eager); en se carga bajo demanda (ADR-0007).
+const esModules = import.meta.glob<Messages>('./locales/es/*.json', { eager: true, import: 'default' });
+const enModules = import.meta.glob<Messages>('./locales/en/*.json', { import: 'default' });
+
+function bundleFrom(entries: ReadonlyArray<readonly [string, Messages]>): LocaleBundle {
+  const byName = new Map(entries.map(([path, messages]) => [path.replace(/^.*\/(.+)\.json$/, '$1'), messages]));
+  return Object.fromEntries(NAMESPACES.map((ns) => [ns, byName.get(ns) ?? {}])) as LocaleBundle;
+}
 
 const loaders: Readonly<Record<Language, () => Promise<LocaleBundle>>> = {
-  es: async () => ({ common: esCommon, errors: esErrors }),
-  en: async () => {
-    const [common, errors] = await Promise.all([
-      import('./locales/en/common.json'),
-      import('./locales/en/errors.json'),
-    ]);
-    return { common: common.default, errors: errors.default };
-  },
+  es: async () => bundleFrom(Object.entries(esModules)),
+  en: async () =>
+    bundleFrom(await Promise.all(Object.entries(enModules).map(async ([path, load]) => [path, await load()] as const))),
 };
 
 export function isLanguage(value: unknown): value is Language {
@@ -73,7 +80,7 @@ i18n.on('languageChanged', syncDocumentLanguage);
 export async function initI18n(language: Language = readPreferredLanguage()): Promise<I18nInstance> {
   if (!i18n.isInitialized) {
     await i18n.use(initReactI18next).init({
-      resources: { es: { common: esCommon, errors: esErrors } },
+      resources: { es: bundleFrom(Object.entries(esModules)) },
       lng: DEFAULT_LANGUAGE,
       fallbackLng: DEFAULT_LANGUAGE,
       supportedLngs: [...SUPPORTED_LANGUAGES],
