@@ -7,6 +7,9 @@ const CURRENCY_MARKS = /€|\bEUR\b/giu
 const MINUS_SIGNS = /[−‒–]/gu
 /** Entero con miles opcionales (1.234.567) o sin ellos. */
 const INTEGER_PART = /^(?:\d{1,3}(?:\.\d{3})+|\d+)$/u
+const SIGN_AND_SPACE = /[-+()\s]/gu
+/** Un solo punto seguido de exactamente 3 dígitos: 12.345 puede ser 12,345 (inglés) o 12345 (miles español). */
+const DOT_THREE_DIGITS = /^\d{1,3}\.\d{3}$/u
 const ONE_OR_TWO_DIGITS = /^\d{1,2}$/u
 
 interface SignedBody {
@@ -76,4 +79,10 @@ export function parseSpanishAmount(text: string): Result<Money, DomainError> {
     return err(domainError('money.outOfRange', { value: reported(text) }))
   }
   return result
+}
+
+/** `true` si el texto se interpreta como miles españoles pero podría ser un decimal inglés (p. ej. `12.345`). */
+export function isAmbiguousAmount(text: string): boolean {
+  const bare = text.replace(CURRENCY_MARKS, ' ').replace(MINUS_SIGNS, '-').replace(SIGN_AND_SPACE, '')
+  return DOT_THREE_DIGITS.test(bare)
 }

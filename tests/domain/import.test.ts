@@ -115,6 +115,25 @@ describe('detectColumnMapping', () => {
     expect(mapping.columns).toEqual(['date', 'description', 'amount'])
   })
 
+  it('detects complementary numeric columns without header as debit/credit with a balance', () => {
+    const rows = [
+      ['05/01/2026', 'COMPRA MERCADONA', '45,10', '', '954,90'],
+      ['06/01/2026', 'NOMINA EMPRESA', '', '1.500,00', '2.454,90'],
+      ['07/01/2026', 'RECIBO LUZ', '60,00', '', '2.394,90'],
+    ]
+    const { mapping } = detectColumnMapping(table(rows))
+    expect(mapping.columns).toEqual(['date', 'description', 'debit', 'credit', 'balance'])
+    expect(mapping.amountConvention).toBe('debitCredit')
+  })
+
+  it('keeps confidence low when several numeric columns are not conclusive without header', () => {
+    const rows = [
+      ['05/01/2026', 'COMPRA MERCADONA', '-45,10', '954,90'],
+      ['06/01/2026', 'NOMINA EMPRESA', '1.500,00', '2.454,90'],
+    ]
+    expect(detectColumnMapping(table(rows)).confidence).toBeLessThanOrEqual(0.4)
+  })
+
   it('returns an empty zero-confidence mapping for an empty table', () => {
     const detection = detectColumnMapping(table([]))
     expect(detection.mapping).toEqual({ headerRowIndex: -1, columns: [], amountConvention: 'signed' })
@@ -181,6 +200,33 @@ describe('normalizeRows', () => {
     columns: ['date', 'description', 'amount', 'balance'],
     amountConvention: 'signed',
   }
+
+  it('reports ambiguous amounts as warnings without rejecting the row', () => {
+    const rows = [BASIC_HEADER, ['05/01/2026', 'COMPRA', '12.345', ''], ['06/01/2026', 'OTRA', '-1.234,56', '']]
+    const { drafts, rowErrors, warnings } = normalizeRows(table(rows), signed, ACCOUNT)
+    expect(rowErrors).toEqual([])
+    expect(drafts).toHaveLength(2)
+    expect(drafts[0]?.amount).toEqual({ cents: 1_234_500 })
+    expect(warnings).toEqual([{ line: 2, code: 'ambiguousAmount', value: '12.345' }])
+  })
+
+  it('returns no warnings for unambiguous rows', () => {
+    const rows = [BASIC_HEADER, ['05/01/2026', 'COMPRA', '-45,10', '']]
+    expect(normalizeRows(table(rows), signed, ACCOUNT).warnings).toEqual([])
+  })
+
+  it('rejects native numbers with more than two decimals', () => {
+    const rows = [BASIC_HEADER, ['05/01/2026', 'COMPRA', num(12.3401), EMPTY]]
+    const { drafts, rowErrors } = normalizeRows(table(rows), signed, ACCOUNT)
+    expect(drafts).toEqual([])
+    expect(rowErrors[0]?.error.code).toBe('money.invalidAmount')
+  })
+
+  it('still accepts native numbers with floating point noise', () => {
+    const rows = [BASIC_HEADER, ['05/01/2026', 'COMPRA', num(45.1), EMPTY], ['05/01/2026', 'X', num(0.1 + 0.2), EMPTY]]
+    const { drafts } = normalizeRows(table(rows), signed, ACCOUNT)
+    expect(drafts.map((d) => d.amount.cents)).toEqual([4510, 30])
+  })
 
   it('turns valid rows into drafts (AC-001)', () => {
     const rows = [BASIC_HEADER, ['05/01/2026', 'COMPRA MERCADONA 123', '-45,10', '1.954,90']]

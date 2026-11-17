@@ -85,11 +85,30 @@ describe('parseSpanishDate', () => {
     ['29/02/2024', '2024-02-29'],
     ['31/12/99', '1999-12-31'],
     ['01/01/00', '2000-01-01'],
-    ['01/01/69', '2069-01-01'],
+    ['01/01/26', '2026-01-01'],
+    ['01/01/27', '2027-01-01'],
+    ['01/01/28', '1928-01-01'],
+    ['01/01/69', '1969-01-01'],
     ['01/01/70', '1970-01-01'],
   ])('parses %j as %s (always dd/mm)', (input, expected) => {
     expect(parseSpanishDate(input)).toEqual({ ok: true, value: expected })
   })
+
+  it('pivots two-digit years relative to the supplied reference year', () => {
+    expect(parseSpanishDate('01/01/69', 2060)).toEqual({ ok: true, value: '1969-01-01' })
+    expect(parseSpanishDate('01/01/61', 2060)).toEqual({ ok: true, value: '2061-01-01' })
+    expect(parseSpanishDate('01/01/62', 2040)).toEqual({ ok: true, value: '1962-01-01' })
+    expect(parseSpanishDate('01/01/2062', 2040)).toEqual({ ok: true, value: '2062-01-01' })
+  })
+
+  it.each([['03/04-2025'], ['03-04/25'], ['03.04/2025'], ['2025-04/03'], ['2025/04-03']])(
+    'rejects mixed separators in %s',
+    (input) => {
+      const result = parseSpanishDate(input)
+      expect(result.ok).toBe(false)
+      if (!result.ok) expect(result.error.code).toBe('date.invalidFormat')
+    },
+  )
 
   it.each([['29/02/2026'], ['31/04/2026'], ['31/02/2026'], ['00/01/2026'], ['2026/13/01'], ['01/13/2026']])(
     'rejects the impossible date %s',
@@ -143,6 +162,9 @@ describe('date ambiguity', () => {
     expect(hasAmbiguousDates(['03/04/2025', '25/06/2025'])).toBe(false)
     expect(hasAmbiguousDates(['03/04/2025', 'basura'])).toBe(true)
     expect(hasAmbiguousDates([])).toBe(false)
+    expect(hasAmbiguousDates(['05/05/2025', '03/04/2025'])).toBe(true)
+    expect(hasAmbiguousDates(['05/05/2025', '25/06/2025'])).toBe(false)
+    expect(hasAmbiguousDates(['05/05/2025'])).toBe(false)
     expect(hasAmbiguousDates(['basura'])).toBe(false)
   })
 })

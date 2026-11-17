@@ -1,5 +1,5 @@
-import type { DomainError, DomainErrorCode } from '@/domain/shared/DomainError';
-import type { Result } from '@/domain/shared/Result';
+import { domainError, type DomainError, type DomainErrorCode } from '@/domain/shared/DomainError';
+import { err, ok, type Result } from '@/domain/shared/Result';
 
 /**
  * Sobre binario `.ccbackup` (ADR-0004, architecture §10):
@@ -49,7 +49,7 @@ export interface IterationLimits {
 const DEFAULT_LIMITS: IterationLimits = { min: MIN_KDF_ITERATIONS, max: MAX_KDF_ITERATIONS };
 
 function fail(code: DomainErrorCode): Result<never, DomainError> {
-  return { ok: false, error: { code } };
+  return err(domainError(code));
 }
 
 function toBase64(data: Uint8Array): string {
@@ -155,14 +155,11 @@ export function parseEnvelope(
   const cipher = parseCipher(header.cipher);
   if (!kdf || !cipher) return fail('backup.invalidFormat');
 
-  return {
-    ok: true,
-    value: {
-      iterations: kdf.iterations,
-      salt: kdf.salt,
-      iv: cipher.iv,
-      aad: envelope.slice(0, prefixLength),
-      ciphertext: envelope.slice(prefixLength),
-    },
-  };
+  return ok({
+    iterations: kdf.iterations,
+    salt: kdf.salt,
+    iv: cipher.iv,
+    aad: envelope.slice(0, prefixLength),
+    ciphertext: envelope.slice(prefixLength),
+  });
 }

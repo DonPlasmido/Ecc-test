@@ -17,6 +17,8 @@ import { err, ok, type Result } from '@/domain/shared/Result'
 const REQUIRED_GROUPS = 3
 /** Sin cabecera la confianza nunca supera este valor. */
 const NO_HEADER_MAX_CONFIDENCE = 0.5
+/** Sin cabecera y con columnas numéricas ambiguas: obliga a confirmar el mapeo. */
+const INCONCLUSIVE_MAX_CONFIDENCE = 0.4
 /** Proporción de celdas que deben parecer fecha/importe para asignar la columna. */
 const CONTENT_MATCH_RATIO = 0.8
 const SINGLE_USE_ROLES: readonly ColumnRole[] = ['date', 'valueDate', 'description', 'amount', 'debit', 'credit', 'balance']
@@ -65,27 +67,65 @@ function ratio(cells: readonly (RawCell | undefined)[], test: (cell: RawCell | u
   return filled.length === 0 ? 0 : filled.filter(test).length / filled.length
 }
 
+/** `true` si en cada fila de la muestra exactamente una de las dos columnas tiene valor. */
+function areComplementary(sample: readonly (readonly RawCell[])[], first: number, second: number): boolean {
+  return sample.every((row) => (cellText(row[first]) !== '') !== (cellText(row[second]) !== ''))
+}
+
+/** Primer par de columnas numéricas con relleno complementario (Debe/Haber), o `null`. */
+function findDebitCreditPair(sample: readonly (readonly RawCell[])[], numeric: readonly number[]): readonly [number, number] | null {
+  for (let i = 0; i < numeric.length; i += 1) {
+    for (let j = i + 1; j < numeric.length; j += 1) {
+      const first = numeric[i] ?? 0
+      const second = numeric[j] ?? 0
+      if (areComplementary(sample, first, second)) return [first, second]
+    }
+  }
+  return null
+}
+
+interface ContentRoles {
+  readonly roles: readonly ColumnRole[]
+  /** `false` si hay varias columnas numéricas y no se pudo distinguir su papel. */
+  readonly conclusive: boolean
+}
+
+function assignNumericRoles(roles: ColumnRole[], sample: readonly (readonly RawCell[])[], numeric: readonly number[]): boolean {
+  const pair = numeric.length >= 2 ? findDebitCreditPair(sample, numeric) : null
+  if (pair !== null) {
+    roles[pair[0]] = 'debit'
+    roles[pair[1]] = 'credit'
+    const rest = numeric.filter((col) => !pair.includes(col))
+    if (rest[0] !== undefined) roles[rest[0]] = 'balance'
+    return true
+  }
+  const amountRoles: ColumnRole[] = ['amount', 'balance']
+  for (const col of numeric) roles[col] = amountRoles.shift() ?? 'ignore'
+  return numeric.length < 2
+}
+
 /** Sin cabecera: deduce fecha, descripción, importe y saldo por el contenido de las primeras filas. */
-function rolesFromContent(table: RawTable): readonly ColumnRole[] {
+function rolesFromContent(table: RawTable): ContentRoles {
   const sample = table.rows.slice(0, HEADER_SEARCH_ROWS).filter((row) => row.some((cell) => cellText(cell) !== ''))
   const width = Math.max(0, ...sample.map((row) => row.length))
   const roles: ColumnRole[] = Array.from({ length: width }, () => 'ignore')
   const dateRoles: ColumnRole[] = ['date', 'valueDate']
-  const amountRoles: ColumnRole[] = ['amount', 'balance']
+  const numeric: number[] = []
   let bestText = { index: -1, length: 0 }
   for (let col = 0; col < width; col += 1) {
     const cells = sample.map((row) => row[col])
     if (ratio(cells, looksLikeDate) >= CONTENT_MATCH_RATIO) {
       roles[col] = dateRoles.shift() ?? 'ignore'
     } else if (ratio(cells, looksLikeAmount) >= CONTENT_MATCH_RATIO) {
-      roles[col] = amountRoles.shift() ?? 'ignore'
+      numeric.push(col)
     } else {
       const length = cells.reduce((sum, cell) => sum + cellText(cell).length, 0)
       if (length > bestText.length) bestText = { index: col, length }
     }
   }
+  const conclusive = assignNumericRoles(roles, sample, numeric)
   if (bestText.index >= 0) roles[bestText.index] = 'description'
-  return roles
+  return { roles, conclusive }
 }
 
 /** Detecta fila de cabecera y papel de cada columna, con una confianza de 0 a 1. */
@@ -98,10 +138,11 @@ export function detectColumnMapping(table: RawTable): ColumnMappingDetection {
       confidence: confidenceOf(columns),
     }
   }
-  const columns = rolesFromContent(table)
+  const { roles: columns, conclusive } = rolesFromContent(table)
+  const cap = conclusive ? NO_HEADER_MAX_CONFIDENCE : INCONCLUSIVE_MAX_CONFIDENCE
   return {
     mapping: { headerRowIndex: -1, columns, amountConvention: conventionOf(columns) },
-    confidence: confidenceOf(columns) * NO_HEADER_MAX_CONFIDENCE,
+    confidence: Math.min(confidenceOf(columns) * NO_HEADER_MAX_CONFIDENCE, cap),
   }
 }
 

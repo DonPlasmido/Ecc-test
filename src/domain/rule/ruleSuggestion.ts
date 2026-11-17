@@ -1,7 +1,7 @@
 import { UNCATEGORIZED, type CategoryId } from '@/domain/category/Category'
 import type { AmountSign, RuleOperator } from '@/domain/rule/Rule'
 import { matchesRulePattern } from '@/domain/rule/wordMatch'
-import type { Transaction } from '@/domain/transaction/Transaction'
+import type { Transaction, TransactionId } from '@/domain/transaction/Transaction'
 
 /** Longitud mínima (letras) del token significativo de una sugerencia. */
 export const MIN_SUGGESTION_TOKEN_LETTERS = 3
@@ -24,7 +24,10 @@ export interface RuleSuggestion {
 }
 
 /** Movimiento del histórico contra el que se puntúan los candidatos. */
-export type SuggestionHistoryItem = Pick<Transaction, 'normalizedDescription' | 'categoryId'>
+export type SuggestionHistoryItem = Pick<Transaction, 'normalizedDescription' | 'categoryId'> & {
+  /** Si se aporta, el movimiento con el mismo id se excluye del histórico (los repositorios devuelven copias). */
+  readonly id?: TransactionId
+}
 
 /** Ruido bancario (español e inglés) y sufijos societarios que nunca identifican un comercio. */
 const NOISE_WORDS: ReadonlySet<string> = new Set([
@@ -95,8 +98,8 @@ function compareCandidates(a: ScoredCandidate, b: ScoredCandidate): number {
 
 /**
  * Propone (nunca crea) una regla a partir de una corrección manual. Candidatos de 1-3 tokens
- * significativos puntuados por precisión sobre `history` (otros movimientos; no incluir `tx`).
- * Sin candidato válido, propone el concepto normalizado completo. Siempre `contains` y `any`.
+ * significativos puntuados por precisión sobre `history` (se excluye `tx` por `id` si el elemento lo trae).
+ * Sin candidato válido, propone el concepto normalizado sin tokens con dígitos. Siempre `contains` y `any`.
  */
 export function suggestRule(
   tx: Transaction,
@@ -104,7 +107,7 @@ export function suggestRule(
   history: readonly SuggestionHistoryItem[] = [],
 ): RuleSuggestion | null {
   if (newCategoryId === UNCATEGORIZED) return null
-  const others = history.filter((item) => (item as unknown) !== tx)
+  const others = history.filter((item) => item.id === undefined || item.id !== tx.id)
   const best = candidatePatterns(tx.normalizedDescription)
     .map((pattern) => score(pattern, others, newCategoryId))
     .filter((c): c is ScoredCandidate => c !== null)
@@ -114,6 +117,12 @@ export function suggestRule(
   return { pattern, operator: 'contains', categoryId: newCategoryId, amountSign: 'any' }
 }
 
+/** Concepto completo sin tokens con dígitos (referencias, importes, fechas). */
 function fullConcept(normalized: string): string | null {
-  return count(normalized, LETTERS) >= MIN_SUGGESTION_TOKEN_LETTERS ? normalized : null
+  const concept = normalized
+    .split(' ')
+    .filter((token) => count(token, DIGITS) === 0)
+    .join(' ')
+    .trim()
+  return count(concept, LETTERS) >= MIN_SUGGESTION_TOKEN_LETTERS ? concept : null
 }

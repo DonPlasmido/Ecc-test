@@ -20,6 +20,3 @@ export interface Category {
   readonly color: string;
   readonly archived: boolean;
 }
-
-// TODO(domain): src/domain/category/defaultCategories.ts (ids estables, nombres vía i18n)
-// export const DEFAULT_CATEGORIES: readonly Category[];
