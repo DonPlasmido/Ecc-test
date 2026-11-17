@@ -16,6 +16,7 @@
     "bench": "vitest bench --run"
   },
   "dependencies": {
+    "@tanstack/react-virtual": "3.14.25",
     "exceljs": "4.4.0",
     "i18next": "26.7.1",
     "idb": "8.0.4",
