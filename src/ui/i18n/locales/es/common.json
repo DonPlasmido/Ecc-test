@@ -1,0 +1,141 @@
+{
+  "app": {
+    "name": "Cuentas Claras",
+    "documentTitle": "{{page}} - Cuentas Claras",
+    "loading": "Cargando…"
+  },
+  "skipLink": "Saltar al contenido",
+  "nav": {
+    "label": "Principal",
+    "dashboard": "Panel",
+    "transactions": "Movimientos",
+    "import": "Importar",
+    "budgets": "Presupuestos",
+    "settings": "Ajustes"
+  },
+  "pages": {
+    "dashboard": {
+      "title": "Panel",
+      "intro": "Resumen de ingresos, gastos y saldo de tus cuentas."
+    },
+    "transactions": {
+      "title": "Movimientos",
+      "intro": "Busca, filtra y corrige la categoría de tus movimientos."
+    },
+    "import": {
+      "title": "Importar extracto",
+      "intro": "Carga un extracto CSV o Excel de tu banco. Los datos no salen de tu dispositivo."
+    },
+    "budgets": {
+      "title": "Presupuestos",
+      "intro": "Límites mensuales por categoría y cuánto llevas gastado."
+    },
+    "rules": {
+      "title": "Reglas",
+      "intro": "Reglas que asignan categorías automáticamente según el concepto."
+    },
+    "settings": {
+      "title": "Ajustes",
+      "intro": "Idioma, tema y copia de seguridad cifrada."
+    },
+    "notFound": {
+      "title": "Página no encontrada",
+      "text": "La dirección no corresponde a ninguna pantalla.",
+      "back": "Volver al panel"
+    },
+    "placeholder": "Esta pantalla está en construcción."
+  },
+  "settings": {
+    "language": {
+      "label": "Idioma / Language",
+      "changed": "Idioma cambiado a Español"
+    },
+    "theme": {
+      "legend": "Tema",
+      "system": "Sistema",
+      "light": "Claro",
+      "dark": "Oscuro",
+      "changed": "Tema cambiado: {{theme}}"
+    },
+    "backup": {
+      "title": "Copia de seguridad",
+      "text": "Exporta todos tus datos en un archivo cifrado con contraseña o restaura una copia anterior."
+    },
+    "appearance": "Apariencia",
+    "rulesLink": "Reglas de categorización"
+  },
+  "actions": {
+    "close": "Cerrar",
+    "retry": "Reintentar",
+    "showTable": "Ver como tabla",
+    "hideTable": "Ocultar tabla",
+    "dismiss": "Cerrar notificación"
+  },
+  "field": {
+    "required": "(obligatorio)"
+  },
+  "status": {
+    "loading": "Cargando"
+  },
+  "toast": {
+    "region": "Notificaciones",
+    "info": "Información:",
+    "success": "Hecho:",
+    "warning": "Aviso:",
+    "error": "Error:"
+  },
+  "money": {
+    "expense": "gasto",
+    "income": "ingreso"
+  },
+  "budget": {
+    "ok": "Dentro del presupuesto",
+    "near": "Cerca del límite",
+    "over": "Superado",
+    "spentOfLimit": "{{spent}} de {{limit}}"
+  },
+  "chart": {
+    "empty": "Sin datos para este periodo",
+    "labelColumn": "Periodo",
+    "valueColumn": "Importe",
+    "summary": "{{title}}. Máximo {{max}} en {{maxLabel}}; mínimo {{min}} en {{minLabel}}."
+  },
+  "transactions": {
+    "grid": {
+      "label": "Movimientos",
+      "date": "Fecha",
+      "description": "Concepto",
+      "category": "Categoría",
+      "amount": "Importe",
+      "loadingRow": "Cargando movimiento"
+    }
+  },
+  "categories": {
+    "uncategorized": "Sin categoría",
+    "groceries": "Supermercado",
+    "restaurants": "Restaurantes y cafés",
+    "transport": "Transporte",
+    "housing": "Vivienda",
+    "utilities": "Suministros",
+    "health": "Salud",
+    "leisure": "Ocio",
+    "shopping": "Compras",
+    "subscriptions": "Suscripciones",
+    "education": "Educación",
+    "travel": "Viajes",
+    "taxes-fees": "Impuestos y comisiones",
+    "gifts": "Regalos",
+    "salary": "Nómina",
+    "other-income": "Otros ingresos",
+    "transfers": "Transferencias"
+  },
+  "errorBoundary": {
+    "title": "Algo ha fallado",
+    "text": "La pantalla no se ha podido mostrar. Tus datos siguen guardados en este dispositivo.",
+    "retry": "Reintentar"
+  },
+  "boot": {
+    "failedTitle": "No se ha podido abrir la aplicación",
+    "reload": "Recargar"
+  }
+}
