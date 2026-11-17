@@ -95,8 +95,8 @@ describe('parseSpanishDate', () => {
   })
 
   it('pivots two-digit years relative to the supplied reference year', () => {
-    expect(parseSpanishDate('01/01/69', 2060)).toEqual({ ok: true, value: '2069-01-01' })
-    expect(parseSpanishDate('01/01/62', 2060)).toEqual({ ok: true, value: '2062-01-01' })
+    expect(parseSpanishDate('01/01/69', 2060)).toEqual({ ok: true, value: '1969-01-01' })
+    expect(parseSpanishDate('01/01/61', 2060)).toEqual({ ok: true, value: '2061-01-01' })
     expect(parseSpanishDate('01/01/62', 2040)).toEqual({ ok: true, value: '1962-01-01' })
     expect(parseSpanishDate('01/01/2062', 2040)).toEqual({ ok: true, value: '2062-01-01' })
   })

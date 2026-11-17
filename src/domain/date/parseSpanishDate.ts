@@ -3,28 +3,37 @@ import { domainError, type DomainError } from '@/domain/shared/DomainError'
 import { err, type Result } from '@/domain/shared/Result'
 
 const MAX_REPORTED_LENGTH = 50
-/** Años de 2 dígitos: 00-69 → 2000-2069, 70-99 → 1970-1999. */
-const TWO_DIGIT_YEAR_PIVOT = 70
-const DAY_FIRST = /^(\d{1,2})[/.-](\d{1,2})[/.-](\d{2}|\d{4})$/u
-const YEAR_FIRST = /^(\d{4})[/-](\d{1,2})[/-](\d{1,2})$/u
+/**
+ * Año de referencia por defecto para los años de 2 dígitos. El dominio no lee el reloj:
+ * quien necesite otro año lo pasa como parámetro.
+ */
+export const DEFAULT_REFERENCE_YEAR = 2026
+/** Un año de 2 dígitos puede caer como mucho este número de años por delante del de referencia. */
+const MAX_YEARS_AHEAD = 1
+const CENTURY = 100
+/** Mismo separador en toda la fecha (referencia inversa `\2`). */
+const DAY_FIRST = /^(\d{1,2})([/.-])(\d{1,2})\2(\d{2}|\d{4})$/u
+const YEAR_FIRST = /^(\d{4})([/-])(\d{1,2})\2(\d{1,2})$/u
 const MAX_MONTH = 12
 
-function fullYear(digits: string): number {
+/** Años de 2 dígitos: siglo XXI salvo que quede más de un año por delante de `referenceYear`. */
+function fullYear(digits: string, referenceYear: number): number {
   const year = Number(digits)
   if (digits.length === 4) return year
-  return year < TWO_DIGIT_YEAR_PIVOT ? 2000 + year : 1900 + year
+  const candidate = 2000 + year
+  return candidate > referenceYear + MAX_YEARS_AHEAD ? candidate - CENTURY : candidate
 }
 
-/** Interpreta fechas españolas (dd/mm/aaaa, dd-mm-aa, dd.mm.aaaa) o aaaa-mm-dd. Siempre día primero. */
-export function parseSpanishDate(text: string): Result<IsoDate, DomainError> {
+/** Interpreta fechas españolas (dd/mm/aaaa, dd-mm-aa, dd.mm.aaaa) o aaaa-mm-dd, con un único separador. Siempre día primero. */
+export function parseSpanishDate(text: string, referenceYear: number = DEFAULT_REFERENCE_YEAR): Result<IsoDate, DomainError> {
   const trimmed = text.trim()
   const dayFirst = DAY_FIRST.exec(trimmed)
   if (dayFirst !== null) {
-    return isoDateFromParts(fullYear(dayFirst[3] ?? ''), Number(dayFirst[2]), Number(dayFirst[1]))
+    return isoDateFromParts(fullYear(dayFirst[4] ?? '', referenceYear), Number(dayFirst[3]), Number(dayFirst[1]))
   }
   const yearFirst = YEAR_FIRST.exec(trimmed)
   if (yearFirst !== null) {
-    return isoDateFromParts(Number(yearFirst[1]), Number(yearFirst[2]), Number(yearFirst[3]))
+    return isoDateFromParts(Number(yearFirst[1]), Number(yearFirst[3]), Number(yearFirst[4]))
   }
   return err(domainError('date.invalidFormat', { value: text.slice(0, MAX_REPORTED_LENGTH) }))
 }
@@ -34,14 +43,14 @@ export function isAmbiguousDate(text: string): boolean {
   const match = DAY_FIRST.exec(text.trim())
   if (match === null) return false
   const first = Number(match[1])
-  const second = Number(match[2])
+  const second = Number(match[3])
   return first <= MAX_MONTH && second <= MAX_MONTH && first !== second && first >= 1 && second >= 1
 }
 
 /** Fecha dd/mm/aaaa con día = mes (05/05): valdría igual en ambos órdenes, no aporta información. */
 function hasSameDayAndMonth(text: string): boolean {
   const match = DAY_FIRST.exec(text.trim())
-  return match !== null && Number(match[1]) === Number(match[2])
+  return match !== null && Number(match[1]) === Number(match[3])
 }
 
 /**
