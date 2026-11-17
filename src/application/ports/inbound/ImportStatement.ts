@@ -20,6 +20,8 @@ export interface ImportPreview {
   readonly confidence: number;
   /** `true` si el mapeo vino de un `ImportProfile`. */
   readonly rememberedMapping: boolean;
+  /** `true` si todas las fechas interpretables son ambiguas (dd/mm vs mm/dd): la UI debe pedir confirmación. */
+  readonly ambiguousDates?: boolean;
 }
 
 /** Entrada de la confirmación de importación. */
