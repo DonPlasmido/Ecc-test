@@ -215,6 +215,19 @@ describe('normalizeRows', () => {
     expect(normalizeRows(table(rows), signed, ACCOUNT).warnings).toEqual([])
   })
 
+  it('rejects native numbers with more than two decimals', () => {
+    const rows = [BASIC_HEADER, ['05/01/2026', 'COMPRA', num(12.3401), EMPTY]]
+    const { drafts, rowErrors } = normalizeRows(table(rows), signed, ACCOUNT)
+    expect(drafts).toEqual([])
+    expect(rowErrors[0]?.error.code).toBe('money.invalidAmount')
+  })
+
+  it('still accepts native numbers with floating point noise', () => {
+    const rows = [BASIC_HEADER, ['05/01/2026', 'COMPRA', num(45.1), EMPTY], ['05/01/2026', 'X', num(0.1 + 0.2), EMPTY]]
+    const { drafts } = normalizeRows(table(rows), signed, ACCOUNT)
+    expect(drafts.map((d) => d.amount.cents)).toEqual([4510, 30])
+  })
+
   it('turns valid rows into drafts (AC-001)', () => {
     const rows = [BASIC_HEADER, ['05/01/2026', 'COMPRA MERCADONA 123', '-45,10', '1.954,90']]
     const { drafts, rowErrors } = normalizeRows(table(rows), signed, ACCOUNT)
