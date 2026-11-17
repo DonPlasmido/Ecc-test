@@ -31,9 +31,3 @@ export interface Rule {
   /** ISO datetime. */
   readonly createdAt: string;
 }
-
-// TODO(domain): src/domain/rule/ruleMatcher.ts
-// export function matchRule(tx: Pick<Transaction, 'normalizedDescription' | 'amount' | 'accountId'>,
-//   rules: readonly Rule[]): Rule | null;
-// export function categorize(tx: Transaction, rules: readonly Rule[]): Transaction; // 'manual' intacto
-// export function sortRules(rules: readonly Rule[]): readonly Rule[]; // prioridad, luego createdAt

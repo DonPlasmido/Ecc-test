@@ -1,5 +1,6 @@
 import type { TransactionDraft } from '@/domain/transaction/Transaction';
 import type { RowError } from '@/domain/import/RowError';
+import type { RowWarning } from '@/domain/import/RowWarning';
 
 /** Filas iniciales en las que se busca la cabecera. */
 export const HEADER_SEARCH_ROWS = 20;
@@ -37,12 +38,6 @@ export interface ColumnMappingDetection {
 export interface NormalizedRows {
   readonly drafts: readonly TransactionDraft[];
   readonly rowErrors: readonly RowError[];
+  /** Avisos de filas aceptadas (no se rechazan). */
+  readonly warnings: readonly RowWarning[];
 }
-
-// TODO(domain): un archivo por función, según docs/architecture.md §4 y §5.3.
-// detectHeaderRow.ts:     export function detectHeaderRow(table: RawTable): number;
-// detectColumnMapping.ts: export function detectColumnMapping(table: RawTable): ColumnMappingDetection;
-//                         export function validateMapping(m: ColumnMapping): Result<ColumnMapping, DomainError>;
-//                         export function headerSignature(headers: readonly string[]): string;
-// normalizeRows.ts:       export function normalizeRows(table: RawTable, m: ColumnMapping,
-//                           accountId: AccountId): NormalizedRows;
