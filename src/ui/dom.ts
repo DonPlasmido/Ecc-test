@@ -25,6 +25,11 @@ export function message(kind: MsgKind, ...lines: string[]): HTMLElement {
     ...lines.flatMap((line, i) => (i === 0 ? [line] : [h('br'), line])))
 }
 
+/** Libera la memoria de los enlaces de descarga que había dentro de `container`. */
+export function revokeDownloads(container: HTMLElement): void {
+  container.querySelectorAll<HTMLAnchorElement>('a[href^="blob:"]').forEach((a) => URL.revokeObjectURL(a.href))
+}
+
 export function downloadLink(data: BlobPart, filename: string, mime: string, text = 'Descargar'): HTMLAnchorElement {
   const url = URL.createObjectURL(new Blob([data], { type: mime }))
   return h('a', { class: 'download', href: url, download: filename }, `${text}: ${filename}`)

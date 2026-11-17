@@ -25,6 +25,7 @@ async function route(): Promise<void> {
   if (!tool) return renderHome()
   app.replaceChildren(backLink(), h('h1', {}, tool.title), h('p', { class: 'lead' }, tool.description))
   const { render } = await tool.load()
+  if (location.hash.slice(1) !== id) return // la persona cambió de pantalla mientras cargaba
   render(app)
   window.scrollTo(0, 0)
 }

@@ -100,3 +100,5 @@ table.data th, table.data td { text-align: left; padding: 6px 4px; border-bottom
 table.data td.num, table.data th.num { text-align: right; font-variant-numeric: tabular-nums; }
 details { margin-top: 12px; }
 summary { cursor: pointer; color: var(--primary); font-weight: 600; }
+fieldset { border: 0; padding: 0; margin: 12px 0 0; }
+legend { font-weight: 600; padding: 0; margin-bottom: 6px; }

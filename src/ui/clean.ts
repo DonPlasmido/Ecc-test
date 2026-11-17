@@ -24,10 +24,11 @@ export function render(root: HTMLElement): void {
       loaded = await loadExcel(file)
       options.replaceChildren(
         sheetSelect('clean-sheet', loaded.sheets),
-        h('label', {}, 'Qué hacer'),
-        checkbox('opt-empty', 'Quitar filas vacías'),
-        checkbox('opt-dup', 'Quitar filas duplicadas'),
-        checkbox('opt-trim', 'Quitar espacios sobrantes en los textos'),
+        h('fieldset', {},
+          h('legend', {}, 'Qué hacer'),
+          checkbox('opt-empty', 'Quitar filas vacías'),
+          checkbox('opt-dup', 'Quitar filas duplicadas'),
+          checkbox('opt-trim', 'Quitar espacios sobrantes en los textos')),
       )
       if (loaded.warnings.length) output.replaceChildren(message('warn', ...loaded.warnings))
     }).then(() => { button.disabled = loaded === null })

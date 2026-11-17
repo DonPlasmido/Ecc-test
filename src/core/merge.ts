@@ -1,6 +1,8 @@
 import type { Cell, Row, Table } from './table'
 
 export const SOURCE_HEADER = 'Origen'
+/** Se usa si alguna tabla ya tiene una columna «Origen». */
+export const SOURCE_HEADER_ALT = 'Archivo de origen'
 
 export interface MergeInput {
   /** Nombre que identifica de dónde viene la tabla (archivo y, si hace falta, hoja). */
@@ -70,8 +72,9 @@ export function mergeTables(
     }),
   )
 
+  const sourceHeader = headers.some((h) => normalize(h) === normalize(SOURCE_HEADER)) ? SOURCE_HEADER_ALT : SOURCE_HEADER
   return {
-    table: { headers: options.addSourceColumn ? [SOURCE_HEADER, ...headers] : headers, rows },
+    table: { headers: options.addSourceColumn ? [sourceHeader, ...headers] : headers, rows },
     warnings,
     rowsPerSource: inputs.map(({ source, table }) => ({ source, rows: table.rows.length })),
   }

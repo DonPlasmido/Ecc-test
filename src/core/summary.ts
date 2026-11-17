@@ -56,8 +56,9 @@ export function summarizeColumn(table: Table, index: number): ColumnSummary {
     ignored: cells.length - numbers.length,
     sum,
     mean: hasNumbers ? sum / numbers.length : null,
-    min: hasNumbers ? Math.min(...numbers) : null,
-    max: hasNumbers ? Math.max(...numbers) : null,
+    // reduce en vez de Math.min(...numbers): con cientos de miles de filas el spread desborda la pila
+    min: hasNumbers ? numbers.reduce((a, b) => (b < a ? b : a)) : null,
+    max: hasNumbers ? numbers.reduce((a, b) => (b > a ? b : a)) : null,
   }
 }
 

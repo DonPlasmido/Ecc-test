@@ -1,6 +1,6 @@
 import { checkFile, type FileKind } from '../core/files'
 import { readWorkbook, type Sheet } from '../io/excel'
-import { h, message } from './dom'
+import { h, message, revokeDownloads } from './dom'
 
 export interface LoadedExcel {
   readonly fileName: string
@@ -62,6 +62,7 @@ export async function runAction(button: HTMLButtonElement, output: HTMLElement, 
   const label = button.textContent
   button.disabled = true
   button.textContent = 'Trabajando…'
+  revokeDownloads(output)
   output.replaceChildren()
   try {
     await action()
