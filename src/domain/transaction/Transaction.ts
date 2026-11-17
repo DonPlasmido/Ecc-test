@@ -55,8 +55,23 @@ export interface TransactionDraft {
   readonly sourceLine: number;
 }
 
-// TODO(domain): funciones puras en este archivo (devuelven copia nueva).
-// export function recategorize(tx: Transaction, categoryId: CategoryId,
-//   source: CategorySource, ruleId: RuleId | null, now: string): Transaction;
-// export function withDescription(tx: Transaction, description: string, now: string): Transaction;
-// export function withNote(tx: Transaction, note: string, now: string): Transaction;
+/** Copia con nueva categoría, origen y regla. */
+export function recategorize(
+  tx: Transaction,
+  categoryId: CategoryId,
+  source: CategorySource,
+  ruleId: RuleId | null,
+  now: string,
+): Transaction {
+  return { ...tx, categoryId, categorySource: source, ruleId, updatedAt: now };
+}
+
+/** Copia con la descripción editable cambiada (no afecta a la clave de deduplicación). */
+export function withDescription(tx: Transaction, description: string, now: string): Transaction {
+  return { ...tx, description, updatedAt: now };
+}
+
+/** Copia con la nota cambiada. */
+export function withNote(tx: Transaction, note: string, now: string): Transaction {
+  return { ...tx, note, updatedAt: now };
+}

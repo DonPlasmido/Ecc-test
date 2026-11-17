@@ -65,5 +65,7 @@ export interface DomainError {
   readonly details?: DomainErrorDetails;
 }
 
-// TODO(domain): implementar constructor puro en este archivo.
-// export function domainError(code: DomainErrorCode, details?: DomainErrorDetails): DomainError;
+/** Construye un error de dominio; `details` solo se incluye si se aporta. */
+export function domainError(code: DomainErrorCode, details?: DomainErrorDetails): DomainError {
+  return details === undefined ? { code } : { code, details }
+}
