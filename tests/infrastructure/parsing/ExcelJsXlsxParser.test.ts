@@ -2,7 +2,7 @@ import ExcelJS from 'exceljs';
 import { describe, expect, test } from 'vitest';
 import type { StatementFile } from '@/domain/import/StatementFile';
 import { ExcelJsXlsxParser } from '@/infrastructure/parsing/ExcelJsXlsxParser';
-import { MAX_ROWS } from '@/infrastructure/parsing/limits';
+import { MAX_COLS, MAX_ROWS, MAX_SHEETS } from '@/infrastructure/parsing/limits';
 import { toArrayBuffer, utf8File } from './helpers';
 import { buildZip } from './zipFixtures';
 
@@ -244,5 +244,28 @@ describe('ExcelJsXlsxParser.parse ZIP guard (H1)', () => {
     const file = await xlsxFile('ok.xlsx', (s) => s.addRow(['a', 1]));
 
     expect((await parser.parse(file)).ok).toBe(true);
+  });
+});
+
+describe('ExcelJsXlsxParser.parse column and sheet limits (M2/M3)', () => {
+  test('rejects sheets wider than MAX_COLS', async () => {
+    const file = await xlsxFile('wide.xlsx', (s) => {
+      s.getCell(1, 1).value = 'a';
+      s.getCell(1, MAX_COLS + 1).value = 'b';
+    });
+
+    const result = await parser.parse(file);
+
+    expect(!result.ok && result.error.code).toBe('import.unsupportedFormat');
+    expect(!result.ok && result.error.details?.field).toBe('columns');
+  });
+
+  test('ignores data beyond the first MAX_SHEETS sheets', async () => {
+    const empties: SheetFill[] = Array.from({ length: MAX_SHEETS }, () => () => undefined);
+    const file = await xlsxFile('many.xlsx', ...empties, (s) => s.addRow(['late']));
+
+    const result = await parser.parse(file);
+
+    expect(!result.ok && result.error.code).toBe('import.emptyFile');
   });
 });

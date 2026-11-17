@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 import { PapaCsvParser } from '@/infrastructure/parsing/PapaCsvParser';
-import { MAX_FILE_BYTES, MAX_ROWS } from '@/infrastructure/parsing/limits';
+import { MAX_CELL_CHARS, MAX_COLS, MAX_FILE_BYTES, MAX_ROWS } from '@/infrastructure/parsing/limits';
 import { cp1252File, toArrayBuffer, toStrings, utf8File } from './helpers';
 
 const parser = new PapaCsvParser();
@@ -160,5 +160,41 @@ describe('PapaCsvParser.parse', () => {
     const rows = await parseRows('a.csv', "a;b\n'; DROP TABLE x;--;Café ☕ 🎉\n");
 
     expect(rows[1]).toEqual(["'", ' DROP TABLE x'.trim(), '--', 'Café ☕ 🎉']);
+  });
+});
+
+describe('PapaCsvParser.parse column and cell limits (M1)', () => {
+  test('rejects rows with more than MAX_COLS columns', async () => {
+    const text = `${Array.from({ length: MAX_COLS + 1 }, (_, i) => i).join(',')}\n1,2\n`;
+
+    const result = await parser.parse(utf8File('wide.csv', text));
+
+    expect(!result.ok && result.error.code).toBe('import.unsupportedFormat');
+    expect(!result.ok && result.error.details?.field).toBe('columns');
+  });
+
+  test('accepts exactly MAX_COLS columns', async () => {
+    const text = `${Array.from({ length: MAX_COLS }, (_, i) => i).join(',')}\n1,2\n`;
+
+    const result = await parser.parse(utf8File('wide.csv', text));
+
+    expect(result.ok && result.value.rows[0]?.length).toBe(MAX_COLS);
+  });
+
+  test('rejects cells longer than MAX_CELL_CHARS', async () => {
+    const text = `a;b\n${'x'.repeat(MAX_CELL_CHARS + 1)};2\n`;
+
+    const result = await parser.parse(utf8File('long.csv', text));
+
+    expect(!result.ok && result.error.code).toBe('import.unsupportedFormat');
+    expect(!result.ok && result.error.details?.field).toBe('cellLength');
+  });
+
+  test('accepts a cell of exactly MAX_CELL_CHARS', async () => {
+    const text = `a;b\n${'x'.repeat(MAX_CELL_CHARS)};2\n`;
+
+    const result = await parser.parse(utf8File('long.csv', text));
+
+    expect(result.ok).toBe(true);
   });
 });
