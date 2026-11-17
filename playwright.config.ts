@@ -13,7 +13,8 @@ export default defineConfig({
   },
   projects: [{ name: 'android', use: { ...devices['Pixel 7'] } }],
   webServer: {
-    command: `npx vite build && npx vite preview --port ${PORT} --strictPort`,
+    // Carpeta propia: si compilara en dist/ pisaría la versión que se publica en GitHub Pages
+    command: `npx vite build --outDir dist-e2e && npx vite preview --outDir dist-e2e --port ${PORT} --strictPort`,
     env: { BASE_PATH: '/' },
     port: PORT,
     reuseExistingServer: !process.env.CI,
