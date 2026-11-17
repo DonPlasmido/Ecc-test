@@ -201,6 +201,20 @@ describe('normalizeRows', () => {
     amountConvention: 'signed',
   }
 
+  it('reports ambiguous amounts as warnings without rejecting the row', () => {
+    const rows = [BASIC_HEADER, ['05/01/2026', 'COMPRA', '12.345', ''], ['06/01/2026', 'OTRA', '-1.234,56', '']]
+    const { drafts, rowErrors, warnings } = normalizeRows(table(rows), signed, ACCOUNT)
+    expect(rowErrors).toEqual([])
+    expect(drafts).toHaveLength(2)
+    expect(drafts[0]?.amount).toEqual({ cents: 1_234_500 })
+    expect(warnings).toEqual([{ line: 2, code: 'ambiguousAmount', value: '12.345' }])
+  })
+
+  it('returns no warnings for unambiguous rows', () => {
+    const rows = [BASIC_HEADER, ['05/01/2026', 'COMPRA', '-45,10', '']]
+    expect(normalizeRows(table(rows), signed, ACCOUNT).warnings).toEqual([])
+  })
+
   it('turns valid rows into drafts (AC-001)', () => {
     const rows = [BASIC_HEADER, ['05/01/2026', 'COMPRA MERCADONA 123', '-45,10', '1.954,90']]
     const { drafts, rowErrors } = normalizeRows(table(rows), signed, ACCOUNT)

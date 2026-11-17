@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { Money } from '@/domain/money/Money'
-import { parseSpanishAmount } from '@/domain/money/parseSpanishAmount'
+import { isAmbiguousAmount, parseSpanishAmount } from '@/domain/money/parseSpanishAmount'
 import { money } from './builders'
 
 describe('Money', () => {
@@ -151,5 +151,15 @@ describe('parseSpanishAmount', () => {
     const result = parseSpanishAmount('99999999999999999999,99')
     expect(result.ok).toBe(false)
     if (!result.ok) expect(result.error.code).toBe('money.outOfRange')
+  })
+})
+
+describe('isAmbiguousAmount', () => {
+  it.each(['12.345', '1.234', '-12.345', '12.345 EUR', '(1.234)'])('flags %j', (input) => {
+    expect(isAmbiguousAmount(input)).toBe(true)
+  })
+
+  it.each(['12.34', '12,345', '1.234,56', '1.234.567', '12', '1234.567', '', 'abc'])('does not flag %j', (input) => {
+    expect(isAmbiguousAmount(input)).toBe(false)
   })
 })
