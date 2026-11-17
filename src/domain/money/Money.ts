@@ -1,6 +1,6 @@
 import type { Brand } from '@/domain/shared/brand';
-import type { DomainError } from '@/domain/shared/DomainError';
-import type { Result } from '@/domain/shared/Result';
+import { domainError, type DomainError } from '@/domain/shared/DomainError';
+import { err, ok, type Result } from '@/domain/shared/Result';
 
 /** Céntimos de euro: entero seguro (`Number.isSafeInteger`) con signo (ADR-0003). */
 export type Cents = Brand<number, 'Cents'>;
@@ -29,7 +29,30 @@ export interface MoneyOperations {
   ratioBasisPoints(part: Money, whole: Money): number;
 }
 
-// TODO(domain): implementar el objeto compañero en este archivo.
-// export const Money: MoneyOperations = { ... };
-// TODO(domain): src/domain/money/parseSpanishAmount.ts ("1.234,56" | "-12,30" | "12,30-", sin parseFloat)
-// export function parseSpanishAmount(text: string): Result<Money, DomainError>;
+function make(cents: number): Money {
+  return { cents: (cents === 0 ? 0 : cents) as Cents }
+}
+
+/** Objeto compañero de `Money`: operaciones puras en céntimos enteros. */
+export const Money: MoneyOperations = {
+  ofCents(cents) {
+    if (!Number.isInteger(cents)) {
+      return err(domainError('money.notInteger', { value: String(cents) }))
+    }
+    if (!Number.isSafeInteger(cents)) {
+      return err(domainError('money.outOfRange', { value: String(cents) }))
+    }
+    return ok(make(cents))
+  },
+  zero: () => make(0),
+  add: (a, b) => make(a.cents + b.cents),
+  subtract: (a, b) => make(a.cents - b.cents),
+  negate: (a) => make(-a.cents),
+  sum: (values) => make(values.reduce((total, v) => total + v.cents, 0)),
+  isExpense: (a) => a.cents < 0,
+  compare: (a, b) => (a.cents < b.cents ? -1 : a.cents > b.cents ? 1 : 0),
+  ratioBasisPoints(part, whole) {
+    if (whole.cents === 0) return 0
+    return Number((BigInt(part.cents) * BigInt(BASIS_POINTS_FULL)) / BigInt(whole.cents))
+  },
+}

@@ -13,6 +13,12 @@ export interface Err<E> {
   readonly error: E;
 }
 
-// TODO(domain): implementar constructores puros en este archivo.
-// export function ok<T>(value: T): Ok<T>;
-// export function err<E>(error: E): Err<E>;
+/** Construye la rama de éxito. */
+export function ok<T>(value: T): Ok<T> {
+  return { ok: true, value }
+}
+
+/** Construye la rama de fallo. */
+export function err<E>(error: E): Err<E> {
+  return { ok: false, error }
+}
