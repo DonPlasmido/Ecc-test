@@ -240,6 +240,7 @@ describe('parseEnvelope', () => {
     ['iteraciones null', { iterations: null }],
     ['sal ausente', { salt: undefined }],
     ['sal no base64', { salt: '!!!!' }],
+    ['sal base64 de longitud inválida', { salt: 'A' }],
     ['sal de 8 B', { salt: b64(bytes(8, 1)) }],
     ['sal de 32 B', { salt: b64(bytes(32, 1)) }],
     ['sal base64 no canónico', { salt: `${b64(bytes(SALT_BYTES, 1)).slice(0, -2)}=B` }],

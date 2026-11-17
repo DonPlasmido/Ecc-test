@@ -30,10 +30,13 @@ export interface EnvelopeParts {
   readonly iv: Uint8Array;
 }
 
-export interface ParsedEnvelope extends EnvelopeParts {
+export interface ParsedEnvelope {
+  readonly iterations: number;
+  readonly salt: Uint8Array<ArrayBuffer>;
+  readonly iv: Uint8Array<ArrayBuffer>;
   /** Magic + longitud + cabecera: datos adicionales autenticados. */
-  readonly aad: Uint8Array;
-  readonly ciphertext: Uint8Array;
+  readonly aad: Uint8Array<ArrayBuffer>;
+  readonly ciphertext: Uint8Array<ArrayBuffer>;
 }
 
 export interface IterationLimits {
@@ -54,7 +57,7 @@ function toBase64(data: Uint8Array): string {
 }
 
 /** Decodifica base64 canónico; `null` si no lo es o la longitud no coincide. */
-function fromBase64(text: unknown, expectedLength: number): Uint8Array | null {
+function fromBase64(text: unknown, expectedLength: number): Uint8Array<ArrayBuffer> | null {
   if (typeof text !== 'string' || !/^[A-Za-z0-9+/]+={0,2}$/.test(text)) return null;
   try {
     const binary = atob(text);
@@ -67,7 +70,7 @@ function fromBase64(text: unknown, expectedLength: number): Uint8Array | null {
 }
 
 /** Construye magic + longitud + cabecera JSON. Lanza si sal/IV tienen longitud incorrecta (error de programación). */
-export function buildEnvelopePrefix(parts: EnvelopeParts): Uint8Array {
+export function buildEnvelopePrefix(parts: EnvelopeParts): Uint8Array<ArrayBuffer> {
   if (parts.salt.length !== SALT_BYTES) throw new RangeError('invalid salt length');
   if (parts.iv.length !== IV_BYTES) throw new RangeError('invalid iv length');
   const header = {
@@ -83,7 +86,7 @@ export function buildEnvelopePrefix(parts: EnvelopeParts): Uint8Array {
   return prefix;
 }
 
-export function assembleEnvelope(prefix: Uint8Array, ciphertext: Uint8Array): Uint8Array {
+export function assembleEnvelope(prefix: Uint8Array, ciphertext: Uint8Array): Uint8Array<ArrayBuffer> {
   const envelope = new Uint8Array(prefix.length + ciphertext.length);
   envelope.set(prefix, 0);
   envelope.set(ciphertext, prefix.length);
@@ -107,7 +110,7 @@ function parseHeaderJson(headerBytes: Uint8Array): unknown {
   }
 }
 
-function parseKdf(kdf: unknown, limits: IterationLimits): { iterations: number; salt: Uint8Array } | null {
+function parseKdf(kdf: unknown, limits: IterationLimits): { iterations: number; salt: Uint8Array<ArrayBuffer> } | null {
   if (!isPlainObject(kdf) || !hasExactKeys(kdf, ['name', 'hash', 'iterations', 'salt'])) return null;
   if (kdf.name !== KDF_NAME || kdf.hash !== KDF_HASH) return null;
   const { iterations } = kdf;
@@ -117,7 +120,7 @@ function parseKdf(kdf: unknown, limits: IterationLimits): { iterations: number; 
   return salt ? { iterations, salt } : null;
 }
 
-function parseCipher(cipher: unknown): { iv: Uint8Array } | null {
+function parseCipher(cipher: unknown): { iv: Uint8Array<ArrayBuffer> } | null {
   if (!isPlainObject(cipher) || !hasExactKeys(cipher, ['name', 'iv'])) return null;
   if (cipher.name !== CIPHER_NAME) return null;
   const iv = fromBase64(cipher.iv, IV_BYTES);
