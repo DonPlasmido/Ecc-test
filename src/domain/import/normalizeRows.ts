@@ -14,7 +14,7 @@ import { err, ok, type Result } from '@/domain/shared/Result'
 import type { TransactionDraft } from '@/domain/transaction/Transaction'
 
 /** Tolerancia al convertir un número nativo en céntimos (errores de coma flotante, no terceros decimales: 12.3401 se rechaza). */
-const FLOAT_TOLERANCE = 0.01
+const FLOAT_TOLERANCE = 1e-6
 
 type Row = readonly RawCell[]
 
