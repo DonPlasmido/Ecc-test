@@ -163,6 +163,33 @@ describe('PapaCsvParser.parse', () => {
   });
 });
 
+describe('PapaCsvParser delimiter detection with bank preambles', () => {
+  test('keeps the semicolon delimiter when the file has a preamble and decimal commas', async () => {
+    const text = [
+      'Titular:;PERSONA',
+      'Cuenta:;ES00 0000',
+      '',
+      'F.Valor;Fecha;Concepto;Importe;Divisa;Disponible;Observaciones',
+      '28/10/2026;28/10/2026;ALQUILER;-1.200,00;EUR;1.767,93;',
+      '27/10/2026;27/10/2026;NOMINA;1.850,00;EUR;2.967,93;',
+      ...Array.from({ length: 30 }, (_, i) => `01/09/2026;01/09/2026;COMPRA ${i};-${i + 1},50;EUR;1.000,00;`),
+    ].join('\n');
+
+    const rows = await parseRows('bbva.csv', text);
+
+    expect(rows[2]).toEqual(['F.Valor', 'Fecha', 'Concepto', 'Importe', 'Divisa', 'Disponible', 'Observaciones']);
+    expect(rows[3]).toEqual(['28/10/2026', '28/10/2026', 'ALQUILER', '-1.200,00', 'EUR', '1.767,93', '']);
+  });
+
+  test('keeps the semicolon delimiter with a one-line preamble', async () => {
+    const text = 'Importes en euros\nFecha;Concepto;Debe;Haber\n01/08/2026;ALQUILER;750,00;\n02/08/2026;NETFLIX;12,99;\n';
+
+    const rows = await parseRows('caixa.csv', text);
+
+    expect(rows[2]).toEqual(['01/08/2026', 'ALQUILER', '750,00', '']);
+  });
+});
+
 describe('PapaCsvParser.parse column and cell limits (M1)', () => {
   test('rejects rows with more than MAX_COLS columns', async () => {
     const text = `${Array.from({ length: MAX_COLS + 1 }, (_, i) => i).join(',')}\n1,2\n`;
