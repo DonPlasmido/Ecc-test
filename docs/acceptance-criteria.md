@@ -47,7 +47,7 @@ Una persona puede importar sus extractos bancarios españoles, categorizarlos, p
 - A3. Tamaño máximo de archivo de importación: 100.000 filas / 20 MB.
 - A4. Umbral «cerca» del presupuesto: 80 %; el gasto se calcula neto de devoluciones dentro de la categoría.
 - A5. Contraseña de copia: mínimo 8 caracteres; PBKDF2-SHA-256 con 600.000 iteraciones (recomendación OWASP vigente).
-- A6. Umbrales de rendimiento medidos en el runner de CI `ubuntu-latest` (Node LTS); los umbrales E2E (AC-033) son orientativos porque Playwright no limita CPU al emular Pixel 7.
+- A6. Umbrales de benchmark medidos en el runner de CI `ubuntu-latest` (Node LTS); los E2E (AC-033) con Pixel 7 y CPU ×4. Coherentes con los objetivos no funcionales de `docs/architecture.md` (filtro p95 < 200 ms en dispositivo, objetivo interno < 50 ms).
 - A7. Saldo: se toma de la columna «Saldo» del extracto cuando existe; si no, se estima.
 
 **Dependencies and constraints**
@@ -72,7 +72,7 @@ Una persona puede importar sus extractos bancarios españoles, categorizarlos, p
 | Filtrado combinado de 100.000 movimientos | tinybench, ≥ 30 iteraciones tras calentamiento, datos con semilla fija, CI `ubuntu-latest` | **p95 ≤ 50 ms**, media ≤ 25 ms | AC-032 |
 | Filtrado + ordenación por fecha | igual | p95 ≤ 100 ms | AC-032 |
 | Importar (parse + normalizar + deduplicar) 100.000 filas contra 100.000 existentes | tinybench | media ≤ 2.000 ms | AC-014 |
-| Actualización de la lista al buscar | Playwright Pixel 7, 100k sembrados | ≤ 300 ms tras la última pulsación | AC-033 |
+| Actualización de la lista al buscar | Playwright Pixel 7, CPU ×4, 100k sembrados | p95 ≤ 200 ms tras el debounce | AC-033 |
 | Filas en el DOM | lista con 100k | ≤ 100 `[role=row]` | AC-031 |
 
 ## Acceptance Criteria
@@ -91,7 +91,7 @@ Una persona puede importar sus extractos bancarios españoles, categorizarlos, p
 #### AC-002: Normalización de importes y fechas en los límites
 - **Escenario (Dado):** tabla de valores de entrada
 - **Acción (Cuando):** se normaliza cada valor
-- **Esperado (Entonces):** `1.234.567,89 → 123456789`, `-0,01 → -1`, `+12,00 → 1200`, `12 → 1200`, `1/2/2026 → 2026-02-01`; `31/02/2026`, `2026/13/01`, `abc` y `1,2,3` se rechazan con motivo
+- **Esperado (Entonces):** `1.234.567,89 → 123456789`, `-0,01 → -1`, `+12,00 → 1200`, `12 → 1200`, `12,30- → -1230` (signo final), `1/2/2026 → 2026-02-01`; `31/02/2026`, `2026/13/01`, `abc` y `1,2,3` se rechazan con motivo
 - **No debe:** aceptar silenciosamente un valor ambiguo o redondear céntimos
 - **Verificación:** unit table-driven
 - **Prioridad:** Obligatorio
@@ -364,9 +364,9 @@ Una persona puede importar sus extractos bancarios españoles, categorizarlos, p
 - **Historias:** `transaction-list-4` · **Tests:** `TEST-LIST-002`
 
 #### AC-033: Respuesta de la UI al buscar
-- **Escenario (Dado):** 100.000 movimientos sembrados, Playwright con perfil Pixel 7
+- **Escenario (Dado):** 100.000 movimientos sembrados, Playwright con perfil Pixel 7 y CPU ralentizada ×4 (CDP)
 - **Acción (Cuando):** se escribe un término de búsqueda
-- **Esperado (Entonces):** la lista filtrada y el contador se actualizan ≤ 300 ms tras la última pulsación (debounce incluido); render inicial de la lista ≤ 1.500 ms tras abrir la vista
+- **Esperado (Entonces):** p95 (10 búsquedas) ≤ 200 ms desde el fin del debounce hasta que la lista filtrada y el contador están pintados; hidratación + render inicial de la lista ≤ 1.500 ms; ninguna tarea larga > 50 ms durante el scroll
 - **Verificación:** E2E con medición `performance.now()`
 - **Prioridad:** Importante
 - **Historias:** `transaction-list-2` · **Tests:** `TEST-LIST-003`
@@ -563,7 +563,7 @@ Una persona puede importar sus extractos bancarios españoles, categorizarlos, p
 
 ## Blocking Decisions
 
-- [ ] **D1 — Clave de deduplicación** (bloquea `import-statements-5`): se propone fecha + importe en céntimos + concepto normalizado + saldo (si existe), contada como multiconjunto (AC-012). Riesgo: si el banco cambia el texto del concepto entre descargas se crearían duplicados; si se relaja la clave se perderían movimientos legítimos.
+- [ ] **D1 — Clave de deduplicación** (bloquea `import-statements-5`): se propone cuenta + fecha + importe en céntimos + concepto original normalizado + saldo (si existe) con contador de ocurrencias, es decir, multiconjunto (AC-012; coincide con `docs/architecture.md` §9). Riesgo: si el banco cambia el texto del concepto entre descargas se crearían duplicados; si se relaja la clave se perderían movimientos legítimos.
 - [ ] **D2 — Modo de restauración** (bloquea `encrypted-backup-2`): se propone *reemplazar todo* tras confirmación (AC-041). La alternativa *fusionar* requiere reutilizar la deduplicación y definir conflictos de reglas/presupuestos.
 - [ ] **D3 — Umbral «cerca» del presupuesto** (no bloqueante, A4): 80 %.
 - [ ] **D4 — Cálculo del saldo sin columna «Saldo»** (no bloqueante, A7).

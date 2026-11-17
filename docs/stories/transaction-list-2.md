@@ -14,7 +14,7 @@ Como usuario quiero buscar y filtrar movimientos para encontrar uno concreto rá
 
 Detalle verificable (Dado/Cuando/Entonces) en `docs/acceptance-criteria.md`; evidencia en `docs/TESTS.md`.
 
-- [ ] AC-033: Respuesta de la UI al buscar — la lista filtrada y el contador se actualizan ≤ 300 ms tras la última pulsación (debounce incluido); render inicial de la lista ≤ 1.500 ms tras abrir la vista (TEST-LIST-003)
+- [ ] AC-033: Respuesta de la UI al buscar — p95 (10 búsquedas) ≤ 200 ms desde el fin del debounce hasta que la lista filtrada y el contador están pintados; hidratación + render inicial de la lista ≤ 1.500 ms; ninguna tarea larga > 50 ms durante el scroll (TEST-LIST-003)
 - [ ] AC-034: Búsqueda y filtros combinables — el resultado es la intersección (AND) de todos los filtros; búsqueda por subcadena sin distinguir mayúsculas ni tildes; se muestra el número de resultados (TEST-LIST-004)
 
 ## Technical Notes
