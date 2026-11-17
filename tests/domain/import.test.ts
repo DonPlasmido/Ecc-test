@@ -115,6 +115,25 @@ describe('detectColumnMapping', () => {
     expect(mapping.columns).toEqual(['date', 'description', 'amount'])
   })
 
+  it('detects complementary numeric columns without header as debit/credit with a balance', () => {
+    const rows = [
+      ['05/01/2026', 'COMPRA MERCADONA', '45,10', '', '954,90'],
+      ['06/01/2026', 'NOMINA EMPRESA', '', '1.500,00', '2.454,90'],
+      ['07/01/2026', 'RECIBO LUZ', '60,00', '', '2.394,90'],
+    ]
+    const { mapping } = detectColumnMapping(table(rows))
+    expect(mapping.columns).toEqual(['date', 'description', 'debit', 'credit', 'balance'])
+    expect(mapping.amountConvention).toBe('debitCredit')
+  })
+
+  it('keeps confidence low when several numeric columns are not conclusive without header', () => {
+    const rows = [
+      ['05/01/2026', 'COMPRA MERCADONA', '-45,10', '954,90'],
+      ['06/01/2026', 'NOMINA EMPRESA', '1.500,00', '2.454,90'],
+    ]
+    expect(detectColumnMapping(table(rows)).confidence).toBeLessThanOrEqual(0.4)
+  })
+
   it('returns an empty zero-confidence mapping for an empty table', () => {
     const detection = detectColumnMapping(table([]))
     expect(detection.mapping).toEqual({ headerRowIndex: -1, columns: [], amountConvention: 'signed' })
