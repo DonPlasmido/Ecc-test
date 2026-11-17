@@ -1,8 +1,8 @@
 # ADR-0002: IndexedDB con `idb` como persistencia, con transacciones de grano grueso
 
 **Date**: 2026-11-17
-**Status**: proposed
-**Deciders**: agente `architect` (ECC); pendiente de validación por el responsable del proyecto
+**Status**: accepted
+**Deciders**: agente `architect` (ECC); validado por el responsable del proyecto (2026-11-17)
 
 ## Context
 

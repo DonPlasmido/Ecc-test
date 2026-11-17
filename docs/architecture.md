@@ -10,8 +10,9 @@
 
 - El repositorio solo contiene `package.json` con dependencias fijadas, el brief y el PRD. No hay `src/`.
 - Versiones y librerías fijadas por el brief: React 19, TypeScript strict, Vite 8, idb, papaparse,
-  exceljs, recharts, i18next, react-router-dom, vite-plugin-pwa, Vitest, Playwright, tinybench.
-  **No hay** librería de estado global, de virtualización ni de consultas: el diseño se ajusta a ello.
+  exceljs, i18next, react-router-dom, vite-plugin-pwa, Vitest, Playwright, tinybench, más @tanstack/react-virtual
+  3.14.25 (adoptada tras search-first; ADR-0008). recharts se ha desinstalado (ADR-0011).
+  **No hay** librería de estado global, de gráficos ni de consultas: el diseño se ajusta a ello.
 - No hay deuda técnica previa: es la oportunidad de fijar las fronteras antes de escribir código.
 
 ## 2. Requisitos que condicionan la arquitectura
@@ -209,7 +210,7 @@ src/
       useContainer.ts
       useAsyncQuery.ts             # caché por clave + versión de datos
       useDataVersion.ts            # useSyncExternalStore sobre TransactionIndexStore
-      useVirtualRows.ts            # virtualización de filas de altura fija (ADR-0008)
+      useVirtualRows.ts            # envoltorio de @tanstack/react-virtual, altura fija (ADR-0008)
     i18n/
       i18n.ts                      # init i18next; es por defecto, en lazy
       locales/es/{common,import,transactions,budgets,dashboard,backup,errors}.json
@@ -226,7 +227,7 @@ src/
       categories/  CategoriesPage.tsx
       rules/       RulesPage.tsx
       budgets/     BudgetsPage.tsx
-      dashboard/   DashboardPage.tsx, charts/*.tsx (recharts, lazy)
+      dashboard/   DashboardPage.tsx, charts/*.tsx (HTML/CSS + SVG propios, lazy; ADR-0011)
       settings/    SettingsPage.tsx, BackupSection.tsx
 test/
   fakes/                           # implementaciones en memoria de puertos de salida
@@ -720,16 +721,17 @@ Resumen ([ADR-0004](adr/0004-cifrado-webcrypto.md)):
 
 ## 11. UI
 
-- **React 19** con componentes de función; páginas cargadas con `lazy()` por ruta (el panel con recharts y la
+- **React 19** con componentes de función; páginas cargadas con `lazy()` por ruta (el panel con sus gráficos y la
   importación con exceljs quedan fuera del chunk inicial).
 - **Estado** ([ADR-0005](adr/0005-estado-ui-sin-libreria.md)): sin librería global. Tres tipos de estado:
   datos persistidos (a través de casos de uso + `useAsyncQuery` invalidado por `TransactionIndex.version`),
   estado de navegación (query del hash) y estado local (`useState`/`useReducer`).
-- **Gráficos** ([ADR-0006](adr/0006-graficos-recharts.md)): recharts con datos ya agregados (≤ 24 puntos por serie),
-  cada gráfico con tabla equivalente accesible y colores de tokens de tema.
+- **Gráficos** ([ADR-0011](adr/0011-graficos-propios-html-svg.md), sustituye a ADR-0006): propios, barras HTML/CSS
+  y SVG para series temporales, con datos ya agregados (≤ 24 puntos por serie), cada gráfico con tabla equivalente
+  accesible y colores de tokens de tema.
 - **i18n** ([ADR-0007](adr/0007-i18n-i18next.md)): i18next + react-i18next, `es` empaquetado por defecto y `en`
   cargado bajo demanda; formatos con `Intl`; el dominio devuelve códigos de error, nunca textos.
-- **Lista de 100k** ([ADR-0008](adr/0008-virtualizacion-de-listas.md)): `useVirtualRows` propio con altura fija,
+- **Lista de 100k** ([ADR-0008](adr/0008-virtualizacion-de-listas.md)): @tanstack/react-virtual 3.14.25 con altura fija,
   `role="table"` con `aria-rowcount`/`aria-rowindex`, paginación de 100 filas desde el índice.
 - **Accesibilidad**: foco gestionado en diálogos, `prefers-reduced-motion`, contraste AA en ambos temas,
   objetivos táctiles ≥ 24 px, anuncios `aria-live` para resultados de importación y filtros.
@@ -781,5 +783,5 @@ recorre `src/domain` y `src/application` fallando si aparece un import de librer
 | Hidratación de 100k > 1,5 s en móvil gama media | `getAll` por tramos, índice columnar, benchmark en CI | Store `monthlyTotals` materializado para el panel e hidratación diferida en un Web Worker |
 | exceljs pesado / incompatibilidades de empaquetado en Vite 8 | `import()` dinámico; bundle de navegador de exceljs | Leer XLSX en un Worker; en último caso, pedir al usuario CSV |
 | Clave de dedup frágil si el banco cambia el concepto | Saldo en la huella, aviso de "posibles duplicados", deshacer lote | Coincidencia difusa opcional (misma fecha+importe) con confirmación |
-| Virtualización propia (no hay librería verificada) | Altura fija, hook pequeño con tests, frontera de componente | Sustituir por @tanstack/react-virtual tras verificar versión ≥ 2 semanas |
+| @tanstack/react-virtual: cambios de API o regresiones | Versión exacta 3.14.25, altura fija, uso confinado en `VirtualTransactionList` | Hook propio de altura fija detrás del mismo componente |
 | Desalojo de IndexedDB por el navegador | `storage.persist()`, recordatorio de copia | — (la copia cifrada es la recuperación) |

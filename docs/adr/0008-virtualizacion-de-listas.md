@@ -1,50 +1,59 @@
-# ADR-0008: Virtualización propia de la lista de movimientos con altura fija
+# ADR-0008: Virtualización de la lista de movimientos con @tanstack/react-virtual y altura fija
 
 **Date**: 2026-11-17
-**Status**: proposed
-**Deciders**: agente `architect` (ECC); pendiente de validación por el responsable del proyecto
+**Status**: accepted
+**Deciders**: agente `architect` (ECC); validado por el responsable del proyecto (2026-11-17), que adopta la librería según `docs/research/search-first.md` (b)
 
 ## Context
 
 La lista de movimientos debe ser fluida con 100.000 filas en un Pixel 7 (PRD: filtro < 200 ms, sin tirones).
-Renderizar 100k nodos es inviable. Las versiones verificadas del brief no incluyen ninguna librería de
-virtualización y la regla del proyecto exige versiones publicadas hace ≥ 2 semanas y verificadas.
+Renderizar 100k nodos es inviable. La propuesta inicial de este ADR era un hook propio porque no había librería
+verificada. La investigación search-first verificó `@tanstack/react-virtual` 3.14.25 (publicada 2026-11-01, MIT,
+headless, compatible con React 19) y el council la aceptaba como alternativa a la versión a mano.
 
 ## Decision
 
-Implementamos un hook pequeño `useVirtualRows({ count, rowHeight, overscan, scrollElement })` en `ui/hooks`
-con altura de fila fija (densidad cómoda: 56 px; compacta: 44 px), que calcula el rango visible con
-`requestAnimationFrame` y `ResizeObserver`. `VirtualTransactionList` pide al caso de uso `QueryTransactions.page`
-solo las filas visibles + overscan (bloques de 100 filas cacheados por `resultId`). Accesibilidad: `role="table"`
-con `aria-rowcount` total y `aria-rowindex` por fila, navegación por teclado entre filas y anuncio `aria-live`
-del total de resultados. El hook queda detrás del componente para poder sustituirlo.
+Adoptamos `@tanstack/react-virtual` **3.14.25** (versión exacta fijada en `package.json`) detrás de un componente
+fino `VirtualTransactionList` que aporta el marcado y la semántica accesible: `role="table"`/`role="grid"` con
+`aria-rowcount` = total filtrado, `aria-rowindex` por fila, cabecera fija, navegación por teclado entre filas y
+anuncio `aria-live` del total. Altura de fila fija (cómoda 56 px, compacta 44 px) con `overscan` para evitar
+mediciones. Las filas visibles se piden a `QueryTransactions.page` en bloques de 100 cacheados por `resultId`;
+el filtrado y el orden se hacen sobre el índice en memoria (ADR-0009), nunca re-renderizando la lista.
 
 ## Alternatives Considered
 
-### Alternativa 1: @tanstack/react-virtual
-- **Pros**: probado, alturas variables, mantenimiento activo.
-- **Cons**: no está en las versiones verificadas; habría que verificar versión y fecha de publicación.
-- **Why not**: restricción del brief para el MVP; es el plan B preferente si el hook propio da problemas.
+### Alternativa 1: hook propio `useVirtualRows` con altura fija (propuesta inicial y recomendación del council)
+- **Pros**: sin dependencia; ~80 líneas con tests del cálculo de rango.
+- **Cons**: mantenimiento propio de casos límite (orientación, scroll restoration, Safari/Chrome Android).
+- **Why not**: ya hay una librería verificada, probada en producción y headless que no limita la accesibilidad.
 
-### Alternativa 2: react-window
+### Alternativa 2: react-window 2.5.3
 - **Pros**: maduro y ligero.
-- **Cons**: no verificado; API antigua con compatibilidad React 19 por confirmar.
-- **Why not**: mismo motivo y menor actividad.
+- **Cons**: API v2 nueva (`List`/`rowComponent`); menos control sobre la semántica de tabla.
+- **Why not**: el enfoque headless de TanStack encaja mejor con el marcado accesible propio.
 
-### Alternativa 3: paginación clásica (páginas de 50)
+### Alternativa 3: react-virtuoso / virtua
+- **Pros**: alturas automáticas (`TableVirtuoso`); virtua es muy ligero.
+- **Cons**: virtuoso añade API y comportamiento implícito; virtua sigue en 0.x.
+- **Why not**: más superficie o menos estabilidad de API sin beneficio para filas de altura fija.
+
+### Alternativa 4: paginación clásica (páginas de 50)
 - **Pros**: trivial y accesible.
 - **Cons**: peor experiencia en móvil; el PRD pide lista fluida.
-- **Why not**: no cumple la expectativa; se mantiene como modo de reserva sin JS de scroll.
+- **Why not**: no cumple la expectativa; se mantiene como modo de reserva.
 
 ## Consequences
 
 ### Positive
-- Sin dependencia nueva; ~80 líneas con tests unitarios del cálculo de rango.
-- DOM constante (~30–40 filas) independiente del total.
+- DOM constante (~30–40 filas) independiente del total, con una librería mantenida y probada.
+- Admite alturas variables (`measureElement`) y scroll a un índice si se necesitan más adelante.
 
 ### Negative
-- Altura fija: conceptos largos se truncan con elipsis (el detalle completo se ve en el diálogo de edición).
-- Mantenimiento propio de casos límite (cambio de orientación, scroll restoration).
+- Nueva dependencia (~64 KB descomprimido) que hay que mantener fijada a una versión exacta.
+- En jsdom (Vitest) no renderiza filas sin dimensiones: los tests deben dar `initialRect` o simular medidas, y el scroll real se comprueba en Playwright.
+- Altura fija: conceptos largos se truncan con elipsis (detalle completo en el diálogo de edición).
 
 ### Risks
-- "Not Invented Here" y bugs sutiles de scroll en Safari/Chrome Android. Mitigación: E2E en Pixel 7 con 100k sembrados midiendo tareas largas; sustituir por @tanstack/react-virtual tras verificar versión si falla.
+- Cambios de API o regresiones en versiones nuevas (publica a menudo). Mitigación: versión exacta, actualizar solo versiones publicadas hace ≥ 2 semanas, uso confinado en `VirtualTransactionList`.
+- Rendimiento en móvil. Mitigación: E2E en Pixel 7 con 100k sembrados midiendo tareas largas.
+- Compatibilidad con React Compiler no verificada. Mitigación: comprobarla antes de activarlo.

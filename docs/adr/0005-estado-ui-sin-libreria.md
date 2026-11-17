@@ -1,8 +1,8 @@
 # ADR-0005: Estado de UI con React nativo, URL del hash router y versión del índice
 
 **Date**: 2026-11-17
-**Status**: proposed
-**Deciders**: agente `architect` (ECC); pendiente de validación por el responsable del proyecto
+**Status**: accepted
+**Deciders**: agente `architect` (ECC); validado por el responsable del proyecto (2026-11-17)
 
 ## Context
 

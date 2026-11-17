@@ -1,8 +1,8 @@
 # ADR-0004: Copia de seguridad cifrada con WebCrypto (PBKDF2-SHA-256 + AES-GCM 256)
 
 **Date**: 2026-11-17
-**Status**: proposed
-**Deciders**: agente `architect` (ECC); pendiente de validación por el responsable del proyecto
+**Status**: accepted
+**Deciders**: agente `architect` (ECC); validado por el responsable del proyecto (2026-11-17)
 
 ## Context
 

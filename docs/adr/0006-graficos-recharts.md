@@ -1,8 +1,12 @@
 # ADR-0006: Gráficos con recharts sobre datos preagregados y carga diferida
 
 **Date**: 2026-11-17
-**Status**: proposed
-**Deciders**: agente `architect` (ECC); pendiente de validación por el responsable del proyecto
+**Status**: superseded by ADR-0011
+**Deciders**: agente `architect` (ECC); rechazado por el responsable del proyecto (2026-11-17)
+
+> **Superseded** el 2026-11-17 por [ADR-0011](0011-graficos-propios-html-svg.md): el responsable del proyecto
+> adopta el veredicto del council (`docs/council/decisions.md`, decisión 3) y recharts se ha desinstalado.
+> Se conserva este ADR como registro de la alternativa evaluada.
 
 ## Context
 

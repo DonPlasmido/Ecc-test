@@ -1,8 +1,8 @@
 # ADR-0003: `Money` como céntimos enteros y fechas `IsoDate` sin zona horaria
 
 **Date**: 2026-11-17
-**Status**: proposed
-**Deciders**: agente `architect` (ECC); pendiente de validación por el responsable del proyecto
+**Status**: accepted
+**Deciders**: agente `architect` (ECC); validado por el responsable del proyecto (2026-11-17)
 
 ## Context
 
