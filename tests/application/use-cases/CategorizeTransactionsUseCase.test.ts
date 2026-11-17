@@ -77,7 +77,7 @@ describe('CategorizeTransactionsUseCase', () => {
     put('a', merca);
     put('b', merca);
 
-    const result = await useCase().execute({ scope: { ids: ['a', 'ghost' as TransactionId] } });
+    const result = await useCase().execute({ scope: { ids: ['a' as TransactionId, 'ghost' as TransactionId] } });
 
     expect(result).toEqual({ changed: 1, sampleIds: ['a'] });
     expect(w.state.transactions.get('b')?.categorySource).toBe('none');
