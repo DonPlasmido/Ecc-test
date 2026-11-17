@@ -253,7 +253,7 @@ describe('ImportStatementUseCase.commit', () => {
     await importRows([COFFEE]);
     const before = structuredClone(w.state);
     const quota = Object.assign(new Error('full'), { name: 'QuotaExceededError' });
-    const failing: TransactionRepository = { ...w.transactions, existingDedupKeys: (k) => w.transactions.existingDedupKeys(k), insertImport: () => Promise.reject(quota) } as TransactionRepository;
+    const failing = { existingDedupKeys: (k: never) => w.transactions.existingDedupKeys(k), insertImport: () => Promise.reject(quota) } as unknown as TransactionRepository;
     const useCase = build([SALARY, GROCERY], undefined, failing);
     const preview = await useCase.preview(FILE);
     if (!preview.ok) throw new Error('preview');
