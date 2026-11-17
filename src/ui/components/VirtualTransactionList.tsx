@@ -57,6 +57,18 @@ function clampIndex(index: number, total: number): number {
   return Math.min(Math.max(index, 0), Math.max(total - 1, 0));
 }
 
+/**
+ * Primer y último índice de la ventana contigua, sin contar la fila activa cuando está
+ * montada solo para conservar el foco lejos de la ventana. `[0, -1]` si no hay filas.
+ */
+function visibleWindow(indexes: readonly number[], activeIndex: number): readonly [number, number] {
+  const mounted = new Set(indexes);
+  const isPinnedOnly = (index: number) =>
+    index === activeIndex && indexes.length > 1 && !mounted.has(index - 1) && !mounted.has(index + 1);
+  const window = indexes.filter((index) => !isPinnedOnly(index));
+  return [window[0] ?? 0, window.at(-1) ?? -1];
+}
+
 type RowProps = {
   index: number;
   transaction: Transaction | undefined;
@@ -149,8 +161,7 @@ export function VirtualTransactionList({
     rangeExtractor,
   });
   const items = virtualizer.getVirtualItems();
-  const firstIndex = items[0]?.index ?? 0;
-  const lastIndex = items.at(-1)?.index ?? -1;
+  const [firstIndex, lastIndex] = visibleWindow(items.map((item) => item.index), activeIndex);
 
   useEffect(() => {
     if (lastIndex >= 0) onRangeChange?.(firstIndex, lastIndex);

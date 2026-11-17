@@ -31,12 +31,12 @@ export function Page({ title, intro, children }: PageProps) {
 
   return (
     <div className="stack stack--loose">
-      <header className="page__header">
+      <div className="page__header">
         <h1 className="page__title" ref={headingRef} tabIndex={-1}>
           {title}
         </h1>
         {intro ? <p className="page__intro">{intro}</p> : null}
-      </header>
+      </div>
       {children}
     </div>
   );
