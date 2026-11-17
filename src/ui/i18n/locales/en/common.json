@@ -1,0 +1,141 @@
+{
+  "app": {
+    "name": "Cuentas Claras",
+    "documentTitle": "{{page}} - Cuentas Claras",
+    "loading": "Loading…"
+  },
+  "skipLink": "Skip to content",
+  "nav": {
+    "label": "Main",
+    "dashboard": "Overview",
+    "transactions": "Transactions",
+    "import": "Import",
+    "budgets": "Budgets",
+    "settings": "Settings"
+  },
+  "pages": {
+    "dashboard": {
+      "title": "Overview",
+      "intro": "Summary of income, spending and account balances."
+    },
+    "transactions": {
+      "title": "Transactions",
+      "intro": "Search, filter and fix the category of your transactions."
+    },
+    "import": {
+      "title": "Import statement",
+      "intro": "Load a CSV or Excel statement from your bank. Your data never leaves this device."
+    },
+    "budgets": {
+      "title": "Budgets",
+      "intro": "Monthly limits per category and how much you have spent."
+    },
+    "rules": {
+      "title": "Rules",
+      "intro": "Rules that assign categories automatically based on the description."
+    },
+    "settings": {
+      "title": "Settings",
+      "intro": "Language, theme and encrypted backup."
+    },
+    "notFound": {
+      "title": "Page not found",
+      "text": "This address does not match any screen.",
+      "back": "Back to overview"
+    },
+    "placeholder": "This screen is under construction."
+  },
+  "settings": {
+    "language": {
+      "label": "Idioma / Language",
+      "changed": "Language changed to English"
+    },
+    "theme": {
+      "legend": "Theme",
+      "system": "System",
+      "light": "Light",
+      "dark": "Dark",
+      "changed": "Theme changed: {{theme}}"
+    },
+    "backup": {
+      "title": "Backup",
+      "text": "Export all your data to a password-encrypted file or restore an earlier backup."
+    },
+    "appearance": "Appearance",
+    "rulesLink": "Categorization rules"
+  },
+  "actions": {
+    "close": "Close",
+    "retry": "Try again",
+    "showTable": "Show as table",
+    "hideTable": "Hide table",
+    "dismiss": "Dismiss notification"
+  },
+  "field": {
+    "required": "(required)"
+  },
+  "status": {
+    "loading": "Loading"
+  },
+  "toast": {
+    "region": "Notifications",
+    "info": "Info:",
+    "success": "Done:",
+    "warning": "Warning:",
+    "error": "Error:"
+  },
+  "money": {
+    "expense": "expense",
+    "income": "income"
+  },
+  "budget": {
+    "ok": "Within budget",
+    "near": "Close to the limit",
+    "over": "Over budget",
+    "spentOfLimit": "{{spent}} of {{limit}}"
+  },
+  "chart": {
+    "empty": "No data for this period",
+    "labelColumn": "Period",
+    "valueColumn": "Amount",
+    "summary": "{{title}}. Highest {{max}} in {{maxLabel}}; lowest {{min}} in {{minLabel}}."
+  },
+  "transactions": {
+    "grid": {
+      "label": "Transactions",
+      "date": "Date",
+      "description": "Description",
+      "category": "Category",
+      "amount": "Amount",
+      "loadingRow": "Loading transaction"
+    }
+  },
+  "categories": {
+    "uncategorized": "Uncategorized",
+    "groceries": "Groceries",
+    "restaurants": "Restaurants and cafés",
+    "transport": "Transport",
+    "housing": "Housing",
+    "utilities": "Utilities",
+    "health": "Health",
+    "leisure": "Leisure",
+    "shopping": "Shopping",
+    "subscriptions": "Subscriptions",
+    "education": "Education",
+    "travel": "Travel",
+    "taxes-fees": "Taxes and fees",
+    "gifts": "Gifts",
+    "salary": "Salary",
+    "other-income": "Other income",
+    "transfers": "Transfers"
+  },
+  "errorBoundary": {
+    "title": "Something went wrong",
+    "text": "This screen could not be displayed. Your data is still stored on this device.",
+    "retry": "Try again"
+  },
+  "boot": {
+    "failedTitle": "The app could not be opened",
+    "reload": "Reload"
+  }
+}

@@ -1,0 +1,59 @@
+{
+  "unexpected": "Ha ocurrido un error inesperado. Inténtalo de nuevo.",
+  "money": {
+    "notInteger": "El importe debe expresarse en céntimos enteros.",
+    "outOfRange": "El importe es demasiado grande.",
+    "invalidAmount": "No se reconoce el importe «{{value}}»."
+  },
+  "date": {
+    "invalidFormat": "No se reconoce el formato de la fecha «{{value}}».",
+    "invalidDate": "La fecha «{{value}}» no existe."
+  },
+  "import": {
+    "emptyFile": "El archivo está vacío.",
+    "unsupportedFormat": "Formato no admitido. Usa un archivo CSV o Excel (.xlsx).",
+    "corruptFile": "No se ha podido leer el archivo. Puede estar dañado.",
+    "headerNotFound": "No se ha encontrado la fila de cabecera con las columnas del extracto.",
+    "missingDateColumn": "Indica qué columna contiene la fecha.",
+    "missingDescriptionColumn": "Indica qué columna contiene el concepto.",
+    "missingAmountColumn": "Indica qué columna contiene el importe (o las de cargo y abono).",
+    "invalidMapping": "La asignación de columnas no es válida. Revisa que no se repitan columnas.",
+    "emptyDescription": "La fila no tiene concepto.",
+    "previewNotFound": "La vista previa ha caducado. Vuelve a cargar el archivo.",
+    "accountNotFound": "La cuenta seleccionada ya no existe."
+  },
+  "transaction": {
+    "notFound": "El movimiento ya no existe."
+  },
+  "account": {
+    "notFound": "La cuenta no existe.",
+    "invalidName": "Escribe un nombre para la cuenta.",
+    "inUse": "No se puede eliminar una cuenta con movimientos."
+  },
+  "category": {
+    "notFound": "La categoría no existe.",
+    "invalidName": "Escribe un nombre para la categoría.",
+    "inUse": "La categoría está en uso. Archívala en lugar de eliminarla."
+  },
+  "rule": {
+    "notFound": "La regla no existe.",
+    "invalidPattern": "Escribe el texto que debe contener el concepto."
+  },
+  "budget": {
+    "notFound": "El presupuesto no existe.",
+    "invalidLimit": "El límite mensual debe ser mayor que cero.",
+    "invalidRange": "El mes de fin no puede ser anterior al de inicio.",
+    "duplicateCategory": "Ya hay un presupuesto para esa categoría en esos meses."
+  },
+  "backup": {
+    "invalidFormat": "El archivo no es una copia de Cuentas Claras.",
+    "unsupportedVersion": "La copia se creó con una versión no compatible.",
+    "wrongPasswordOrCorrupted": "La contraseña no es correcta o el archivo está dañado.",
+    "weakPassword": "La contraseña debe tener al menos {{expected}} caracteres.",
+    "invalidSnapshot": "La copia contiene datos no válidos y no se ha restaurado."
+  },
+  "storage": {
+    "quotaExceeded": "No queda espacio en el dispositivo para guardar los datos.",
+    "unavailable": "El almacenamiento del navegador no está disponible (¿modo privado?)."
+  }
+}
