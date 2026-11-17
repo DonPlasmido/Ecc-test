@@ -12,6 +12,34 @@ const CSV_EXTENSIONS: ReadonlySet<string> = new Set(['csv', 'txt', 'tsv']);
 const DELIMITERS = [';', ',', '\t'];
 const HTML_START = /^\s*<(!doctype|html|table|head|body)/i;
 
+const DELIMITER_SAMPLE_ROWS = 60;
+const DEFAULT_DELIMITER = ',';
+
+/**
+ * Elige el separador por la "tabla" más consistente: filas con ≥2 campos que comparten el nº de campos
+ * más frecuente, ponderadas por ese nº. Papa solo mira las primeras líneas y se confunde con preámbulos
+ * bancarios y comas decimales; así `;` gana a `,` cuando los importes son `1.200,00`.
+ */
+function detectDelimiter(text: string): string {
+  let best = DEFAULT_DELIMITER;
+  let bestScore = 0;
+  for (const delimiter of DELIMITERS) {
+    const sample = Papa.parse<string[]>(text, { delimiter, skipEmptyLines: 'greedy', preview: DELIMITER_SAMPLE_ROWS });
+    const frequency = new Map<number, number>();
+    for (const row of sample.data) {
+      if (row.length >= 2) frequency.set(row.length, (frequency.get(row.length) ?? 0) + 1);
+    }
+    for (const [fields, rows] of frequency) {
+      const score = fields * rows;
+      if (score > bestScore) {
+        bestScore = score;
+        best = delimiter;
+      }
+    }
+  }
+  return best;
+}
+
 function toCell(value: string): RawCell {
   const text = value.trim();
   return text === '' ? { kind: 'empty' } : { kind: 'text', value: text };
@@ -33,8 +61,7 @@ export class PapaCsvParser implements StatementParserPort {
     if (HTML_START.test(text)) return failure('import.unsupportedFormat', { field: 'html' });
 
     const parsed = Papa.parse<string[]>(text, {
-      delimiter: '',
-      delimitersToGuess: DELIMITERS,
+      delimiter: detectDelimiter(text),
       skipEmptyLines: 'greedy',
       preview: MAX_ROWS + 1,
     });
