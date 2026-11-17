@@ -38,8 +38,17 @@ export function isAmbiguousDate(text: string): boolean {
   return first <= MAX_MONTH && second <= MAX_MONTH && first !== second && first >= 1 && second >= 1
 }
 
-/** `true` si todas las fechas interpretables del archivo son ambiguas: hay que confirmar el formato. */
+/** Fecha dd/mm/aaaa con día = mes (05/05): valdría igual en ambos órdenes, no aporta información. */
+function hasSameDayAndMonth(text: string): boolean {
+  const match = DAY_FIRST.exec(text.trim())
+  return match !== null && Number(match[1]) === Number(match[2])
+}
+
+/**
+ * `true` si todas las fechas interpretables del archivo que discriminan el formato son ambiguas:
+ * hay que confirmar el formato. Las fechas con día = mes se ignoran.
+ */
 export function hasAmbiguousDates(texts: readonly string[]): boolean {
-  const parseable = texts.filter((t) => parseSpanishDate(t).ok)
-  return parseable.length > 0 && parseable.every(isAmbiguousDate)
+  const informative = texts.filter((t) => parseSpanishDate(t).ok && !hasSameDayAndMonth(t))
+  return informative.length > 0 && informative.every(isAmbiguousDate)
 }
