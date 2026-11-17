@@ -125,4 +125,57 @@ describe('migrateSnapshot', () => {
     expect(migrateSnapshot({ ...raw, settings: null }).ok).toBe(true);
     expect(ACCOUNT).toBeDefined();
   });
+
+  const mapping = { headerRowIndex: 0, columns: ['date', 'description', 'amount'], amountConvention: 'signed' };
+  const batch = { id: 'b', accountId: ACCOUNT, fileName: 'f.csv', importedAt: 'x', rowCount: 1, inserted: 1, duplicates: 0, mapping };
+  const profile = { headerSignature: 'FECHA', mapping, accountId: null };
+
+  it('accepts well-formed import batches and profiles', async () => {
+    const raw = await validRaw();
+
+    expect(migrateSnapshot({ ...raw, importBatches: [batch], importProfiles: [profile] }).ok).toBe(true);
+  });
+
+  it.each([
+    ['batch with a non-integer header row', { importBatches: [{ ...batch, mapping: { ...mapping, headerRowIndex: 0.5 } }] }],
+    ['batch with an unknown convention', { importBatches: [{ ...batch, mapping: { ...mapping, amountConvention: 'x' } }] }],
+    ['batch with unknown column roles', { importBatches: [{ ...batch, mapping: { ...mapping, columns: ['nope'] } }] }],
+    ['batch with non-array columns', { importBatches: [{ ...batch, mapping: { ...mapping, columns: 'date' } }] }],
+    ['batch with a non numeric count', { importBatches: [{ ...batch, rowCount: 'many' }] }],
+    ['duplicated batch ids', { importBatches: [batch, batch] }],
+    ['profile with a bad mapping', { importProfiles: [{ ...profile, mapping: null }] }],
+    ['profile with a numeric account', { importProfiles: [{ ...profile, accountId: 3 }] }],
+    ['duplicated profile signatures', { importProfiles: [profile, profile] }],
+    ['account with another currency', { accounts: [{ id: 'a', name: 'n', ibanLast4: null, currency: 'USD', createdAt: 'x' }] }],
+    ['duplicated account ids', { accounts: [{ id: 'a', name: 'n', ibanLast4: null, currency: 'EUR', createdAt: 'x' }, { id: 'a', name: 'n', ibanLast4: null, currency: 'EUR', createdAt: 'x' }] }],
+    ['category with an unknown kind', { categories: [{ id: 'c', name: 'n', nameKey: null, kind: 'other', color: 'x', archived: false }] }],
+    ['category with a non boolean archived flag', { categories: [{ id: 'c', name: 'n', nameKey: null, kind: 'expense', color: 'x', archived: 'no' }] }],
+    ['rule with a non numeric priority', { rules: [{ ...rule(), priority: Number.NaN }] }],
+    ['budget with a non object limit', { budgets: [{ id: 'b', categoryId: 'x', monthlyLimit: 5, startMonth: '2026-01', endMonth: null }] }],
+    ['budget with an invalid end month', { budgets: [{ id: 'b', categoryId: 'x', monthlyLimit: { cents: 5 }, startMonth: '2026-01', endMonth: '2026-99' }] }],
+    ['transaction with an invalid value date', { transactions: [{ ...tx(), valueDate: '2026-13-01' }] }],
+    ['transaction with an unsafe balance', { transactions: [{ ...tx(), balance: { cents: 2 ** 60 } }] }],
+    ['transaction with a numeric description', { transactions: [{ ...tx(), description: 7 }] }],
+    ['settings with an unknown theme', { settings: { locale: 'es', theme: 'neon' } }],
+    ['settings with a non text lastBackupAt', { settings: { locale: 'es', theme: 'dark', lastBackupAt: 1 } }],
+    ['missing schema version', { schemaVersion: undefined }],
+  ])('rejects %s', async (_name, patch) => {
+    const raw = await validRaw();
+
+    expect(codeOf(migrateSnapshot({ ...raw, ...patch }))).toBe('backup.invalidSnapshot');
+  });
+
+  it('reports the offending field but never the value', async () => {
+    const raw = await validRaw();
+
+    const result = migrateSnapshot({ ...raw, transactions: [{ ...tx(), description: 7 }] });
+
+    expect(result).toEqual({ ok: false, error: { code: 'backup.invalidSnapshot', details: { field: 'transactions[0].description' } } });
+  });
+
+  it('rethrows unexpected errors instead of masking them', () => {
+    const hostile = { get formatVersion(): number { throw new Error('getter exploded'); } };
+
+    expect(() => migrateSnapshot(hostile)).toThrow('getter exploded');
+  });
 });
