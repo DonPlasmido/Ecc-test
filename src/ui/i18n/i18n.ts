@@ -28,16 +28,18 @@ export function isLanguage(value: unknown): value is Language {
   return typeof value === 'string' && (SUPPORTED_LANGUAGES as readonly string[]).includes(value);
 }
 
-/** Lee la preferencia guardada; si no hay, usa el idioma del navegador. Nunca lanza. */
+/**
+ * Lee la preferencia guardada; si no hay, español (AC-044: el idioma por defecto no depende del
+ * navegador). Nunca lanza.
+ */
 export function readPreferredLanguage(): Language {
   try {
     const stored = window.localStorage.getItem(LANGUAGE_STORAGE_KEY);
     if (isLanguage(stored)) return stored;
   } catch {
-    // localStorage bloqueado (modo privado, política): se usa el idioma del navegador.
+    // localStorage bloqueado (modo privado, política): se usa el idioma por defecto.
   }
-  const browser = typeof navigator === 'undefined' ? '' : navigator.language.slice(0, 2);
-  return isLanguage(browser) ? browser : DEFAULT_LANGUAGE;
+  return DEFAULT_LANGUAGE;
 }
 
 function storeLanguage(language: Language): void {
