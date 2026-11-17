@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ExportEncryptedBackupUseCase } from '@/application/use-cases/ExportEncryptedBackupUseCase';
+import type { DataSnapshotPort } from '@/application/ports/outbound/DataSnapshotPort';
 import { ImportEncryptedBackupUseCase } from '@/application/use-cases/ImportEncryptedBackupUseCase';
 import { WebCryptoBackupCipher } from '@/infrastructure/crypto/WebCryptoBackupCipher';
 import { rule, tx } from '../../domain/builders';
@@ -15,7 +16,7 @@ function exporter(): ExportEncryptedBackupUseCase {
   return new ExportEncryptedBackupUseCase({ snapshot: w.snapshot, cipher, clock: w.clock, settings: w.settings });
 }
 
-function importer(snapshot = w.snapshot): ImportEncryptedBackupUseCase {
+function importer(snapshot: DataSnapshotPort = w.snapshot): ImportEncryptedBackupUseCase {
   return new ImportEncryptedBackupUseCase({ snapshot, cipher, onDataChanged });
 }
 
