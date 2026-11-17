@@ -6,4 +6,11 @@ export interface Tool {
   load: () => Promise<{ render: (root: HTMLElement) => void }>
 }
 
-export const tools: Tool[] = []
+export const tools: Tool[] = [
+  {
+    id: 'limpiar',
+    title: 'Limpiar tabla',
+    description: 'Quita filas duplicadas, filas vacías y espacios sobrantes.',
+    load: () => import('./clean'),
+  },
+]

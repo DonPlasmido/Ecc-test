@@ -7,6 +7,8 @@ const base = process.env.BASE_PATH ?? '/Ecc-test/'
 
 export default defineConfig({
   base,
+  // ExcelJS pesa ~1 MB, pero solo se descarga al abrir una herramienta (import dinámico).
+  build: { chunkSizeWarningLimit: 1500 },
   plugins: [
     VitePWA({
       registerType: 'autoUpdate',
