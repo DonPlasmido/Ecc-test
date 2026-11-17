@@ -1,0 +1,284 @@
+/*
+ * Cuentas Claras — estilos de los componentes React que no estaban en components.css:
+ * cabecera de la app, encabezado de página, lista virtualizada (role=grid) y gráficos propios.
+ * Requiere tokens.css, base.css y components.css.
+ */
+
+/* ---------- Cabecera y encabezado de página ---------- */
+.app-header__title {
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-tight);
+}
+
+.page__header {
+  display: grid;
+  gap: var(--space-2);
+  margin-bottom: var(--space-6);
+}
+
+.page__title {
+  font-size: var(--text-2xl);
+  line-height: var(--leading-tight);
+  text-wrap: balance;
+}
+
+.page__title:focus {
+  outline: none;
+}
+
+.page__title:focus-visible {
+  outline: var(--focus-ring-width) solid var(--color-focus);
+  outline-offset: var(--focus-ring-offset);
+}
+
+.page__intro {
+  color: var(--color-text-muted);
+  text-wrap: pretty;
+}
+
+main:focus {
+  outline: none;
+}
+
+html {
+  /* El foco no queda tapado por la cabecera fija ni por la navegación inferior (a11y T8). */
+  scroll-padding-top: calc(3.5rem + var(--space-2));
+  scroll-padding-bottom: calc(var(--nav-height) + var(--space-2) + env(safe-area-inset-bottom));
+}
+
+/* ---------- Lista virtualizada (ADR-0008, a11y §2) ---------- */
+.vgrid {
+  position: relative;
+  height: min(70dvh, 40rem);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-md);
+  background-color: var(--color-surface);
+}
+
+.vgrid__head {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background-color: var(--color-surface);
+  border-bottom: var(--border-width) solid var(--color-border);
+}
+
+.vgrid__head-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  height: 100%;
+  padding-inline: var(--space-4);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+/* En móvil solo se ven «Concepto» e «Importe»; las demás cabeceras quedan para lectores. */
+.vgrid__head-row > [aria-colindex='1'],
+.vgrid__head-row > [aria-colindex='3'] {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.vgrid__head-row > [aria-colindex='4'] {
+  text-align: end;
+}
+
+.vgrid__body {
+  position: relative;
+}
+
+.vgrid__row {
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-areas:
+    'desc desc amount'
+    'date cat amount';
+  align-items: center;
+  column-gap: var(--space-2);
+  padding-inline: var(--space-4);
+  border-bottom: var(--border-width) solid var(--color-rule);
+  background-color: var(--color-surface);
+  cursor: pointer;
+  transition-property: background-color;
+  transition-duration: var(--duration-instant);
+  transition-timing-function: var(--ease-sharp);
+}
+
+.vgrid__row:hover {
+  background-color: var(--color-surface-sunken);
+}
+
+/* Contorno interior: `overflow` del contenedor no lo recorta (a11y §2.3). */
+.vgrid__row:focus-visible {
+  outline: var(--focus-ring-width) solid var(--color-focus);
+  outline-offset: calc(-1 * var(--focus-ring-width));
+}
+
+.vgrid__desc {
+  grid-area: desc;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-weight: var(--weight-medium);
+}
+
+.vgrid__date {
+  grid-area: date;
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+
+.vgrid__cat {
+  grid-area: cat;
+  min-width: 0;
+  overflow: hidden;
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+
+.vgrid__cat .chip {
+  min-height: 1.25rem;
+  padding-inline: 0;
+  border: 0;
+  background: none;
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+
+.vgrid__amount {
+  grid-area: amount;
+  text-align: end;
+}
+
+.vgrid__loading {
+  grid-column: 1 / -1;
+}
+
+.vgrid__loading .skeleton {
+  width: 60%;
+}
+
+/* ---------- Gráficos propios (ADR-0011) ---------- */
+.chart {
+  display: grid;
+  gap: var(--space-3);
+  margin: 0;
+}
+
+.chart__title {
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+  text-wrap: balance;
+}
+
+.chart-bars {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.chart-bars__row {
+  --bar-value: 0;
+  --bar-color: var(--color-accent);
+
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  row-gap: var(--space-1);
+  column-gap: var(--space-3);
+  font-size: var(--text-sm);
+}
+
+.chart-bars__track {
+  grid-column: 1 / -1;
+  height: 0.5rem;
+  overflow: hidden;
+  border-radius: var(--radius-pill);
+  background-color: var(--color-surface-sunken);
+}
+
+.chart-bars__fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background-color: var(--bar-color);
+  transform: scaleX(var(--bar-value));
+  transform-origin: left center;
+  transition-property: transform;
+  transition-duration: var(--duration-normal);
+  transition-timing-function: var(--ease-smooth);
+}
+
+.chart-line {
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.chart-line__grid {
+  stroke: var(--color-chart-grid);
+  stroke-width: 1;
+}
+
+.chart-line__axis {
+  fill: var(--color-chart-axis);
+  font-size: 0.625rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.chart-line__path {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.chart-line__dot {
+  fill: var(--color-surface);
+  stroke: currentColor;
+  stroke-width: 1.5;
+}
+
+.chart__legend {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-size: var(--text-sm);
+}
+
+.chart__legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.chart__swatch {
+  width: 1.5rem;
+  height: 0.5rem;
+  stroke: currentColor;
+  stroke-width: 3;
+}
+
+.chart__legend-text {
+  color: var(--color-text);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chart-bars__fill,
+  .vgrid__row {
+    transition-duration: 0s;
+  }
+}
