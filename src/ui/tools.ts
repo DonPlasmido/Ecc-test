@@ -13,4 +13,10 @@ export const tools: Tool[] = [
     description: 'Quita filas duplicadas, filas vacías y espacios sobrantes.',
     load: () => import('./clean'),
   },
+  {
+    id: 'juntar',
+    title: 'Juntar Excels',
+    description: 'Une varios archivos en uno solo, columna con columna.',
+    load: () => import('./merge'),
+  },
 ]
