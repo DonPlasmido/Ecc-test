@@ -1,16 +1,14 @@
 import type { StatementFile } from '@/domain/import/StatementFile';
-import type { DomainError, DomainErrorCode, DomainErrorDetails } from '@/domain/shared/DomainError';
-import type { Err, Ok } from '@/domain/shared/Result';
+import { domainError, type DomainError, type DomainErrorCode, type DomainErrorDetails } from '@/domain/shared/DomainError';
+import { err, ok, type Err, type Ok } from '@/domain/shared/Result';
 import { MAX_FILE_BYTES } from './limits';
 
-// `ok`/`err`/`domainError` del dominio aún son TODO(domain); aquí se construyen los valores planos
-// equivalentes para no depender de su implementación.
 export function okResult<T>(value: T): Ok<T> {
-  return { ok: true, value };
+  return ok(value);
 }
 
 export function failure(code: DomainErrorCode, details?: DomainErrorDetails): Err<DomainError> {
-  return { ok: false, error: details ? { code, details } : { code } };
+  return err(domainError(code, details));
 }
 
 /** Extensión en minúsculas sin punto; cadena vacía si no hay. */

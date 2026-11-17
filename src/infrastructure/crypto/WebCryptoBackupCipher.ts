@@ -1,6 +1,6 @@
 import type { BackupCipherPort } from '@/application/ports/outbound/BackupCipherPort';
-import type { DomainError } from '@/domain/shared/DomainError';
-import type { Result } from '@/domain/shared/Result';
+import { domainError, type DomainError } from '@/domain/shared/DomainError';
+import { err, ok, type Result } from '@/domain/shared/Result';
 import {
   DEFAULT_KDF_ITERATIONS,
   GCM_TAG_BYTES,
@@ -66,10 +66,10 @@ export class WebCryptoBackupCipher implements BackupCipherPort {
         key,
         ciphertext,
       );
-      return { ok: true, value: new Uint8Array(plaintext) };
+      return ok(new Uint8Array(plaintext));
     } catch {
       // Contraseña errónea, sobre manipulado o fallo de WebCrypto: mismo error, sin detalles.
-      return { ok: false, error: { code: 'backup.wrongPasswordOrCorrupted' } };
+      return err(domainError('backup.wrongPasswordOrCorrupted'));
     }
   }
 }
