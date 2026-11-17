@@ -204,7 +204,7 @@ describe('suggestRule', () => {
 
   it('fallback drops tokens containing digits', () => {
     const past = history([['TIENDA PEPE', GROCERIES], ['TIENDA PEPE', GROCERIES], ['TIENDA PEPE', GROCERIES]])
-    const suggestion = suggestRule(tx({ normalizedDescription: 'TIENDA PEPE 28001 REF123' }), LEISURE, past)
+    const suggestion = suggestRule(tx({ normalizedDescription: 'TIENDA PEPE 28001 12/05' }), LEISURE, past)
     expect(suggestion?.pattern).toBe('TIENDA PEPE')
   })
 
