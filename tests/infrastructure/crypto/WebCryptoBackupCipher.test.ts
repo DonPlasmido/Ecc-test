@@ -4,6 +4,7 @@ import {
   DEFAULT_KDF_ITERATIONS,
   GCM_TAG_BYTES,
   IV_BYTES,
+  MAX_ENVELOPE_BYTES,
   MAX_KDF_ITERATIONS,
   SALT_BYTES,
   assembleEnvelope,
@@ -371,6 +372,22 @@ describe('WebCryptoBackupCipher', () => {
       if (result.ok) throw new Error('esperaba error');
       expect(result.error).toEqual({ code: 'backup.wrongPasswordOrCorrupted' });
       expect(JSON.stringify(result)).not.toContain('boom');
+    });
+  });
+
+  describe('tope de tamaño del sobre (L2)', () => {
+    it('rechaza sobres de más de 100 MB sin derivar la clave', async () => {
+      const cipher = fastCipher();
+      const small = await cipher.encrypt(text('x'), PASSWORD);
+      const huge = new Uint8Array(MAX_ENVELOPE_BYTES + 1);
+      huge.set(small);
+      const deriveSpy = vi.spyOn(crypto.subtle, 'deriveKey');
+
+      const result = await cipher.decrypt(huge, PASSWORD);
+
+      expect(deriveSpy).not.toHaveBeenCalled();
+      if (result.ok) throw new Error('esperaba error');
+      expect(result.error).toEqual({ code: 'backup.invalidFormat' });
     });
   });
 });

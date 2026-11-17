@@ -2,8 +2,9 @@ import ExcelJS from 'exceljs';
 import { describe, expect, test } from 'vitest';
 import type { StatementFile } from '@/domain/import/StatementFile';
 import { ExcelJsXlsxParser } from '@/infrastructure/parsing/ExcelJsXlsxParser';
-import { MAX_ROWS } from '@/infrastructure/parsing/limits';
+import { MAX_COLS, MAX_ROWS, MAX_SHEETS } from '@/infrastructure/parsing/limits';
 import { toArrayBuffer, utf8File } from './helpers';
+import { buildZip } from './zipFixtures';
 
 const parser = new ExcelJsXlsxParser();
 
@@ -194,5 +195,77 @@ describe('ExcelJsXlsxParser.parse', () => {
 
     expect(!result.ok && result.error.code).toBe('import.unsupportedFormat');
     expect(!result.ok && result.error.details?.field).toBe('rows');
+  });
+});
+
+const MB = 1024 * 1024;
+
+describe('ExcelJsXlsxParser.parse ZIP guard (H1)', () => {
+  async function rejection(bytes: ArrayBuffer) {
+    const result = await parser.parse({ name: 'bomba.xlsx', bytes });
+    if (result.ok) throw new Error('se esperaba un rechazo');
+    return result.error;
+  }
+
+  test('rejects a real zip bomb (20 MB of zeros) by ratio, quickly', async () => {
+    const started = Date.now();
+    const bytes = buildZip([{ name: 'xl/worksheets/sheet1.xml', data: new Uint8Array(20 * MB) }]);
+
+    const error = await rejection(bytes);
+
+    expect(error.code).toBe('import.unsupportedFormat');
+    expect(error.details?.field).toBe('ratio');
+    expect(Date.now() - started).toBeLessThan(3000);
+  });
+
+  test('rejects when declared uncompressed total exceeds 50 MB', async () => {
+    const entries = [1, 2, 3].map((i) => ({
+      name: `p${i}.xml`,
+      data: new Uint8Array(1),
+      declared: { compressed: 10 * MB, uncompressed: 20 * MB },
+    }));
+
+    const error = await rejection(buildZip(entries));
+
+    expect(error.code).toBe('import.unsupportedFormat');
+    expect(error.details?.field).toBe('uncompressedSize');
+  });
+
+  test('rejects more than 100 entries', async () => {
+    const entries = Array.from({ length: 101 }, (_, i) => ({ name: `f${i}.xml`, data: new Uint8Array(1) }));
+
+    const error = await rejection(buildZip(entries));
+
+    expect(error.code).toBe('import.unsupportedFormat');
+    expect(error.details?.field).toBe('entries');
+  });
+
+  test('does not reject a normal workbook', async () => {
+    const file = await xlsxFile('ok.xlsx', (s) => s.addRow(['a', 1]));
+
+    expect((await parser.parse(file)).ok).toBe(true);
+  });
+});
+
+describe('ExcelJsXlsxParser.parse column and sheet limits (M2/M3)', () => {
+  test('rejects sheets wider than MAX_COLS', async () => {
+    const file = await xlsxFile('wide.xlsx', (s) => {
+      s.getCell(1, 1).value = 'a';
+      s.getCell(1, MAX_COLS + 1).value = 'b';
+    });
+
+    const result = await parser.parse(file);
+
+    expect(!result.ok && result.error.code).toBe('import.unsupportedFormat');
+    expect(!result.ok && result.error.details?.field).toBe('columns');
+  });
+
+  test('ignores data beyond the first MAX_SHEETS sheets', async () => {
+    const empties: SheetFill[] = Array.from({ length: MAX_SHEETS }, () => () => undefined);
+    const file = await xlsxFile('many.xlsx', ...empties, (s) => s.addRow(['late']));
+
+    const result = await parser.parse(file);
+
+    expect(!result.ok && result.error.code).toBe('import.emptyFile');
   });
 });

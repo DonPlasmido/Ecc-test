@@ -23,3 +23,20 @@ Fecha: 2026-11-17 · Alcance: crypto, parsing, indexeddb, domain/import · Estad
 ## Verificado correcto
 AAD sobre magic+longitud+cabecera, sal/IV aleatorios, límites KDF, parser estricto del sobre, error único
 para contraseña errónea/manipulación, NFC, escrituras IndexedDB atómicas, rechazo de .xls/OLE2/PDF/HTML.
+
+## Estado
+
+| Hallazgo | Estado | Commit (RED / GREEN) |
+|---|---|---|
+| H1 bomba ZIP | Arreglado: `zipGuard.ts` lee el directorio central (DataView) y rechaza >50 MB descomprimidos, >100 entradas o ratio >100:1 | 5b4c774 / de8aae8 |
+| M1 CSV columnas/celda | Arreglado: MAX_COLS=200, MAX_CELL_CHARS=2000 | e6d9982 / cc1e298 |
+| M2 columnCount XLSX | Arreglado: rechazo si columnCount > 200 antes de iterar | e6d9982 / cc1e298 |
+| M3 hojas XLSX | Arreglado: solo las 10 primeras | e6d9982 / cc1e298 |
+| L2 tope de sobre | Arreglado: >100 MB devuelve `backup.invalidFormat` sin derivar clave | 20a8b27 / bd643d0 |
+| L3 CSP | Arreglado: meta CSP en index.html; verificada con build + preview en Chromium sin errores (con un `main.tsx` temporal, aún no existe) | dee7621 / 75a3791 |
+| M4 | Pendiente: sin exportación CSV, neutralizar al añadirla |  |
+| M5 | Pendiente: `replaceAll` confía en la validación del caso de uso |  |
+| L1 | Pendiente: la capa de aplicación impone ≥ 12 |  |
+| L4, L5 | Pendiente |  |
+
+Nota H1: se valida el tamaño declarado en el ZIP; un ZIP que mienta en el directorio central no queda cubierto por completo.
