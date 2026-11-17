@@ -6,6 +6,7 @@ import {
   GCM_TAG_BYTES,
   IV_BYTES,
   KDF_HASH,
+  MAX_ENVELOPE_BYTES,
   MAX_KDF_ITERATIONS,
   MIN_KDF_ITERATIONS,
   SALT_BYTES,
@@ -56,6 +57,7 @@ export class WebCryptoBackupCipher implements BackupCipherPort {
   }
 
   async decrypt(envelope: Uint8Array, password: string): Promise<Result<Uint8Array, DomainError>> {
+    if (envelope.length > MAX_ENVELOPE_BYTES) return { ok: false, error: { code: 'backup.invalidFormat' } };
     const parsed = parseEnvelope(envelope, this.limits);
     if (!parsed.ok) return parsed;
     const { salt, iv, iterations, aad, ciphertext } = parsed.value;

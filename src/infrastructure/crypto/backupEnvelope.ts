@@ -20,6 +20,8 @@ export const SALT_BYTES = 16;
 export const IV_BYTES = 12;
 export const GCM_TAG_BYTES = 16;
 export const MAX_HEADER_BYTES = 1024;
+/** Tamaño máximo de un sobre al descifrar (100 MB). */
+export const MAX_ENVELOPE_BYTES = 100 * 1024 * 1024;
 
 const LENGTH_FIELD_BYTES = 4;
 const PREFIX_FIXED_BYTES = BACKUP_MAGIC.length + LENGTH_FIELD_BYTES;
