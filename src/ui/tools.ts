@@ -19,4 +19,10 @@ export const tools: Tool[] = [
     description: 'Une varios archivos en uno solo, columna con columna.',
     load: () => import('./merge'),
   },
+  {
+    id: 'resumen',
+    title: 'Resumen y gráfico',
+    description: 'Total, media, mínimo y máximo de una columna, con gráfico por grupos.',
+    load: () => import('./summary'),
+  },
 ]
