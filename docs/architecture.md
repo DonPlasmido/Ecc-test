@@ -332,7 +332,7 @@ export interface Transaction {
   readonly updatedAt: string;
 }
 
-export type RuleOperator = 'contains' | 'startsWith' | 'equals'; // sin regex en v1 (ReDoS, ADR-0001)
+export type RuleOperator = 'contains' | 'startsWith' | 'equals'; // sin regex en v1 (evita ReDoS con patrones del usuario)
 export interface Rule {
   readonly id: RuleId;
   readonly pattern: string;               // normalizado
@@ -537,7 +537,7 @@ export class TransactionIndex {
 
 Es "mutable por dentro" de forma deliberada y encapsulada (rendimiento con 100k); hacia fuera solo
 expone resultados inmutables y una `version` que la UI observa con `useSyncExternalStore`.
-Justificación y plan B en [ADR-0002](adr/0002-indexeddb-con-idb.md) y [ADR-0008](adr/0008-virtualizacion-de-listas.md).
+Justificación y plan B en [ADR-0009](adr/0009-indice-de-lectura-en-memoria.md).
 
 ## 7. Puertos de salida
 
@@ -672,7 +672,7 @@ sequenceDiagram
   UC-->>UI: ImportResult (insertados, duplicados, errores)
 ```
 
-**Clave de deduplicación** (`domain/transaction/DedupKey.ts`):
+**Clave de deduplicación** (`domain/transaction/DedupKey.ts`, [ADR-0010](adr/0010-deduplicacion-de-importaciones.md)):
 
 ```ts
 export type DedupKey = Brand<string, 'DedupKey'>;
