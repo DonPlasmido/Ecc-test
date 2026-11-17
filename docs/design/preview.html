@@ -1,0 +1,294 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Cuentas Claras — tokens</title>
+  <link rel="stylesheet" href="../../src/ui/styles/tokens.css" />
+  <link rel="stylesheet" href="../../src/ui/styles/base.css" />
+  <link rel="stylesheet" href="../../src/ui/styles/components.css" />
+  <style>
+    .swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(9.5rem, 1fr)); gap: var(--space-3); }
+    .swatch { display: grid; gap: var(--space-1); font-size: var(--text-xs); }
+    .swatch__chip { height: 3rem; border-radius: var(--radius-sm); border: 1px solid var(--color-border); }
+    .swatch__name { font-weight: var(--weight-semibold); font-size: var(--text-sm); }
+    .ratio[data-ok='false'] { color: var(--color-negative); font-weight: var(--weight-bold); }
+    .demo-row { display: flex; flex-wrap: wrap; gap: var(--space-3); align-items: center; }
+    .scale > * + * { margin-top: var(--space-2); }
+    .motion-demo { width: 2.75rem; height: 2.75rem; border-radius: var(--radius-md); background: var(--color-accent); transition-property: transform; transition-timing-function: var(--ease-smooth); }
+    .motion-lane[data-run='true'] .motion-demo { transform: translateX(calc(100% * 4)); }
+    .motion-lane { padding: var(--space-2); background: var(--color-surface-sunken); border-radius: var(--radius-md); }
+  </style>
+</head>
+<body>
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <symbol id="i-home" viewBox="0 0 24 24"><path d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-4.5v-6h-5v6H5a1 1 0 0 1-1-1z"/></symbol>
+    <symbol id="i-list" viewBox="0 0 24 24"><path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01"/></symbol>
+    <symbol id="i-import" viewBox="0 0 24 24"><path d="M12 4v11m0 0-4-4m4 4 4-4M5 20h14"/></symbol>
+    <symbol id="i-pie" viewBox="0 0 24 24"><path d="M12 3v9h9A9 9 0 1 1 12 3z"/><path d="M15 3.5A9 9 0 0 1 20.5 9H15z"/></symbol>
+    <symbol id="i-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5"/></symbol>
+    <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 4 2.8 20h18.4zM12 10v4.5M12 17.5h.01"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="i-ledger" viewBox="0 0 24 24"><path d="M6 3h11a2 2 0 0 1 2 2v16H8a2 2 0 0 1-2-2zM6 19a2 2 0 0 1 2-2h11M10 7h5M10 10.5h5"/></symbol>
+  </svg>
+
+  <div class="app-shell">
+    <header class="app-header">
+      <svg class="icon" aria-hidden="true"><use href="#i-ledger" /></svg>
+      <strong style="flex:1">Cuentas Claras · sistema de diseño</strong>
+      <label class="visually-hidden" for="theme">Tema</label>
+      <select id="theme" class="select" style="width:auto;min-height:var(--control-height-sm)">
+        <option value="">Sistema</option>
+        <option value="light">Claro</option>
+        <option value="dark">Oscuro</option>
+      </select>
+    </header>
+
+    <main class="container page stack stack--loose">
+      <section class="stack" aria-labelledby="h-panel">
+        <p class="eyebrow" id="h-panel">Saldo · noviembre 2026</p>
+        <p class="figure">2.481,07 €</p>
+        <div class="split text-sm">
+          <span>Ingresos <span class="amount amount--positive">+2.150,00 €</span></span>
+          <span>Gastos <span class="amount amount--negative">−1.312,45 €</span></span>
+        </div>
+      </section>
+
+      <section class="stack" aria-labelledby="h-color">
+        <h2 id="h-color">Color y contraste (calculado en vivo)</h2>
+        <p class="text-muted text-sm">Ratio WCAG frente a <code>--color-surface</code> y <code>--color-surface-sunken</code>. Umbral: 4.5 para texto, 3 para bordes y marcas.</p>
+        <div class="swatches" id="swatches"></div>
+      </section>
+
+      <section class="stack" aria-labelledby="h-type">
+        <h2 id="h-type">Tipografía</h2>
+        <div class="scale">
+          <p class="figure">36 · 1.234,56 €</p>
+          <p class="figure figure--md">28 · 987,65 €</p>
+          <h1>22 · Título de página que puede ocupar dos líneas</h1>
+          <h2>18 · Título de tarjeta</h2>
+          <p>16 · Cuerpo: importa tus extractos y revisa en qué se va el dinero cada mes.</p>
+          <p class="text-sm text-muted">14 · Secundario y tablas densas</p>
+          <p class="eyebrow">12 · Rótulo de sección</p>
+        </div>
+      </section>
+
+      <section class="stack" aria-labelledby="h-btn">
+        <h2 id="h-btn">Botones</h2>
+        <div class="demo-row">
+          <button class="btn btn--primary" type="button"><svg class="icon" aria-hidden="true"><use href="#i-import" /></svg>Importar extracto</button>
+          <button class="btn" type="button">Secundario</button>
+          <button class="btn btn--quiet" type="button">Discreto</button>
+          <button class="btn btn--danger" type="button">Borrar</button>
+          <button class="btn" type="button" disabled>Desactivado</button>
+          <button class="btn btn--primary" type="button" aria-busy="true">Guardando</button>
+          <button class="btn btn--sm" type="button">Pequeño</button>
+          <button class="btn btn--icon" type="button" aria-label="Añadir"><svg class="icon" aria-hidden="true"><use href="#i-plus" /></svg></button>
+        </div>
+      </section>
+
+      <section class="stack" aria-labelledby="h-form">
+        <h2 id="h-form">Campos</h2>
+        <div class="grid-auto">
+          <div class="field">
+            <label class="field__label" for="f-concept">Concepto</label>
+            <input class="input" id="f-concept" placeholder="MERCADONA" />
+            <span class="field__hint">Se busca sin distinguir mayúsculas.</span>
+          </div>
+          <div class="field">
+            <label class="field__label" for="f-amount">Importe</label>
+            <input class="input input--amount" id="f-amount" inputmode="decimal" value="12,3x" aria-invalid="true" aria-describedby="f-amount-err" />
+            <span class="field__error" id="f-amount-err"><svg class="icon" aria-hidden="true"><use href="#i-alert" /></svg>Usa coma decimal, por ejemplo 12,30.</span>
+          </div>
+          <div class="field">
+            <label class="field__label" for="f-cat">Categoría</label>
+            <select class="select" id="f-cat"><option>Supermercado</option><option>Vivienda</option><option>Ocio</option></select>
+          </div>
+          <div class="field">
+            <label class="field__label" for="f-dis">Cuenta</label>
+            <input class="input" id="f-dis" value="Cuenta principal" disabled />
+          </div>
+        </div>
+        <label class="check"><input type="checkbox" checked /> Crear regla para conceptos parecidos</label>
+      </section>
+
+      <section class="stack" aria-labelledby="h-chips">
+        <h2 id="h-chips">Chips de categoría</h2>
+        <div class="cluster" id="chips"></div>
+      </section>
+
+      <section class="stack" aria-labelledby="h-budget">
+        <h2 id="h-budget">Presupuestos</h2>
+        <article class="card">
+          <div class="card__header"><h3 class="card__title">Supermercado</h3><span class="status"><svg class="icon" aria-hidden="true"><use href="#i-check" /></svg>Bien</span></div>
+          <div class="budget-meter" data-status="ok" style="--meter-value:0.45">
+            <div class="budget-meter__track" role="meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow="45" aria-label="Supermercado: 45 % gastado"><div class="budget-meter__fill"></div><span class="budget-meter__threshold"></span></div>
+            <div class="budget-meter__legend"><span>180,00 € de 400,00 €</span><span class="text-muted">45 %</span></div>
+          </div>
+          <div class="card__section budget-meter" data-status="near" style="--meter-value:0.86">
+            <div class="split"><strong>Ocio</strong><span class="status status--near"><svg class="icon" aria-hidden="true"><use href="#i-alert" /></svg>Cerca</span></div>
+            <div class="budget-meter__track" role="meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow="86" aria-label="Ocio: 86 % gastado"><div class="budget-meter__fill"></div><span class="budget-meter__threshold"></span></div>
+            <div class="budget-meter__legend"><span>129,00 € de 150,00 €</span><span class="text-muted">86 %</span></div>
+          </div>
+          <div class="card__section budget-meter" data-status="over" style="--meter-value:1.12">
+            <div class="split"><strong>Restaurantes</strong><span class="status status--over"><svg class="icon" aria-hidden="true"><use href="#i-x" /></svg>Superado</span></div>
+            <div class="budget-meter__track" role="meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100" aria-valuetext="112 %" aria-label="Restaurantes: 112 % gastado"><div class="budget-meter__fill"></div><span class="budget-meter__threshold"></span></div>
+            <div class="budget-meter__legend"><span>224,00 € de 200,00 €</span><span class="amount amount--negative">+24,00 €</span></div>
+          </div>
+        </article>
+      </section>
+
+      <section class="stack" aria-labelledby="h-table">
+        <h2 id="h-table">Movimientos</h2>
+        <div class="table-wrap">
+          <table class="table">
+            <thead><tr><th scope="col">Fecha</th><th scope="col">Concepto</th><th scope="col" class="num">Importe</th></tr></thead>
+            <tbody>
+              <tr><td class="tabular">14/11</td><td>NÓMINA ACME SL</td><td class="num amount amount--positive">+2.150,00 €</td></tr>
+              <tr><td class="tabular">13/11</td><td>MERCADONA VALENCIA</td><td class="num amount amount--negative">−64,18 €</td></tr>
+              <tr><td class="tabular">12/11</td><td>TRASPASO AHORRO</td><td class="num amount amount--zero">0,00 €</td></tr>
+              <tr><td class="tabular">11/11</td><td>RECIBO LUZ</td><td class="num amount amount--negative">−71,90 €</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div style="border:1px solid var(--color-border);border-radius:var(--radius-lg);overflow:hidden">
+          <div class="ledger-row"><span class="ledger-row__concept">BIZUM DE LAURA PAGO CENA CUMPLEAÑOS SÁBADO</span><span class="amount amount--positive">+35,00 €</span><span class="ledger-row__meta">10/11/2026 · Ocio</span></div>
+          <div class="ledger-row"><span class="ledger-row__concept">AMAZON EU SARL</span><span class="amount amount--negative">−1.249,99 €</span><span class="ledger-row__meta">09/11/2026 · Compras</span></div>
+        </div>
+      </section>
+
+      <section class="stack" aria-labelledby="h-states">
+        <h2 id="h-states">Estados</h2>
+        <div class="empty">
+          <svg class="icon empty__icon" aria-hidden="true"><use href="#i-ledger" /></svg>
+          <p class="empty__title">Aún no hay movimientos</p>
+          <p class="empty__text">Importa un extracto CSV o XLSX de tu banco. Nada sale de este dispositivo.</p>
+          <button class="btn btn--primary" type="button">Importar extracto</button>
+        </div>
+        <div class="card" aria-hidden="true">
+          <span class="skeleton skeleton--text" style="--skeleton-width:40%"></span>
+          <span class="skeleton skeleton--figure"></span>
+          <span class="skeleton skeleton--text"></span>
+          <span class="skeleton skeleton--text" style="--skeleton-width:70%"></span>
+        </div>
+        <div class="demo-row">
+          <button class="btn" type="button" data-toast="success">Toast éxito</button>
+          <button class="btn" type="button" data-toast="error">Toast error</button>
+          <button class="btn" type="button" id="open-dialog">Abrir diálogo</button>
+        </div>
+      </section>
+
+      <section class="stack" aria-labelledby="h-motion">
+        <h2 id="h-motion">Movimiento</h2>
+        <p class="text-sm text-muted">Pulsa para comparar duraciones. Con «reducir movimiento» del sistema los desplazamientos son 0.</p>
+        <div id="motion" class="stack stack--tight"></div>
+        <button class="btn btn--sm" type="button" id="run-motion">Reproducir</button>
+      </section>
+    </main>
+
+    <nav class="bottom-nav" aria-label="Principal">
+      <a class="bottom-nav__item" href="#" aria-current="page"><svg class="icon" aria-hidden="true"><use href="#i-home" /></svg>Panel</a>
+      <a class="bottom-nav__item" href="#"><svg class="icon" aria-hidden="true"><use href="#i-list" /></svg>Movimientos</a>
+      <a class="bottom-nav__item" href="#"><svg class="icon" aria-hidden="true"><use href="#i-import" /></svg>Importar</a>
+      <a class="bottom-nav__item" href="#"><svg class="icon" aria-hidden="true"><use href="#i-pie" /></svg>Presupuestos</a>
+      <a class="bottom-nav__item" href="#"><svg class="icon" aria-hidden="true"><use href="#i-gear" /></svg>Ajustes</a>
+    </nav>
+  </div>
+
+  <div class="toast-region" role="status" aria-live="polite" id="toasts"></div>
+
+  <dialog class="dialog" id="dialog" aria-labelledby="dlg-title">
+    <div class="dialog__header">
+      <h2 class="dialog__title" id="dlg-title">¿Crear una regla?</h2>
+      <button class="btn btn--icon btn--quiet" type="button" aria-label="Cerrar" data-close><svg class="icon" aria-hidden="true"><use href="#i-x" /></svg></button>
+    </div>
+    <div class="dialog__body stack">
+      <p>Has movido «MERCADONA VALENCIA» a <span class="chip chip--cat-3"><span class="chip__label">Supermercado</span></span>. ¿Aplicar a los 41 movimientos con «MERCADONA»?</p>
+    </div>
+    <div class="dialog__footer">
+      <button class="btn" type="button" data-close>Ahora no</button>
+      <button class="btn btn--primary" type="button" data-close>Crear regla</button>
+    </div>
+  </dialog>
+
+  <script>
+    const root = document.documentElement;
+    const css = (n) => getComputedStyle(root).getPropertyValue(n).trim();
+    const lum = (rgb) => rgb.map((v) => v / 255).map((v) => (v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4))
+      .reduce((a, v, i) => a + v * [0.2126, 0.7152, 0.0722][i], 0);
+    const probe = document.createElement('span');
+    document.body.append(probe);
+    const toRgb = (c) => { probe.style.color = c; return getComputedStyle(probe).color.match(/\d+(\.\d+)?/g).slice(0, 3).map(Number); };
+    const ratio = (a, b) => { const x = lum(toRgb(a)), y = lum(toRgb(b)); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); };
+
+    const tokens = [
+      ['text', 4.5], ['text-muted', 4.5], ['accent', 4.5], ['positive', 4.5], ['negative', 4.5], ['warning', 4.5],
+      ['border-strong', 3], ['cat-1', 3], ['cat-2', 3], ['cat-3', 3], ['cat-4', 3], ['cat-5', 3], ['cat-6', 3],
+      ['cat-7', 3], ['cat-8', 3], ['cat-other', 3],
+    ];
+    function renderSwatches() {
+      const surf = css('--color-surface'), sunk = css('--color-surface-sunken');
+      const box = document.getElementById('swatches');
+      box.replaceChildren(...tokens.map(([name, min]) => {
+        const value = css(`--color-${name}`);
+        const r1 = ratio(value, surf), r2 = ratio(value, sunk);
+        const el = document.createElement('div');
+        el.className = 'swatch';
+        el.innerHTML = `<div class="swatch__chip" style="background:var(--color-${name})"></div>
+          <span class="swatch__name">${name}</span><code>${value}</code>
+          <span class="ratio tabular" data-ok="${Math.min(r1, r2) >= min}">${r1.toFixed(2)} · ${r2.toFixed(2)} (≥${min})</span>`;
+        return el;
+      }));
+    }
+
+    const chipNames = ['Supermercado', 'Vivienda', 'Transporte', 'Ocio', 'Restaurantes', 'Salud', 'Suministros', 'Compras'];
+    document.getElementById('chips').replaceChildren(
+      ...chipNames.map((name, i) => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = `chip chip--cat-${i + 1}`;
+        b.setAttribute('aria-pressed', String(i === 0));
+        b.innerHTML = `<span class="chip__label">${name}</span>`;
+        b.addEventListener('click', () => b.setAttribute('aria-pressed', String(b.getAttribute('aria-pressed') !== 'true')));
+        return b;
+      }),
+      Object.assign(document.createElement('span'), { className: 'chip', innerHTML: '<span class="chip__label">Otras</span>' }),
+    );
+
+    const motion = document.getElementById('motion');
+    ['instant', 'fast', 'normal', 'slow'].forEach((d) => {
+      const lane = document.createElement('div');
+      lane.className = 'motion-lane';
+      lane.innerHTML = `<div class="motion-demo" style="transition-duration:var(--duration-${d})"></div><span class="text-sm tabular">--duration-${d}: ${css(`--duration-${d}`)}</span>`;
+      motion.append(lane);
+    });
+    document.getElementById('run-motion').addEventListener('click', () => {
+      motion.querySelectorAll('.motion-lane').forEach((l) => { l.dataset.run = String(l.dataset.run !== 'true'); });
+    });
+
+    document.querySelectorAll('[data-toast]').forEach((btn) => btn.addEventListener('click', () => {
+      const kind = btn.dataset.toast;
+      const t = document.createElement('div');
+      t.className = `toast toast--${kind}`;
+      t.innerHTML = `<svg class="icon toast__icon" aria-hidden="true"><use href="#i-${kind === 'error' ? 'alert' : 'check'}"/></svg>
+        <span class="toast__body">${kind === 'error' ? 'No se pudo leer el archivo: formato desconocido.' : 'Importados 214 movimientos; 3 duplicados omitidos.'}</span>`;
+      document.getElementById('toasts').append(t);
+      setTimeout(() => { t.dataset.leaving = 'true'; t.addEventListener('animationend', () => t.remove(), { once: true }); }, 3200);
+    }));
+
+    const dialog = document.getElementById('dialog');
+    document.getElementById('open-dialog').addEventListener('click', () => dialog.showModal());
+    dialog.querySelectorAll('[data-close]').forEach((b) => b.addEventListener('click', () => dialog.close()));
+
+    const theme = document.getElementById('theme');
+    theme.addEventListener('change', () => {
+      if (theme.value) root.dataset.theme = theme.value; else delete root.dataset.theme;
+      renderSwatches();
+    });
+    matchMedia('(prefers-color-scheme: dark)').addEventListener('change', renderSwatches);
+    renderSwatches();
+  </script>
+</body>
+</html>
