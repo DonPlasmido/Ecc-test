@@ -6,13 +6,14 @@ import { validateMapping } from '@/domain/import/detectColumnMapping'
 import type { RawCell, RawTable } from '@/domain/import/RawTable'
 import type { RowError } from '@/domain/import/RowError'
 import { Money } from '@/domain/money/Money'
-import { parseSpanishAmount } from '@/domain/money/parseSpanishAmount'
+import type { RowWarning } from '@/domain/import/RowWarning'
+import { isAmbiguousAmount, parseSpanishAmount } from '@/domain/money/parseSpanishAmount'
 import { domainError, type DomainError } from '@/domain/shared/DomainError'
 import { normalizeText } from '@/domain/shared/normalizeText'
 import { err, ok, type Result } from '@/domain/shared/Result'
 import type { TransactionDraft } from '@/domain/transaction/Transaction'
 
-/** Tolerancia al convertir un número nativo en céntimos (errores de coma flotante, no terceros decimales). */
+/** Tolerancia al convertir un número nativo en céntimos (errores de coma flotante, no terceros decimales: 12.3401 se rechaza). */
 const FLOAT_TOLERANCE = 0.01
 
 type Row = readonly RawCell[]
@@ -103,18 +104,33 @@ function toDraft(row: Row, mapping: ColumnMapping, accountId: AccountId, line: n
   })
 }
 
+const AMOUNT_ROLES: readonly ColumnRole[] = ['amount', 'debit', 'credit']
+const MAX_REPORTED_LENGTH = 50
+
+function ambiguousAmountWarnings(row: Row, mapping: ColumnMapping, line: number): readonly RowWarning[] {
+  return AMOUNT_ROLES.flatMap((role): RowWarning[] => {
+    const cell = row[mapping.columns.indexOf(role)]
+    if (cell?.kind !== 'text' || !isAmbiguousAmount(cell.value)) return []
+    return [{ line, code: 'ambiguousAmount', value: cell.value.trim().slice(0, MAX_REPORTED_LENGTH) }]
+  })
+}
+
 /** Convierte las filas de datos en borradores válidos; las filas malas se descartan con su `RowError`. */
 export function normalizeRows(table: RawTable, mapping: ColumnMapping, accountId: AccountId): NormalizedRows {
   const valid = validateMapping(mapping)
-  if (!valid.ok) return { drafts: [], rowErrors: [{ line: Math.max(mapping.headerRowIndex + 1, 1), error: valid.error }] }
+  if (!valid.ok) return { drafts: [], rowErrors: [{ line: Math.max(mapping.headerRowIndex + 1, 1), error: valid.error }], warnings: [] }
   const drafts: TransactionDraft[] = []
   const rowErrors: RowError[] = []
+  const warnings: RowWarning[] = []
   table.rows.forEach((row, index) => {
     if (index <= mapping.headerRowIndex || row.every((cell) => cellText(cell) === '')) return
     const line = index + 1
     const result = toDraft(row, mapping, accountId, line)
-    if (result.ok) drafts.push(result.value)
+    if (result.ok) {
+      drafts.push(result.value)
+      warnings.push(...ambiguousAmountWarnings(row, mapping, line))
+    }
     else rowErrors.push({ line, error: result.error })
   })
-  return { drafts, rowErrors }
+  return { drafts, rowErrors, warnings }
 }
