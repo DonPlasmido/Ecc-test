@@ -5,7 +5,7 @@ import type { RawCell, RawTable } from '@/domain/import/RawTable';
 import type { StatementFile } from '@/domain/import/StatementFile';
 import type { DomainError } from '@/domain/shared/DomainError';
 import type { Result } from '@/domain/shared/Result';
-import { MAX_ROWS } from './limits';
+import { MAX_COLS, MAX_ROWS, MAX_SHEETS } from './limits';
 import { inspectZip } from './zipGuard';
 import { checkFileSize, extensionOf, failure, okResult } from './parseResult';
 
@@ -87,9 +87,12 @@ export class ExcelJsXlsxParser implements StatementParserPort {
       return failure('import.corruptFile');
     }
 
-    for (const sheet of workbook.worksheets) {
+    for (const sheet of workbook.worksheets.slice(0, MAX_SHEETS)) {
       if (sheet.rowCount > MAX_ROWS) {
         return failure('import.unsupportedFormat', { field: 'rows', expected: MAX_ROWS });
+      }
+      if (sheet.columnCount > MAX_COLS) {
+        return failure('import.unsupportedFormat', { field: 'columns', expected: MAX_COLS });
       }
       const rows = sheetToRows(sheet);
       if (rows.length > 0) return okResult({ rows, sourceName: file.name });

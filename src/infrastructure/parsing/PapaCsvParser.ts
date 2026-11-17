@@ -5,7 +5,7 @@ import type { StatementFile } from '@/domain/import/StatementFile';
 import type { DomainError } from '@/domain/shared/DomainError';
 import type { Result } from '@/domain/shared/Result';
 import { decodeText } from './decodeText';
-import { MAX_ROWS } from './limits';
+import { MAX_CELL_CHARS, MAX_COLS, MAX_ROWS } from './limits';
 import { checkFileSize, extensionOf, failure, okResult } from './parseResult';
 
 const CSV_EXTENSIONS: ReadonlySet<string> = new Set(['csv', 'txt', 'tsv']);
@@ -43,6 +43,12 @@ export class PapaCsvParser implements StatementParserPort {
       return failure('import.unsupportedFormat', { field: 'rows', expected: MAX_ROWS });
     }
     if (parsed.data.length === 0) return failure('import.emptyFile');
+    if (parsed.data.some((row) => row.length > MAX_COLS)) {
+      return failure('import.unsupportedFormat', { field: 'columns', expected: MAX_COLS });
+    }
+    if (parsed.data.some((row) => row.some((cell) => cell.length > MAX_CELL_CHARS))) {
+      return failure('import.unsupportedFormat', { field: 'cellLength', expected: MAX_CELL_CHARS });
+    }
 
     const rows = parsed.data.map((row) => row.map(toCell));
     return okResult({ rows, sourceName: file.name });
