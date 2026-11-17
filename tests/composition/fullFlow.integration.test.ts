@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
+import type { DashboardData } from '@/application/ports/inbound/BuildDashboard';
 import type { AppContainer } from '@/composition/container.types';
 import { createContainer } from '@/composition/createContainer';
 import type { AccountId } from '@/domain/account/Account';
@@ -48,7 +49,22 @@ async function importSample(c: AppContainer, fileName: string, accountId: Accoun
 
 async function allTransactions(c: AppContainer): Promise<readonly Transaction[]> {
   const { resultId, total } = await c.queryTransactions.search({ filter: {}, sort: 'dateAsc' });
-  return c.queryTransactions.page({ resultId, offset: 0, limit: total });
+  const rows = await c.queryTransactions.page({ resultId, offset: 0, limit: total });
+  // Orden estable por id: el orden entre movimientos de la misma fecha no forma parte del contrato.
+  return [...rows].sort((a, b) => a.id.localeCompare(b.id));
+}
+
+/** El orden de saldos y de categorías depende del orden de hidratación; se compara ordenado. */
+function normalizeDashboard(d: DashboardData): DashboardData {
+  return {
+    ...d,
+    spendingByCategory: [...d.spendingByCategory].sort((a, b) => a.categoryId.localeCompare(b.categoryId)),
+    balances: [...d.balances].sort((a, b) => a.accountId.localeCompare(b.accountId)),
+  };
+}
+
+async function normalizedDashboard(c: AppContainer): Promise<DashboardData> {
+  return normalizeDashboard(await c.buildDashboard.execute(ALL_TIME));
 }
 
 async function createAccount(c: AppContainer, name: string): Promise<AccountId> {
@@ -114,6 +130,11 @@ describe('composition root: full flow over IndexedDB', () => {
     const indexed = await c.queryTransactions.search({ filter: { categoryIds: [SUBSCRIPTIONS] }, sort: 'dateAsc' });
     expect(indexed.total).toBe(inSubscriptions.length);
 
+    expect(total).toBe(100);
+    expect(corrected.value.affectedCount).toBe(5);
+    expect(accepted.ok && accepted.value.recategorized).toBe(5);
+    expect(afterLearning.filter((t) => t.categorySource === 'rule')).toHaveLength(5);
+    expect(afterLearning.filter((t) => t.categoryId !== UNCATEGORIZED)).toHaveLength(6);
     const budget = await c.manageCatalog.saveBudget({
       categoryId: SUBSCRIPTIONS,
       monthlyLimit: limitOf(1000),
@@ -155,7 +176,7 @@ describe('composition root: full flow over IndexedDB', () => {
       expect(await allTransactions(target)).toEqual(afterLearning);
       expect(await target.manageCatalog.listRules()).toEqual(await c.manageCatalog.listRules());
       expect(await target.manageCatalog.listBudgets()).toHaveLength(1);
-      expect(await target.buildDashboard.execute(ALL_TIME)).toEqual(dashboard);
+      expect(await normalizedDashboard(target)).toEqual(normalizeDashboard(dashboard));
     }
   });
 

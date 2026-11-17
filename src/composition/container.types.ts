@@ -7,6 +7,8 @@ import type { ImportStatement } from '@/application/ports/inbound/ImportStatemen
 import type { LearnRuleFromCorrection } from '@/application/ports/inbound/LearnRuleFromCorrection';
 import type { ManageCatalog } from '@/application/ports/inbound/ManageCatalog';
 import type { QueryTransactions } from '@/application/ports/inbound/QueryTransactions';
+import type { SettingsRepository } from '@/application/ports/outbound/SettingsRepository';
+import type { StoragePersistencePort } from '@/application/ports/outbound/StoragePersistencePort';
 import type { TransactionIndexStore } from '@/application/read-model/TransactionIndexStore';
 
 /** Lo único que la UI recibe: puertos de entrada y el observable de versión de datos. */
@@ -21,7 +23,13 @@ export interface AppContainer {
   readonly queryTransactions: QueryTransactions;
   readonly manageCatalog: ManageCatalog;
   readonly indexStore: TransactionIndexStore;
+  /** Ajustes de la app (idioma, tema, última copia). */
+  readonly settings: SettingsRepository;
+  /** Persistencia y cuota del almacenamiento del navegador. */
+  readonly storage: StoragePersistencePort;
+  /** Resuelve cuando el índice ya refleja todas las escrituras en curso (tests y flujos que esperan al índice). */
+  whenIndexIdle(): Promise<void>;
+  /** Libera recursos (cierra la base de datos). */
+  dispose(): void;
 }
 
-// TODO(composition): src/composition/createContainer.ts
-// export async function createContainer(): Promise<AppContainer>;
