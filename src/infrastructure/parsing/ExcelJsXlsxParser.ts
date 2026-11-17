@@ -6,6 +6,7 @@ import type { StatementFile } from '@/domain/import/StatementFile';
 import type { DomainError } from '@/domain/shared/DomainError';
 import type { Result } from '@/domain/shared/Result';
 import { MAX_ROWS } from './limits';
+import { inspectZip } from './zipGuard';
 import { checkFileSize, extensionOf, failure, okResult } from './parseResult';
 
 const XLSX_EXTENSIONS: ReadonlySet<string> = new Set(['xlsx', 'xlsm']);
@@ -75,6 +76,9 @@ export class ExcelJsXlsxParser implements StatementParserPort {
   async parse(file: StatementFile): Promise<Result<RawTable, DomainError>> {
     const sizeError = checkFileSize(file);
     if (sizeError) return sizeError;
+
+    const zipError = inspectZip(file.bytes);
+    if (zipError) return zipError;
 
     let workbook: Workbook;
     try {
