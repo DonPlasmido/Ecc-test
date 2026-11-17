@@ -404,7 +404,8 @@ class ColumnarTransactionIndex implements TransactionIndex {
     this.alive[slot] = 1;
     this.ids[slot] = tx.id;
     this.normalized[slot] = tx.normalizedDescription;
-    const edited = normalizeText(tx.description);
+    // Sin edición del usuario la descripción es la original: ya está normalizada, no se repite el trabajo.
+    const edited = tx.description === tx.rawDescription ? tx.normalizedDescription : normalizeText(tx.description);
     this.searchText[slot] =
       edited === tx.normalizedDescription ? edited : `${tx.normalizedDescription}\n${edited}`;
   }
