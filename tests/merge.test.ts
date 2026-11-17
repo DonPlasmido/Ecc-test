@@ -54,3 +54,14 @@ describe('mergeTables', () => {
     expect(enero).toEqual(copy)
   })
 })
+
+describe('mergeTables con una columna «Origen» ya existente', () => {
+  it('no repite el nombre de la columna de origen', () => {
+    const conOrigen: Table = { headers: ['Origen', 'Valor'], rows: [['tienda', 1]] }
+    const result = mergeTables(
+      [{ source: 'a.xlsx', table: conOrigen }, { source: 'b.xlsx', table: conOrigen }],
+      { addSourceColumn: true },
+    )
+    expect(result.table.headers).toEqual(['Archivo de origen', 'Origen', 'Valor'])
+  })
+})

@@ -82,3 +82,12 @@ describe('groupTotals', () => {
     ])
   })
 })
+
+describe('summarizeColumn con columnas muy largas', () => {
+  it('no falla con 300.000 filas', () => {
+    const rows = Array.from({ length: 300_000 }, (_, i) => [i % 1000])
+    const result = summarizeColumn({ headers: ['N'], rows }, 0)
+    expect(result.min).toBe(0)
+    expect(result.max).toBe(999)
+  })
+})
