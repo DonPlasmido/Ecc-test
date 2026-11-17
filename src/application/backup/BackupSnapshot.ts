@@ -19,6 +19,8 @@ export type ThemePreference = 'system' | 'light' | 'dark';
 export interface AppSettings {
   readonly locale: AppLocale;
   readonly theme: ThemePreference;
+  /** ISO datetime de la última copia exportada; ausente si nunca se exportó. */
+  readonly lastBackupAt?: string;
 }
 
 /**
