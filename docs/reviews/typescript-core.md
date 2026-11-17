@@ -23,3 +23,17 @@ detalle de `money.outOfRange` con valor calculado; fallback de `suggestRule` con
 ## Verificado correcto
 Dedup estable con ocurrencias, reglas por palabra completa con tildes, `budgetStatus` en los límites con BigInt,
 sin redondeo silencioso de importes.
+
+## Estado
+
+| # | Hallazgo | Estado | RED / GREEN |
+|---|----------|--------|-------------|
+| 1 | HIGH detectColumnMapping sin cabecera Debe/Haber | Corregido; columnas numéricas no concluyentes limitan la confianza a 0.4 | d3e35a6 / d35345b |
+| 2 | HIGH suggestRule: exclusión por `id` opcional, sin cast; fallback sin tokens con dígitos | Corregido | 9de0cea / a912742 |
+| 3 | MEDIUM hasAmbiguousDates con día = mes | Corregido | fbe8de6 / 8028840 |
+| 4 | MEDIUM importe ambiguo `12.345` | `isAmbiguousAmount` + `warnings` aditivo en `normalizeRows` | 50dcd6c / 645141f |
+| 5 | MEDIUM `Haber -5,00` (valor absoluto) | Decisión documentada; sin cambio de comportamiento (la vista previa puede avisar) | n/a |
+| 6 | MEDIUM `FLOAT_TOLERANCE` | 1e-6 | 85a7538 / e693b97 |
+| 7 | MEDIUM mappers sin validar | Validación con constructores del dominio; `CorruptRecordError` | fbe8b9f / 20edfd4 |
+| 8 | LOW TODOs, ok/err/domainError, pivote 2 dígitos, separadores mezclados | Corregido (pivote relativo con `referenceYear`, defecto 2026) | 15c5c9f / 0f1f0f1, 4466098 |
+| 9 | LOW `money.outOfRange` con valor calculado, `sourceLine` tras filas vacías, `columnCount` | Sin cambios | n/a |
