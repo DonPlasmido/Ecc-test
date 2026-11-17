@@ -13,26 +13,10 @@ import '@/ui/styles/base.css';
 import '@/ui/styles/components.css';
 import '@/ui/styles/app.css';
 
-type CreateContainerModule = { createContainer: () => Promise<AppContainer> };
-
-/**
- * Carga perezosa de la composición real (`src/composition/createContainer.ts`, otro módulo).
- * `import.meta.glob` no falla si el archivo aún no existe: entonces se usa el contenedor
- * provisional, cuyos casos de uso rechazan con "not wired".
- * TODO(composition): cuando exista createContainer, sustituir por
- *   `const { createContainer } = await import('@/composition/createContainer')`
- * y borrar src/ui/dev/stubContainer.ts.
- */
-const compositionModules = import.meta.glob<CreateContainerModule>('/src/composition/createContainer.ts');
-
+/** Composición real: se carga en diferido para que el primer render (tema/idioma) no espere a IndexedDB. */
 async function loadContainer(): Promise<AppContainer> {
-  const loadComposition = compositionModules['/src/composition/createContainer.ts'];
-  if (loadComposition) {
-    const { createContainer } = await loadComposition();
-    return createContainer();
-  }
-  const { createStubContainer } = await import('@/ui/dev/stubContainer');
-  return createStubContainer();
+  const { createContainer } = await import('@/composition/createContainer');
+  return createContainer();
 }
 
 function isDomainError(value: unknown): value is DomainError {

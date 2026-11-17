@@ -65,6 +65,10 @@ export function createFakeContainer(
     queryTransactions: unprovided('queryTransactions'),
     manageCatalog: unprovided('manageCatalog'),
     ...overrides,
+    settings: overrides.settings ?? unprovided('settings'),
+    storage: overrides.storage ?? unprovided('storage'),
+    whenIndexIdle: overrides.whenIndexIdle ?? (() => Promise.resolve()),
+    dispose: overrides.dispose ?? (() => undefined),
     indexStore: overrides.indexStore ?? createFakeIndexStore(),
   };
 }

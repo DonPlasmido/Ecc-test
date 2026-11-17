@@ -33,10 +33,8 @@ const idleIndexStore: TransactionIndexStore = {
 };
 
 /**
- * Contenedor provisional mientras no exista la composición real.
- * TODO(composition): eliminar cuando `createContainer` esté disponible; main.tsx ya lo
- * carga automáticamente si existe `src/composition/createContainer.ts`.
- * El índice está vacío (para poder renderizar el esqueleto); cualquier caso de uso lanza "not wired".
+ * Contenedor vacío para tests de hooks que no necesitan casos de uso reales.
+ * El índice está vacío; cualquier caso de uso lanza "not wired".
  */
 export function createStubContainer(): AppContainer {
   return {
@@ -49,6 +47,10 @@ export function createStubContainer(): AppContainer {
     importEncryptedBackup: notWired('importEncryptedBackup'),
     queryTransactions: notWired('queryTransactions'),
     manageCatalog: notWired('manageCatalog'),
+    settings: notWired('settings'),
+    storage: notWired('storage'),
+    whenIndexIdle: () => Promise.resolve(),
+    dispose: () => undefined,
     indexStore: idleIndexStore,
   };
 }
