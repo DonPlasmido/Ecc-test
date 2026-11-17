@@ -4,7 +4,7 @@ import { isBlank, type Cell, type Row, type Table } from '../core/table'
 
 export interface GeneratedFile {
   readonly name: string
-  readonly data: Uint8Array
+  readonly data: Uint8Array<ArrayBuffer>
 }
 
 export interface FillOptions {
@@ -102,7 +102,7 @@ export function fillTemplates(template: ArrayBuffer, table: Table, options: Fill
     const scope = Object.fromEntries([...columns].map(([key, col]) => [key, formatCell(row[col] ?? null)]))
     const doc = openTemplate(template, scope)
     doc.render()
-    return { name: names[i]!, data: doc.getZip().generate({ type: 'uint8array', compression: 'DEFLATE' }) }
+    return { name: names[i]!, data: doc.getZip().generate({ type: 'uint8array', compression: 'DEFLATE' }) as Uint8Array<ArrayBuffer> }
   })
   return { files }
 }

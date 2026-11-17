@@ -25,4 +25,10 @@ export const tools: Tool[] = [
     description: 'Total, media, mínimo y máximo de una columna, con gráfico por grupos.',
     load: () => import('./summary'),
   },
+  {
+    id: 'word',
+    title: 'Rellenar Word',
+    description: 'Crea un Word por cada fila de un Excel a partir de una plantilla (cartas, facturas…).',
+    load: () => import('./word'),
+  },
 ]
