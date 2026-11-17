@@ -124,7 +124,7 @@ Estado de todos: **pendiente**. Campos `Archivo`, `Nodo`, `Comando` y `Evidencia
 - Nivel: unit, E2E
 - Grupo de ejecución: tests por defecto / E2E especializado
 - Frontera: UI real; E2E con navegador real
-- Archivo: pendiente · Nodo: pendiente · Comando: pendiente
+- Archivo: `e2e/import.spec.ts` (previsto) · Nodo: pendiente · Comando: pendiente
 - Evidencia: pendiente
 
 #### TEST-IMP-007 — Columnas obligatorias sin asignar
@@ -295,7 +295,7 @@ Estado de todos: **pendiente**. Campos `Archivo`, `Nodo`, `Comando` y `Evidencia
 - Nivel: unit, E2E
 - Grupo de ejecución: tests por defecto / E2E especializado
 - Frontera: UI real
-- Archivo: pendiente · Nodo: pendiente · Comando: pendiente
+- Archivo: `e2e/rules.spec.ts` (previsto) · Nodo: pendiente · Comando: pendiente
 - Evidencia: pendiente
 
 #### TEST-CAT-006 — Validación de reglas y categorías
@@ -362,7 +362,7 @@ Estado de todos: **pendiente**. Campos `Archivo`, `Nodo`, `Comando` y `Evidencia
 - Nivel: unit, E2E
 - Grupo de ejecución: tests por defecto / accesibilidad
 - Frontera: UI real
-- Archivo: pendiente · Nodo: pendiente · Comando: pendiente
+- Archivo: `e2e/budgets.spec.ts` (previsto) · Nodo: pendiente · Comando: pendiente
 - Evidencia: pendiente
 
 ### Panel
@@ -429,7 +429,7 @@ Estado de todos: **pendiente**. Campos `Archivo`, `Nodo`, `Comando` y `Evidencia
 - Nivel: unit, E2E
 - Grupo de ejecución: tests por defecto / accesibilidad
 - Frontera: UI real
-- Archivo: pendiente · Nodo: pendiente · Comando: pendiente
+- Archivo: `e2e/dashboard.spec.ts` (previsto) · Nodo: pendiente · Comando: pendiente
 - Evidencia: pendiente
 
 #### TEST-DASH-006 — Panel vacío
@@ -442,7 +442,7 @@ Estado de todos: **pendiente**. Campos `Archivo`, `Nodo`, `Comando` y `Evidencia
 - Nivel: E2E
 - Grupo de ejecución: E2E especializado
 - Frontera: navegador real, BD vacía
-- Archivo: pendiente · Nodo: pendiente · Comando: pendiente
+- Archivo: `e2e/dashboard.spec.ts` (previsto) · Nodo: pendiente · Comando: pendiente
 - Evidencia: pendiente
 
 ### Lista de movimientos
@@ -457,7 +457,7 @@ Estado de todos: **pendiente**. Campos `Archivo`, `Nodo`, `Comando` y `Evidencia
 - Nivel: E2E
 - Grupo de ejecución: E2E especializado
 - Frontera: navegador real, datos sembrados
-- Archivo: pendiente · Nodo: pendiente · Comando: pendiente
+- Archivo: `e2e/transactions.spec.ts` (previsto) · Nodo: pendiente · Comando: pendiente
 - Evidencia: pendiente
 
 #### TEST-LIST-002 — Benchmark de filtrado de 100.000 movimientos
@@ -483,7 +483,7 @@ Estado de todos: **pendiente**. Campos `Archivo`, `Nodo`, `Comando` y `Evidencia
 - Nivel: E2E
 - Grupo de ejecución: E2E especializado
 - Frontera: navegador real; umbral sensible al hardware
-- Archivo: pendiente · Nodo: pendiente · Comando: pendiente
+- Archivo: `e2e/transactions.spec.ts` (previsto) · Nodo: pendiente · Comando: pendiente
 - Evidencia: pendiente
 
 #### TEST-LIST-004 — Búsqueda y filtros combinables
@@ -509,7 +509,7 @@ Estado de todos: **pendiente**. Campos `Archivo`, `Nodo`, `Comando` y `Evidencia
 - Nivel: integration, E2E
 - Grupo de ejecución: tests por defecto / E2E especializado
 - Frontera: fake-indexeddb y navegador real
-- Archivo: pendiente · Nodo: pendiente · Comando: pendiente
+- Archivo: `e2e/transactions.spec.ts` (previsto) · Nodo: pendiente · Comando: pendiente
 - Evidencia: pendiente
 
 ### Copia cifrada
@@ -602,7 +602,7 @@ Estado de todos: **pendiente**. Campos `Archivo`, `Nodo`, `Comando` y `Evidencia
 - Nivel: unit, E2E
 - Grupo de ejecución: tests por defecto / E2E especializado
 - Frontera: UI real y almacenamiento real
-- Archivo: pendiente · Nodo: pendiente · Comando: pendiente
+- Archivo: `e2e/backup.spec.ts` (previsto) · Nodo: pendiente · Comando: pendiente
 - Evidencia: pendiente
 
 #### TEST-BAK-008 — Solo WebCrypto
@@ -630,7 +630,7 @@ Estado de todos: **pendiente**. Campos `Archivo`, `Nodo`, `Comando` y `Evidencia
 - Nivel: E2E
 - Grupo de ejecución: E2E especializado
 - Frontera: navegador real
-- Archivo: pendiente · Nodo: pendiente · Comando: pendiente
+- Archivo: `e2e/i18n.spec.ts` (previsto) · Nodo: pendiente · Comando: pendiente
 - Evidencia: pendiente
 
 #### TEST-I18N-002 — Claves completas en ambos idiomas
@@ -684,7 +684,7 @@ Estado de todos: **pendiente**. Campos `Archivo`, `Nodo`, `Comando` y `Evidencia
 - Nivel: E2E
 - Grupo de ejecución: E2E especializado
 - Frontera: navegador real
-- Archivo: pendiente · Nodo: pendiente · Comando: pendiente
+- Archivo: `e2e/pwa.spec.ts` (previsto) · Nodo: pendiente · Comando: pendiente
 - Evidencia: pendiente
 
 #### TEST-PWA-003 — Funciona sin conexión
@@ -697,7 +697,7 @@ Estado de todos: **pendiente**. Campos `Archivo`, `Nodo`, `Comando` y `Evidencia
 - Nivel: E2E
 - Grupo de ejecución: E2E especializado
 - Frontera: navegador real, red desactivada
-- Archivo: pendiente · Nodo: pendiente · Comando: pendiente
+- Archivo: `e2e/pwa.spec.ts` (previsto) · Nodo: pendiente · Comando: pendiente
 - Evidencia: pendiente
 
 #### TEST-PWA-004 — Modo claro/oscuro/sistema
@@ -710,7 +710,7 @@ Estado de todos: **pendiente**. Campos `Archivo`, `Nodo`, `Comando` y `Evidencia
 - Nivel: E2E
 - Grupo de ejecución: E2E especializado
 - Frontera: navegador real
-- Archivo: pendiente · Nodo: pendiente · Comando: pendiente
+- Archivo: `e2e/pwa.spec.ts` (previsto) · Nodo: pendiente · Comando: pendiente
 - Evidencia: pendiente
 
 ### Accesibilidad
@@ -725,7 +725,7 @@ Estado de todos: **pendiente**. Campos `Archivo`, `Nodo`, `Comando` y `Evidencia
 - Nivel: E2E
 - Grupo de ejecución: accesibilidad
 - Frontera: navegador real
-- Archivo: pendiente · Nodo: pendiente · Comando: pendiente
+- Archivo: `e2e/a11y/a11y.spec.ts` (previsto) · Nodo: pendiente · Comando: pendiente
 - Evidencia: pendiente
 
 #### TEST-A11Y-002 — Flujo completo con teclado
@@ -738,7 +738,7 @@ Estado de todos: **pendiente**. Campos `Archivo`, `Nodo`, `Comando` y `Evidencia
 - Nivel: E2E
 - Grupo de ejecución: accesibilidad
 - Frontera: navegador real
-- Archivo: pendiente · Nodo: pendiente · Comando: pendiente
+- Archivo: `e2e/a11y/a11y.spec.ts` (previsto) · Nodo: pendiente · Comando: pendiente
 - Evidencia: pendiente
 
 #### TEST-A11Y-003 — Móvil y objetivos táctiles
@@ -751,7 +751,7 @@ Estado de todos: **pendiente**. Campos `Archivo`, `Nodo`, `Comando` y `Evidencia
 - Nivel: E2E
 - Grupo de ejecución: accesibilidad
 - Frontera: navegador real
-- Archivo: pendiente · Nodo: pendiente · Comando: pendiente
+- Archivo: `e2e/a11y/a11y.spec.ts` (previsto) · Nodo: pendiente · Comando: pendiente
 - Evidencia: pendiente
 
 #### TEST-A11Y-004 — Revisión con lector de pantalla
@@ -779,7 +779,7 @@ Estado de todos: **pendiente**. Campos `Archivo`, `Nodo`, `Comando` y `Evidencia
 - Nivel: E2E
 - Grupo de ejecución: E2E especializado
 - Frontera: navegador real
-- Archivo: pendiente · Nodo: pendiente · Comando: pendiente
+- Archivo: `e2e/pwa.spec.ts` (previsto) · Nodo: pendiente · Comando: pendiente
 - Evidencia: pendiente
 
 ## 5. Salidas de verificación manual
