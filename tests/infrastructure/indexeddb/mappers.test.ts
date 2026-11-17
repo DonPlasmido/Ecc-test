@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { IsoDate } from '@/domain/date/IsoDate';
 import type { Cents } from '@/domain/money/Money';
 import {
+  CorruptRecordError,
   budgetFromRecord,
   budgetToRecord,
   transactionFromRecord,
@@ -48,5 +49,42 @@ describe('budget mapper', () => {
     const record = budgetToRecord(budget);
     expect(record.monthlyLimitCents).toBe(25_000);
     expect(budgetFromRecord(record)).toEqual(budget);
+  });
+});
+
+describe('corrupt records', () => {
+  const validTx = () => transactionToRecord(makeTransaction(1));
+  const validBudget = () => budgetToRecord(makeBudget('b1', 'c1', { endMonth: null }));
+
+  it.each([
+    ['date', { date: '2024-02-30' }],
+    ['date', { date: 'garbage' }],
+    ['valueDate', { valueDate: '2024-13-01' }],
+    ['amountCents', { amountCents: 12.5 }],
+    ['amountCents', { amountCents: Number.NaN }],
+    ['balanceCents', { balanceCents: Number.MAX_SAFE_INTEGER * 2 }],
+    ['categorySource', { categorySource: 'bogus' }],
+    ['id', { id: 42 }],
+  ])('rejects a transaction record with invalid %s', (field, patch) => {
+    const record = { ...validTx(), ...patch } as unknown as ReturnType<typeof validTx>;
+    let caught: unknown;
+    try {
+      transactionFromRecord(record);
+    } catch (error) {
+      caught = error;
+    }
+    expect(caught).toBeInstanceOf(CorruptRecordError);
+    expect((caught as CorruptRecordError).field).toBe(field);
+    expect((caught as CorruptRecordError).message).toContain(field);
+  });
+
+  it.each([
+    ['monthlyLimitCents', { monthlyLimitCents: 1.5 }],
+    ['startMonth', { startMonth: '2024-13' }],
+    ['endMonth', { endMonth: 'abc' }],
+  ])('rejects a budget record with invalid %s', (field, patch) => {
+    const record = { ...validBudget(), ...patch } as unknown as ReturnType<typeof validBudget>;
+    expect(() => budgetFromRecord(record)).toThrow(CorruptRecordError);
+    expect(() => budgetFromRecord(record)).toThrow(field);
   });
 });
