@@ -1,3 +1,4 @@
+import type { TransactionId } from '@/domain/transaction/Transaction'
 import { describe, expect, it } from 'vitest'
 import { UNCATEGORIZED, type CategoryId } from '@/domain/category/Category'
 import type { AccountId } from '@/domain/account/Account'
@@ -190,6 +191,21 @@ describe('suggestRule', () => {
     const self = tx({ normalizedDescription: 'NETFLIX.COM 1234' })
     const suggestion = suggestRule(self, LEISURE, [self])
     expect(suggestion?.pattern).toBe('NETFLIX.COM')
+  })
+
+  it('excludes the movement itself by id when the history holds a copy with its old category', () => {
+    const self = tx({ normalizedDescription: 'COMPRA MERCADONA 1234' })
+    const past = [
+      { id: self.id, normalizedDescription: self.normalizedDescription, categoryId: SHOPPING },
+      { id: 'tx-2' as TransactionId, normalizedDescription: 'COMPRA MERCADONA 55', categoryId: GROCERIES },
+    ]
+    expect(suggestRule(self, GROCERIES, past)?.pattern).toBe('MERCADONA')
+  })
+
+  it('fallback drops tokens containing digits', () => {
+    const past = history([['TIENDA PEPE', GROCERIES], ['TIENDA PEPE', GROCERIES], ['TIENDA PEPE', GROCERIES]])
+    const suggestion = suggestRule(tx({ normalizedDescription: 'TIENDA PEPE 28001 REF123' }), LEISURE, past)
+    expect(suggestion?.pattern).toBe('TIENDA PEPE')
   })
 
   it('prefers the simplest pattern among equally precise candidates', () => {
