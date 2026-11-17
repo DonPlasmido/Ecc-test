@@ -23,8 +23,8 @@ describe('SystemClock', () => {
 
 describe('CryptoRandomIdGenerator', () => {
   test('delegates to crypto.randomUUID', () => {
-    const generator = new CryptoRandomIdGenerator({ randomUUID: () => 'fixed-uuid' });
-    expect(generator.next()).toBe('fixed-uuid');
+    const generator = new CryptoRandomIdGenerator({ randomUUID: () => 'a-b-c-d-e' });
+    expect(generator.next()).toBe('a-b-c-d-e');
   });
 
   test('default generator yields distinct UUIDs', () => {

@@ -32,6 +32,8 @@ export interface AccountBalance {
   readonly accountId: AccountId;
   readonly balance: Money;
   readonly asOf: IsoDate | null;
+  /** `true` si no sale directamente del saldo del extracto (AC-028: «estimado»). Ausente = `false`. */
+  readonly estimated?: boolean;
 }
 
 /** Datos ya agregados para los gráficos del panel. */
