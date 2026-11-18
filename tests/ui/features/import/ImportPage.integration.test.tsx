@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { AppContainer } from '@/composition/container.types';
 import { createTestContainer } from '@/composition/createTestContainer';
 import { ImportPage } from '@/ui/features/import/ImportPage';
@@ -30,6 +30,10 @@ async function importSample(user: ReturnType<typeof userEvent.setup>, name: stri
 }
 
 let container: AppContainer;
+
+afterEach(() => {
+  vi.unstubAllGlobals();
+});
 
 beforeEach(async () => {
   await setupI18n('es');
@@ -72,6 +76,16 @@ describe('ImportPage with the real use case and sample statements', () => {
     expect(figure('Movimientos importados')).toBe(String(SAMPLE_TRANSACTIONS));
     const accounts = await container.manageCatalog.listAccounts();
     expect(accounts.map((account) => account.name)).toEqual(['Cuenta principal']);
+  });
+
+  it('previews the real BBVA sample when opened from the dashboard link (?ejemplo=1)', async () => {
+    const bytes = readFileSync(resolve(process.cwd(), 'public/samples/bbva.csv'));
+    vi.stubGlobal('fetch', vi.fn(() => Promise.resolve(new Response(bytes, { status: 200 }))));
+    renderWithProviders(<ImportPage />, { container, route: '/importar?ejemplo=1' });
+
+    const preview = await screen.findByRole('table', { name: /vista previa/i }, { timeout: 5000 });
+    expect(screen.getByText('Archivo: bbva.csv')).toBeInTheDocument();
+    expect(within(preview).getAllByRole('row')[1]).toHaveTextContent('TRANSFERENCIA A CUENTA AHORRO');
   });
 
   it('rejects an unsupported file with a translated message', async () => {

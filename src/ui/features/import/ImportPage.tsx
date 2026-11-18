@@ -1,5 +1,6 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useSearchParams } from 'react-router-dom';
 import type { Account } from '@/domain/account/Account';
 import type { ColumnMapping } from '@/domain/import/ColumnMapping';
 import { useNotifications } from '@/ui/components/Toast';
@@ -15,6 +16,8 @@ import './import.css';
 
 /** Extracto ficticio servido desde `public/samples` (mismo origen: lo permite `connect-src 'self'`). */
 const SAMPLE_FILE = 'bbva.csv';
+/** `#/importar?ejemplo=1` (enlace «Probar con datos de ejemplo» del Panel) carga el extracto de ejemplo al entrar. */
+export const SAMPLE_QUERY_PARAM = 'ejemplo';
 
 function effectiveChoice(choice: AccountChoice | null, accounts: readonly Account[] | null, defaultName: string): AccountChoice {
   if (choice) return choice;
@@ -42,17 +45,42 @@ export function ImportPage() {
   const accounts = useAsync(accountsTask);
   const choice = effectiveChoice(accountChoice, accounts.status === 'success' ? accounts.data : null, t('account.defaultName'));
 
-  const loadSource = async (source: FileSource) => {
-    const preview = await load(source);
-    if (!preview) return;
-    const model = buildPreviewModel(preview.table, preview.suggestedMapping);
-    announce(t('status.previewReady', { valid: model.validCount, errors: model.errorCount }));
-  };
+  const loadSource = useCallback(
+    async (source: FileSource) => {
+      const preview = await load(source);
+      if (!preview) return;
+      const model = buildPreviewModel(preview.table, preview.suggestedMapping);
+      announce(t('status.previewReady', { valid: model.validCount, errors: model.errorCount }));
+    },
+    [load, announce, t],
+  );
 
   const handleFile = (file: File) =>
     loadSource({ name: file.name, read: () => file.arrayBuffer(), readFailure: 'unexpected' });
 
-  const handleSample = () => loadSource({ name: SAMPLE_FILE, read: fetchSample, readFailure: 'sampleUnavailable' });
+  const handleSample = useCallback(
+    () => loadSource({ name: SAMPLE_FILE, read: fetchSample, readFailure: 'sampleUnavailable' }),
+    [loadSource],
+  );
+
+  const [searchParams, setSearchParams] = useSearchParams();
+  const wantsSample = searchParams.get(SAMPLE_QUERY_PARAM) === '1';
+  // Una sola carga por visita (también con el doble efecto de StrictMode); el parámetro se quita de la URL
+  // para que recargar o volver atrás no repita la lectura.
+  const sampleRequested = useRef(false);
+  useEffect(() => {
+    if (!wantsSample || sampleRequested.current) return;
+    sampleRequested.current = true;
+    setSearchParams(
+      (params) => {
+        const next = new URLSearchParams(params);
+        next.delete(SAMPLE_QUERY_PARAM);
+        return next;
+      },
+      { replace: true },
+    );
+    void handleSample();
+  }, [wantsSample, setSearchParams, handleSample]);
 
   const handleMappingChange = (mapping: ColumnMapping) => {
     if (state.step !== 'preview') return;

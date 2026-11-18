@@ -1,5 +1,6 @@
 import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { useLocation } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ImportPreview, ImportResult, ImportStatement } from '@/application/ports/inbound/ImportStatement';
 import type { ManageCatalog } from '@/application/ports/inbound/ManageCatalog';
@@ -38,7 +39,20 @@ const RESULT: ImportResult = {
   rowErrors: [{ line: 3, error: domainError('date.invalidDate', { value: '31/02/2026' }) }],
 };
 
-function setup(options: { preview?: ImportStatement['preview']; commit?: ImportStatement['commit']; accounts?: readonly Account[] } = {}) {
+type SetupOptions = {
+  preview?: ImportStatement['preview'];
+  commit?: ImportStatement['commit'];
+  accounts?: readonly Account[];
+  route?: string;
+};
+
+/** Muestra la query actual del router para comprobar que `?ejemplo=1` se consume. */
+function LocationProbe() {
+  const location = useLocation();
+  return <output aria-label="query">{location.search}</output>;
+}
+
+function setup(options: SetupOptions = {}) {
   const importStatement = {
     preview: vi.fn(options.preview ?? (() => Promise.resolve(ok(previewOf())))),
     commit: vi.fn(options.commit ?? (() => Promise.resolve(ok(RESULT)))),
@@ -49,7 +63,13 @@ function setup(options: { preview?: ImportStatement['preview']; commit?: ImportS
   } as unknown as ManageCatalog & { listAccounts: ReturnType<typeof vi.fn>; saveAccount: ReturnType<typeof vi.fn> };
   const container = createFakeContainer({ importStatement, manageCatalog });
   const user = userEvent.setup();
-  renderWithProviders(<ImportPage />, { container, route: '/importar' });
+  renderWithProviders(
+    <>
+      <ImportPage />
+      <LocationProbe />
+    </>,
+    { container, route: options.route ?? '/importar' },
+  );
   return { user, importStatement, manageCatalog };
 }
 
@@ -119,6 +139,29 @@ describe('ImportPage: file selection', () => {
     await screen.findByRole('table', { name: /vista previa/i });
     expect(fetchMock).toHaveBeenCalledWith(`${import.meta.env.BASE_URL}samples/bbva.csv`);
     expect(importStatement.preview).toHaveBeenCalledWith(expect.objectContaining({ name: 'bbva.csv' }));
+  });
+
+  it('loads the sample automatically from the dashboard link (?ejemplo=1) only once', async () => {
+    const fetchMock = vi.fn(() => Promise.resolve(new Response('Fecha;Concepto;Importe\n', { status: 200 })));
+    vi.stubGlobal('fetch', fetchMock);
+    const { importStatement } = setup({ route: '/importar?ejemplo=1' });
+
+    expect(await screen.findByRole('table', { name: /vista previa/i })).toBeInTheDocument();
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(fetchMock).toHaveBeenCalledWith(`${import.meta.env.BASE_URL}samples/bbva.csv`);
+    expect(importStatement.preview).toHaveBeenCalledTimes(1);
+    expect(importStatement.preview).toHaveBeenCalledWith(expect.objectContaining({ name: 'bbva.csv' }));
+    expect(screen.getByRole('status', { name: 'query' })).toHaveTextContent(/^$/);
+  });
+
+  it('does not load the sample without the query parameter', async () => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal('fetch', fetchMock);
+    setup({ route: '/importar?ejemplo=0' });
+
+    await screen.findByLabelText('Archivo del extracto (CSV o XLSX)');
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(screen.queryByRole('table')).not.toBeInTheDocument();
   });
 
   it('explains when the sample cannot be downloaded', async () => {
