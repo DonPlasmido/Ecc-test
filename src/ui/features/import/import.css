@@ -1,0 +1,252 @@
+/* Pantalla Importar (features/import). Solo tokens de tokens.css; sin `transition: all`. */
+
+.import-subheading {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+  text-wrap: balance;
+}
+
+.import-subheading .icon {
+  color: var(--color-warning);
+  flex: none;
+}
+
+/* Selector: zona de soltar con borde discontinuo; el input nativo sigue visible y accesible. */
+.import-drop {
+  display: grid;
+  justify-items: start;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  border: 2px dashed var(--color-border-strong);
+  border-radius: var(--radius-md);
+  background-color: var(--color-surface-sunken);
+  transition-property: border-color, background-color;
+  transition-duration: var(--duration-fast);
+  transition-timing-function: var(--ease-smooth);
+}
+
+.import-drop:focus-within {
+  border-color: var(--color-focus);
+}
+
+.import-drop[data-drag-over] {
+  border-color: var(--color-accent);
+  background-color: var(--color-accent-soft);
+}
+
+.import-drop__icon {
+  width: 1.75rem;
+  height: 1.75rem;
+  color: var(--color-accent);
+}
+
+.import-drop__input {
+  max-width: 100%;
+  min-height: var(--hit-target);
+  font-size: var(--text-sm);
+}
+
+.import-drop__input::file-selector-button {
+  min-height: var(--hit-target);
+  margin-inline-end: var(--space-3);
+  padding: var(--space-2) var(--space-4);
+  border: var(--border-width) solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  background-color: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+  font-weight: var(--weight-semibold);
+  cursor: pointer;
+}
+
+.import-drop__input:focus-visible {
+  outline: var(--focus-ring-width) solid var(--color-focus);
+  outline-offset: var(--focus-ring-offset);
+  border-radius: var(--radius-sm);
+}
+
+/* La pista de arrastrar solo tiene sentido con puntero fino (escritorio). */
+@media (pointer: coarse) {
+  .import-drop__drag {
+    display: none;
+  }
+}
+
+.import-sample {
+  display: grid;
+  justify-items: start;
+  gap: var(--space-1);
+}
+
+.import-reading {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-text-muted);
+}
+
+.import-spinner {
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid var(--color-border);
+  border-top-color: var(--color-accent);
+  border-radius: 50%;
+  animation: import-spin var(--duration-slow) var(--ease-linear) infinite;
+}
+
+@keyframes import-spin {
+  to {
+    transform: rotate(1turn);
+  }
+}
+
+/* Vista previa */
+.import-preview-card {
+  gap: var(--space-5);
+  animation: import-enter var(--duration-normal) var(--ease-smooth);
+}
+
+@keyframes import-enter {
+  from {
+    opacity: 0;
+    transform: translateY(var(--motion-distance-sm));
+  }
+}
+
+.import-file-name {
+  font-weight: var(--weight-semibold);
+  overflow-wrap: anywhere;
+}
+
+.import-columns {
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 14rem), 1fr));
+}
+
+.import-columns .field__hint {
+  overflow-wrap: anywhere;
+}
+
+.import-callout {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  border-inline-start: 3px solid var(--color-warning);
+  border-radius: var(--radius-sm);
+  background-color: var(--color-warning-soft);
+}
+
+.import-row-errors {
+  display: grid;
+  gap: var(--space-1);
+  padding-inline-start: var(--space-5);
+  font-size: var(--text-sm);
+  list-style: disc;
+  text-wrap: pretty;
+}
+
+.import-preview {
+  max-height: 28rem;
+}
+
+.import-preview:focus-visible {
+  outline: var(--focus-ring-width) solid var(--color-focus);
+  outline-offset: var(--focus-ring-offset);
+}
+
+.import-preview__desc {
+  min-width: 12rem;
+  overflow-wrap: anywhere;
+}
+
+.import-preview tr[data-status='error'] {
+  background-color: var(--color-negative-soft);
+}
+
+.import-status {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+}
+
+.import-status .icon {
+  width: 1rem;
+  height: 1rem;
+  flex: none;
+}
+
+.import-status--ok {
+  color: var(--color-positive);
+}
+
+.import-status--warning {
+  color: var(--color-warning);
+}
+
+.import-status--error {
+  color: var(--color-negative);
+  white-space: normal;
+  min-width: 12rem;
+}
+
+.import-actions {
+  padding-top: var(--space-2);
+  border-top: var(--border-width) solid var(--color-rule);
+}
+
+/* Resumen */
+.import-summary {
+  animation: import-enter var(--duration-normal) var(--ease-smooth);
+}
+
+.import-summary__header {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+}
+
+.import-summary__icon {
+  width: 2rem;
+  height: 2rem;
+  padding: var(--space-1);
+  border-radius: var(--radius-pill);
+  background-color: var(--color-positive-soft);
+  color: var(--color-positive);
+  flex: none;
+}
+
+.import-figures {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
+.import-figures__item {
+  display: grid;
+  gap: var(--space-1);
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  background-color: var(--color-surface-sunken);
+}
+
+.import-figures__item[data-kind='inserted'] dd {
+  color: var(--color-positive);
+}
+
+.import-figures__item dd {
+  font-size: var(--text-2xl);
+  line-height: var(--leading-tight);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .import-preview-card,
+  .import-summary {
+    animation-name: none;
+  }
+}
