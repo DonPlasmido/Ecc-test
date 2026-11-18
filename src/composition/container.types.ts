@@ -1,5 +1,6 @@
 import type { BuildDashboard } from '@/application/ports/inbound/BuildDashboard';
 import type { CategorizeTransactions } from '@/application/ports/inbound/CategorizeTransactions';
+import type { DeleteAllData } from '@/application/ports/inbound/DeleteAllData';
 import type { EvaluateBudgets } from '@/application/ports/inbound/EvaluateBudgets';
 import type { ExportEncryptedBackup } from '@/application/ports/inbound/ExportEncryptedBackup';
 import type { ImportEncryptedBackup } from '@/application/ports/inbound/ImportEncryptedBackup';
@@ -20,6 +21,8 @@ export interface AppContainer {
   readonly buildDashboard: BuildDashboard;
   readonly exportEncryptedBackup: ExportEncryptedBackup;
   readonly importEncryptedBackup: ImportEncryptedBackup;
+  /** Borra todos los datos (tras confirmación en Ajustes). */
+  readonly deleteAllData: DeleteAllData;
   readonly queryTransactions: QueryTransactions;
   readonly manageCatalog: ManageCatalog;
   readonly indexStore: TransactionIndexStore;

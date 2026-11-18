@@ -45,6 +45,7 @@ export function createStubContainer(): AppContainer {
     buildDashboard: notWired('buildDashboard'),
     exportEncryptedBackup: notWired('exportEncryptedBackup'),
     importEncryptedBackup: notWired('importEncryptedBackup'),
+    deleteAllData: notWired('deleteAllData'),
     queryTransactions: notWired('queryTransactions'),
     manageCatalog: notWired('manageCatalog'),
     settings: notWired('settings'),
