@@ -17,6 +17,7 @@ import { createTransactionIndex } from '@/application/read-model/TransactionInde
 import { createTransactionIndexStore } from '@/application/read-model/TransactionIndexStore';
 import { BuildDashboardUseCase } from '@/application/use-cases/BuildDashboardUseCase';
 import { CategorizeTransactionsUseCase } from '@/application/use-cases/CategorizeTransactionsUseCase';
+import { DeleteAllDataUseCase } from '@/application/use-cases/DeleteAllDataUseCase';
 import { EvaluateBudgetsUseCase } from '@/application/use-cases/EvaluateBudgetsUseCase';
 import { ExportEncryptedBackupUseCase } from '@/application/use-cases/ExportEncryptedBackupUseCase';
 import { ImportEncryptedBackupUseCase } from '@/application/use-cases/ImportEncryptedBackupUseCase';
@@ -86,6 +87,7 @@ export async function buildContainer(ports: ContainerPorts): Promise<AppContaine
       settings: ports.settings,
     }),
     importEncryptedBackup: new ImportEncryptedBackupUseCase({ snapshot: ports.snapshot, cipher: ports.cipher, onDataChanged }),
+    deleteAllData: new DeleteAllDataUseCase({ snapshot: ports.snapshot, onDataChanged }),
     queryTransactions: new QueryTransactionsUseCase({ index, transactions, clock, ids }),
     manageCatalog: new ManageCatalogUseCase({
       accounts: ports.accounts,

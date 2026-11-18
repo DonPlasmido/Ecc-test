@@ -62,6 +62,7 @@ export function createFakeContainer(
     buildDashboard: unprovided('buildDashboard'),
     exportEncryptedBackup: unprovided('exportEncryptedBackup'),
     importEncryptedBackup: unprovided('importEncryptedBackup'),
+    deleteAllData: unprovided('deleteAllData'),
     queryTransactions: unprovided('queryTransactions'),
     manageCatalog: unprovided('manageCatalog'),
     ...overrides,

@@ -1,1 +1,88 @@
-{}
+{
+  "actions": {
+    "cancel": "Cancelar"
+  },
+  "password": {
+    "label": "Contraseña",
+    "confirmLabel": "Repetir contraseña",
+    "show": "Mostrar contraseña"
+  },
+  "backup": {
+    "title": "Copia de seguridad cifrada",
+    "text": "Guarda todos tus datos en un archivo .ccbackup cifrado con una contraseña que solo tú conoces. Sirve para cambiar de dispositivo o recuperar tus datos si el navegador los borra.",
+    "never": "Todavía no has hecho ninguna copia. Te recomendamos hacer una ahora.",
+    "last": "Última copia: {{date}}.",
+    "overdue_one": "Tu última copia es del {{date}}, hace {{count}} día. Han pasado más de {{limit}} días: haz una copia nueva.",
+    "overdue_other": "Tu última copia es del {{date}}, hace {{count}} días. Han pasado más de {{limit}} días: haz una copia nueva.",
+    "unknownLast": "No se ha podido leer la fecha de la última copia."
+  },
+  "export": {
+    "open": "Exportar copia cifrada",
+    "title": "Exportar copia cifrada",
+    "description": "Elige una contraseña para cifrar la copia. Te la pediremos para restaurarla.",
+    "noRecovery": "Si olvidas la contraseña no hay forma de recuperar los datos de la copia. Guárdala en un gestor de contraseñas.",
+    "requirements": "Al menos {{min}} caracteres. Mejor una frase larga con varias palabras.",
+    "tooShort_one": "La contraseña debe tener al menos {{min}} caracteres. Añade {{count}} más.",
+    "tooShort_other": "La contraseña debe tener al menos {{min}} caracteres. Añade {{count}} más.",
+    "mismatch": "Las contraseñas no coinciden. Escríbela otra vez igual.",
+    "strength": {
+      "label": "Fortaleza: {{value}}",
+      "tooShort": "demasiado corta",
+      "weak": "débil",
+      "fair": "aceptable",
+      "strong": "fuerte"
+    },
+    "submit": "Cifrar y descargar",
+    "busy": "Cifrando copia…",
+    "done": "Copia guardada: {{file}}"
+  },
+  "restore": {
+    "heading": "Restaurar una copia",
+    "fileLabel": "Archivo de copia (.ccbackup)",
+    "fileHint": "Al restaurar se reemplazan todos los datos actuales de este dispositivo.",
+    "confirm": {
+      "title": "¿Reemplazar todos tus datos?",
+      "description": "Restaurar «{{file}}» borrará todos los movimientos, cuentas, reglas y presupuestos actuales de este dispositivo y los sustituirá por los de la copia. No se puede deshacer.",
+      "continue": "Sí, reemplazar mis datos"
+    },
+    "title": "Restaurar copia",
+    "description": "Escribe la contraseña con la que se cifró «{{file}}».",
+    "passwordHint": "Si la contraseña no es correcta o el archivo está dañado, tus datos actuales no cambian.",
+    "passwordRequired": "Escribe la contraseña de la copia.",
+    "submit": "Restaurar copia",
+    "busy": "Descifrando copia…",
+    "done_one": "Copia restaurada: {{formattedCount}} movimiento (copia del {{date}}).",
+    "done_other": "Copia restaurada: {{formattedCount}} movimientos (copia del {{date}})."
+  },
+  "storage": {
+    "title": "Almacenamiento",
+    "usage": "Uso estimado: {{used}} de {{quota}} disponibles.",
+    "unavailable": "Este navegador no permite estimar el espacio usado.",
+    "persistent": "Almacenamiento persistente: el navegador no borrará tus datos para liberar espacio.",
+    "notPersistent": "Almacenamiento no persistente: el navegador podría borrar tus datos si le falta espacio. Haz copias de seguridad con regularidad.",
+    "retry": "Volver a pedir almacenamiento persistente"
+  },
+  "privacy": {
+    "title": "Privacidad",
+    "local": "Todo se guarda solo en este dispositivo, en el almacenamiento del navegador.",
+    "noServer": "No hay servidores, cuentas ni analítica: tus extractos y movimientos nunca salen del dispositivo.",
+    "encryption": "Las copias se cifran aquí mismo (AES-GCM de 256 bits con una clave derivada de tu contraseña) antes de descargarse."
+  },
+  "rules": {
+    "title": "Reglas y categorías",
+    "text": "Gestiona las reglas que categorizan tus movimientos automáticamente y tus categorías.",
+    "link": "Ir a Reglas y categorías"
+  },
+  "delete": {
+    "title": "Borrar todos los datos",
+    "text": "Elimina de este dispositivo todos los movimientos, cuentas, reglas, presupuestos e importaciones. Exporta antes una copia si quieres conservarlos.",
+    "open": "Borrar todos los datos…",
+    "dialogTitle": "¿Borrar todos los datos?",
+    "description": "Se borrará todo lo guardado en este dispositivo y no se puede deshacer. Solo podrás recuperarlo con una copia de seguridad.",
+    "word": "BORRAR",
+    "confirmLabel": "Escribe {{word}} para confirmar",
+    "mismatch": "Escribe {{word}} exactamente para confirmar.",
+    "submit": "Borrar todo",
+    "done": "Se han borrado todos los datos de este dispositivo."
+  }
+}
