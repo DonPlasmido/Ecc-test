@@ -245,3 +245,50 @@ describe('TransactionsPage: editing and rule suggestion (AC-019, AC-035)', () =>
     expect(corrected?.categorySource).toBe('manual');
   });
 });
+
+describe('TransactionsPage: error recovery', () => {
+  it('offers Reintentar when the search fails and recovers on retry', async () => {
+    const container = await seededContainer(DATASET, ACCOUNTS);
+    let shouldFail = true;
+    const flaky: AppContainer = {
+      ...container,
+      queryTransactions: {
+        ...container.queryTransactions,
+        search: (input) =>
+          shouldFail ? Promise.reject(new Error('boom')) : container.queryTransactions.search(input),
+      },
+    };
+    const user = userEvent.setup();
+    renderTransactionsPage(flaky);
+
+    const retry = await screen.findByRole('button', { name: 'Reintentar' }, SETTLE);
+    shouldFail = false;
+    await user.click(retry);
+
+    expect(await screen.findByRole('grid', { name: 'Movimientos' }, SETTLE)).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Reintentar' })).not.toBeInTheDocument();
+  });
+
+  it('shows a local alert with Reintentar when a page fails, keeping the summary', async () => {
+    const container = await seededContainer(DATASET, ACCOUNTS);
+    let shouldFail = true;
+    const flaky: AppContainer = {
+      ...container,
+      queryTransactions: {
+        ...container.queryTransactions,
+        page: (input) =>
+          shouldFail ? Promise.reject(new Error('boom')) : container.queryTransactions.page(input),
+      },
+    };
+    const user = userEvent.setup();
+    renderTransactionsPage(flaky);
+
+    const alert = await screen.findByRole('alert', undefined, SETTLE);
+    expect(summaryText()).not.toBe('');
+    shouldFail = false;
+    await user.click(within(alert).getByRole('button', { name: 'Reintentar' }));
+
+    await waitFor(() => expect(dataRows().length).toBeGreaterThan(0), SETTLE);
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  });
+});
