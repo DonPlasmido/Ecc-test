@@ -1,1 +1,88 @@
-{}
+{
+  "actions": {
+    "cancel": "Cancel"
+  },
+  "password": {
+    "label": "Password",
+    "confirmLabel": "Repeat password",
+    "show": "Show password"
+  },
+  "backup": {
+    "title": "Encrypted backup",
+    "text": "Save all your data in a .ccbackup file encrypted with a password only you know. Use it to move to another device or to recover your data if the browser deletes it.",
+    "never": "You haven't made a backup yet. We recommend making one now.",
+    "last": "Last backup: {{date}}.",
+    "overdue_one": "Your last backup is from {{date}}, {{count}} day ago. It has been more than {{limit}} days: make a new backup.",
+    "overdue_other": "Your last backup is from {{date}}, {{count}} days ago. It has been more than {{limit}} days: make a new backup.",
+    "unknownLast": "The date of the last backup could not be read."
+  },
+  "export": {
+    "open": "Export encrypted backup",
+    "title": "Export encrypted backup",
+    "description": "Choose a password to encrypt the backup. You will need it to restore it.",
+    "noRecovery": "If you forget the password there is no way to recover the data in the backup. Keep it in a password manager.",
+    "requirements": "At least {{min}} characters. A long phrase with several words is best.",
+    "tooShort_one": "The password must have at least {{min}} characters. Add {{count}} more.",
+    "tooShort_other": "The password must have at least {{min}} characters. Add {{count}} more.",
+    "mismatch": "The passwords don't match. Type it again exactly.",
+    "strength": {
+      "label": "Strength: {{value}}",
+      "tooShort": "too short",
+      "weak": "weak",
+      "fair": "fair",
+      "strong": "strong"
+    },
+    "submit": "Encrypt and download",
+    "busy": "Encrypting backup…",
+    "done": "Backup saved: {{file}}"
+  },
+  "restore": {
+    "heading": "Restore a backup",
+    "fileLabel": "Backup file (.ccbackup)",
+    "fileHint": "Restoring replaces all the current data on this device.",
+    "confirm": {
+      "title": "Replace all your data?",
+      "description": "Restoring “{{file}}” will delete all the current transactions, accounts, rules and budgets on this device and replace them with the ones in the backup. This can't be undone.",
+      "continue": "Yes, replace my data"
+    },
+    "title": "Restore backup",
+    "description": "Enter the password used to encrypt “{{file}}”.",
+    "passwordHint": "If the password is wrong or the file is damaged, your current data stays unchanged.",
+    "passwordRequired": "Enter the backup password.",
+    "submit": "Restore backup",
+    "busy": "Decrypting backup…",
+    "done_one": "Backup restored: {{formattedCount}} transaction (backup from {{date}}).",
+    "done_other": "Backup restored: {{formattedCount}} transactions (backup from {{date}})."
+  },
+  "storage": {
+    "title": "Storage",
+    "usage": "Estimated usage: {{used}} of {{quota}} available.",
+    "unavailable": "This browser can't estimate the space used.",
+    "persistent": "Persistent storage: the browser won't delete your data to free up space.",
+    "notPersistent": "Storage is not persistent: the browser could delete your data if it runs out of space. Make regular backups.",
+    "retry": "Ask for persistent storage again"
+  },
+  "privacy": {
+    "title": "Privacy",
+    "local": "Everything is stored only on this device, in the browser's storage.",
+    "noServer": "There are no servers, accounts or analytics: your statements and transactions never leave the device.",
+    "encryption": "Backups are encrypted right here (256-bit AES-GCM with a key derived from your password) before they are downloaded."
+  },
+  "rules": {
+    "title": "Rules and categories",
+    "text": "Manage the rules that categorise your transactions automatically, and your categories.",
+    "link": "Go to Rules and categories"
+  },
+  "delete": {
+    "title": "Delete all data",
+    "text": "Removes all transactions, accounts, rules, budgets and imports from this device. Export a backup first if you want to keep them.",
+    "open": "Delete all data…",
+    "dialogTitle": "Delete all data?",
+    "description": "Everything stored on this device will be deleted and this can't be undone. You can only get it back from a backup.",
+    "word": "DELETE",
+    "confirmLabel": "Type {{word}} to confirm",
+    "mismatch": "Type {{word}} exactly to confirm.",
+    "submit": "Delete everything",
+    "done": "All data on this device has been deleted."
+  }
+}
