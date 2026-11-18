@@ -252,11 +252,10 @@ describe('TransactionsPage: error recovery', () => {
     let shouldFail = true;
     const flaky: AppContainer = {
       ...container,
-      queryTransactions: {
-        ...container.queryTransactions,
-        search: (input) =>
+      queryTransactions: Object.assign(Object.create(container.queryTransactions) as AppContainer['queryTransactions'], {
+        search: (input: Parameters<AppContainer['queryTransactions']['search']>[0]) =>
           shouldFail ? Promise.reject(new Error('boom')) : container.queryTransactions.search(input),
-      },
+      }),
     };
     const user = userEvent.setup();
     renderTransactionsPage(flaky);
@@ -274,21 +273,21 @@ describe('TransactionsPage: error recovery', () => {
     let shouldFail = true;
     const flaky: AppContainer = {
       ...container,
-      queryTransactions: {
-        ...container.queryTransactions,
-        page: (input) =>
+      queryTransactions: Object.assign(Object.create(container.queryTransactions) as AppContainer['queryTransactions'], {
+        page: (input: Parameters<AppContainer['queryTransactions']['page']>[0]) =>
           shouldFail ? Promise.reject(new Error('boom')) : container.queryTransactions.page(input),
-      },
+      }),
     };
     const user = userEvent.setup();
     renderTransactionsPage(flaky);
 
-    const alert = await screen.findByRole('alert', undefined, SETTLE);
+    const retry = await screen.findByRole('button', { name: 'Reintentar' }, SETTLE);
+    expect(retry.closest('[role="alert"]')).not.toBeNull();
     expect(summaryText()).not.toBe('');
     shouldFail = false;
-    await user.click(within(alert).getByRole('button', { name: 'Reintentar' }));
+    await user.click(retry);
 
     await waitFor(() => expect(dataRows().length).toBeGreaterThan(0), SETTLE);
-    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Reintentar' })).not.toBeInTheDocument();
   });
 });

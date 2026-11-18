@@ -124,7 +124,11 @@ export function TransactionsPage() {
     }
     if (results.error !== null) {
       return (
-        <EmptyState title={t('error.title')} text={t('error.text')} />
+        <EmptyState
+          title={t('error.title')}
+          text={t('error.text')}
+          action={<Button onClick={results.retry}>{tc('actions.retry')}</Button>}
+        />
       );
     }
     if (snapshot.size === 0) {
@@ -150,6 +154,13 @@ export function TransactionsPage() {
       );
     }
     return (
+      <>
+        {results.pageError !== null ? (
+          <div className="tx-page-error" role="alert">
+            <span>{t('pageError.text')}</span>
+            <Button onClick={results.retryPages}>{tc('actions.retry')}</Button>
+          </div>
+        ) : null}
       <VirtualTransactionList
         key={key}
         label={t('list.label')}
@@ -160,6 +171,7 @@ export function TransactionsPage() {
         onActivateRow={setEditing}
         sortKey={params.sort}
       />
+      </>
     );
   };
 

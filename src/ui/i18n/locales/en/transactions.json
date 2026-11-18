@@ -66,6 +66,9 @@
     "title": "No transactions match",
     "text": "Try different text or remove a filter."
   },
+  "pageError": {
+    "text": "Some transactions could not be loaded."
+  },
   "error": {
     "title": "Transactions could not be loaded",
     "text": "Your data is still stored on this device. Reload the page to try again."

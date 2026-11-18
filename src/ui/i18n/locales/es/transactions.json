@@ -66,6 +66,9 @@
     "title": "Ningún movimiento coincide",
     "text": "Prueba con otro texto o quita algún filtro."
   },
+  "pageError": {
+    "text": "No se han podido cargar algunos movimientos."
+  },
   "error": {
     "title": "No se han podido cargar los movimientos",
     "text": "Tus datos siguen guardados en este dispositivo. Recarga la página para intentarlo de nuevo."
