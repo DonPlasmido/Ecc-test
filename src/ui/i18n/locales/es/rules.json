@@ -1,1 +1,133 @@
-{}
+{
+  "title": "Reglas y categorías",
+  "intro": "Las reglas ponen categoría a los movimientos según su concepto. Se prueban en orden y gana la primera que coincide.",
+  "loading": "Cargando reglas y categorías",
+  "loadError": "No se han podido cargar las reglas y categorías.",
+  "actions": {
+    "cancel": "Cancelar",
+    "edit": "Editar",
+    "delete": "Borrar"
+  },
+  "operator": {
+    "contains": "El concepto contiene",
+    "startsWith": "El concepto empieza por",
+    "equals": "El concepto es exactamente"
+  },
+  "summary": {
+    "contains": "Contiene «{{pattern}}»",
+    "startsWith": "Empieza por «{{pattern}}»",
+    "equals": "Es exactamente «{{pattern}}»"
+  },
+  "sign": {
+    "any": "Gastos e ingresos",
+    "expense": "Solo gastos",
+    "income": "Solo ingresos"
+  },
+  "kind": {
+    "expense": "Gasto",
+    "income": "Ingreso",
+    "transfer": "Transferencia"
+  },
+  "color": {
+    "cat-1": "Azul",
+    "cat-2": "Teja",
+    "cat-3": "Verde",
+    "cat-4": "Ciruela",
+    "cat-5": "Ocre",
+    "cat-6": "Turquesa",
+    "cat-7": "Carmín",
+    "cat-8": "Índigo",
+    "neutral": "Gris"
+  },
+  "rules": {
+    "heading": "Reglas",
+    "add": "Nueva regla",
+    "lead": "Si dos reglas coinciden con un movimiento, se aplica la que está más arriba. Las categorías puestas a mano nunca se cambian.",
+    "emptyTitle": "Aún no tienes reglas",
+    "emptyText": "Crea una regla para que los movimientos con un texto en el concepto reciban siempre la misma categoría.",
+    "listLabel": "Reglas por prioridad",
+    "position": "Regla {{position}} de {{total}}:",
+    "assigns": "Asigna",
+    "missingCategory": "Categoría eliminada",
+    "learned": "Aprendida",
+    "disabled": "Desactivada",
+    "counting": "Contando movimientos…",
+    "countUnavailable": "Recuento no disponible",
+    "matches_one": "{{count}} movimiento coincide",
+    "matches_many": "{{count}} movimientos coinciden",
+    "matches_other": "{{count}} movimientos coinciden",
+    "moveUp": "Subir prioridad de «{{pattern}}»",
+    "moveDown": "Bajar prioridad de «{{pattern}}»",
+    "moved": "«{{pattern}}» ahora es la regla {{position}} de {{total}}",
+    "moveError": "No se ha podido cambiar el orden. Se mantiene el anterior.",
+    "edit": "Editar regla «{{pattern}}»",
+    "delete": "Borrar regla «{{pattern}}»",
+    "created": "Regla «{{pattern}}» creada. Pulsa «Aplicar reglas ahora» para usarla con los movimientos que ya tienes.",
+    "updated": "Regla «{{pattern}}» guardada",
+    "deleted": "Regla «{{pattern}}» borrada",
+    "deleteTitle": "¿Borrar la regla?",
+    "deleteText": "La regla «{{pattern}}» dejará de aplicarse. Los movimientos ya categorizados conservan su categoría hasta que vuelvas a aplicar las reglas.",
+    "deleteConfirm": "Borrar regla"
+  },
+  "ruleForm": {
+    "createTitle": "Nueva regla",
+    "editTitle": "Editar regla",
+    "submit": "Guardar regla",
+    "pattern": "Texto del concepto",
+    "patternHint": "Al menos 2 caracteres. No distingue mayúsculas ni tildes y busca palabras completas: «BAR» no coincide con «BARCELONA».",
+    "patternTooShort": "Escribe al menos 2 caracteres.",
+    "operator": "Condición",
+    "category": "Categoría que asigna",
+    "categoryPlaceholder": "Elige una categoría",
+    "categoryRequired": "Elige la categoría que asignará la regla.",
+    "sign": "Aplicar a",
+    "enabled": "Regla activa"
+  },
+  "preview": {
+    "tooShort": "Escribe al menos 2 caracteres para ver qué movimientos coinciden.",
+    "loading": "Buscando coincidencias…",
+    "error": "No se han podido contar las coincidencias.",
+    "matches_one": "Coincide con {{count}} movimiento",
+    "matches_many": "Coincide con {{count}} movimientos",
+    "matches_other": "Coincide con {{count}} movimientos",
+    "samplesLabel": "Ejemplos de conceptos que coinciden"
+  },
+  "apply": {
+    "text": "Vuelve a aplicar todas las reglas a tus movimientos, salvo a los que categorizaste a mano.",
+    "button": "Aplicar reglas ahora",
+    "running": "Aplicando reglas…",
+    "result_one": "Hecho: {{count}} movimiento ha cambiado de categoría.",
+    "result_many": "Hecho: {{count}} movimientos han cambiado de categoría.",
+    "result_other": "Hecho: {{count}} movimientos han cambiado de categoría.",
+    "error": "No se han podido aplicar las reglas. Inténtalo de nuevo."
+  },
+  "categories": {
+    "heading": "Categorías",
+    "add": "Nueva categoría",
+    "listLabel": "Categorías",
+    "archived": "Archivada",
+    "fixed": "Fija",
+    "edit": "Editar categoría «{{name}}»",
+    "delete": "Borrar categoría «{{name}}»",
+    "created": "Categoría «{{name}}» creada",
+    "updated": "Categoría «{{name}}» guardada",
+    "deleted": "Categoría «{{name}}» borrada",
+    "archivedDone": "Categoría «{{name}}» archivada",
+    "deleteTitle": "¿Borrar la categoría?",
+    "deleteText": "Se borrará «{{name}}». Esta acción no se puede deshacer.",
+    "deleteConfirm": "Borrar categoría",
+    "inUseTitle": "«{{name}}» está en uso",
+    "inUseText": "Hay movimientos, reglas o presupuestos con esta categoría, así que no se puede borrar sin dejarlos huérfanos. Puedes archivarla: deja de ofrecerse en las reglas y conservas tus datos.",
+    "archive": "Archivar categoría"
+  },
+  "categoryForm": {
+    "createTitle": "Nueva categoría",
+    "editTitle": "Editar categoría",
+    "submit": "Guardar categoría",
+    "name": "Nombre",
+    "nameRequired": "Escribe un nombre para la categoría.",
+    "kind": "Tipo",
+    "color": "Color",
+    "archived": "Archivada (no se ofrece en las reglas nuevas)"
+  }
+}
