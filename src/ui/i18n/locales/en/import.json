@@ -1,1 +1,113 @@
-{}
+{
+  "title": "Import statement",
+  "intro": "Load a CSV or Excel statement from your bank. Your data never leaves your device.",
+  "file": {
+    "heading": "Choose the statement",
+    "label": "Statement file (CSV or XLSX)",
+    "hint": "Supported formats: CSV and Excel (.xlsx), up to 20 MB. The file is read on your device.",
+    "drop": "You can also drag the file here.",
+    "dropActive": "Drop the file to read it",
+    "sample": "Try a sample statement",
+    "sampleHint": "Fictitious BBVA statement with 50 made-up transactions.",
+    "reading": "Reading statement…"
+  },
+  "uiErrors": {
+    "unexpected": "The file could not be read. Please try again.",
+    "sampleUnavailable": "The sample statement could not be loaded. Check your connection and try again."
+  },
+  "detection": {
+    "heading": "Preview",
+    "fileName": "File: {{name}}",
+    "remembered": "Format recognised: using the mapping you confirmed last time for this bank.",
+    "auto": "Columns detected automatically ({{percent}} confidence).",
+    "lowConfidence": "Detection is uncertain: check what each column contains before importing.",
+    "headerRow": "Header on row {{row}} of the file.",
+    "noHeader": "No header found: columns were inferred from their content."
+  },
+  "mapping": {
+    "heading": "Columns",
+    "intro": "Tell us what each column contains. Changes update the preview immediately.",
+    "columnLabel": "Column {{number}} ({{header}}): use as",
+    "columnLabelNoHeader": "Column {{number}}: use as",
+    "example": "Example: {{value}}",
+    "noExample": "Empty column",
+    "roles": {
+      "date": "Date",
+      "valueDate": "Value date",
+      "description": "Description",
+      "amount": "Amount (signed)",
+      "debit": "Debit (charges)",
+      "credit": "Credit (deposits)",
+      "balance": "Balance",
+      "ignore": "Do not use this column"
+    },
+    "convention": {
+      "label": "How amounts are written",
+      "hint": "Signed: expenses carry a \"-\". Debit and credit: charges subtract and deposits add.",
+      "signed": "One signed column",
+      "debitCredit": "Separate debit and credit columns"
+    },
+    "updated": "Preview updated: {{valid}} valid rows and {{errors}} with errors."
+  },
+  "dates": {
+    "heading": "Ambiguous dates",
+    "text": "Every date can be read as day/month or month/day (for example, 03/04/2026). They will be read as day/month, the format Spanish banks use.",
+    "confirm": "I confirm the dates are in day/month/year format (dd/mm/yyyy)"
+  },
+  "warnings": {
+    "heading": "Check these warnings",
+    "ambiguousAmount": "Line {{line}}: the amount \"{{value}}\" is ambiguous; it is read with a thousands dot (Spanish format).",
+    "duplicatesNote": "Transactions you already have are detected when you confirm and are not duplicated."
+  },
+  "table": {
+    "caption": "Preview of the first {{count}} rows of the statement",
+    "counts": "In the first rows read: {{valid}} valid and {{errors}} with errors.",
+    "line": "Line",
+    "date": "Date",
+    "description": "Description",
+    "amount": "Amount",
+    "balance": "Balance",
+    "status": "Status",
+    "valid": "Valid",
+    "warning": "Check amount",
+    "error": "Will not be imported",
+    "unavailable": "Fill in the required columns to see the preview."
+  },
+  "account": {
+    "heading": "Destination account",
+    "label": "Save the transactions in",
+    "new": "New account…",
+    "newName": "New account name",
+    "defaultName": "Main account",
+    "loading": "Loading accounts…",
+    "loadError": "The accounts could not be loaded."
+  },
+  "blockers": {
+    "heading": "Before importing:",
+    "dates": "Confirm the date format.",
+    "accountName": "Enter a name for the new account.",
+    "accounts": "Wait for the accounts to load."
+  },
+  "actions": {
+    "confirm": "Import",
+    "cancel": "Cancel",
+    "another": "Import another statement",
+    "goToTransactions": "View transactions"
+  },
+  "status": {
+    "previewReady": "Preview ready: {{valid}} valid rows and {{errors}} with errors.",
+    "cancelled": "Import cancelled. Nothing was saved.",
+    "committing": "Importing transactions…"
+  },
+  "summary": {
+    "heading": "Import complete",
+    "announce": "Imported {{inserted}} transactions, skipped {{duplicates}} duplicates and categorised {{categorized}} by rules.",
+    "inserted": "Transactions imported",
+    "duplicates": "Duplicates skipped",
+    "categorized": "Categorised by rules",
+    "rowErrors": "Rows with errors",
+    "nothingNew": "There were no new transactions: the whole statement was already imported.",
+    "rowErrorsHeading": "Rows not imported",
+    "rowError": "Line {{line}}: {{message}}"
+  }
+}
