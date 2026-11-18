@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test'
 import { expectNoA11yViolations } from './fixtures'
+import { ImportScreen } from './fixtures/pages/importPage'
 import { TransactionsScreen } from './fixtures/pages/transactionsPage'
 
 test.describe('Movimientos (Pixel 7)', () => {
@@ -46,19 +47,44 @@ test.describe('Movimientos (Pixel 7)', () => {
   })
 
   test.describe('con movimientos importados', () => {
-    // La pantalla /importar todavía es un marcador (PlaceholderNotice) en esta rama, y el encargo prohíbe
-    // sembrar datos con una página de pruebas: sin importación por UI no hay forma legítima de tener filas.
-    // Activar cuando exista la importación (e2e/fixtures/samples.ts ya trae los extractos de ejemplo).
-    test.fixme(true, 'Requiere la UI de importación (/importar) para sembrar movimientos')
-
     test('busca, abre un movimiento, cambia su categoría y crea la regla propuesta (AC-019, AC-035) @a11y', async ({ page }) => {
+      const importScreen = new ImportScreen(page)
+      await importScreen.goto()
+      await importScreen.chooseSample('bbva.csv')
+      await importScreen.confirm()
+
       const screen = new TransactionsScreen(page)
       await screen.goto()
-      // 1) Importar `bbva.csv` desde /importar. 2) Buscar «NETFLIX» y abrir la fila.
-      // 3) Cambiar la categoría a «Ocio» y guardar. 4) En «¿Crear regla?», comprobar el patrón y
-      //    «Afectaría a N movimientos más», aceptar y verificar el anuncio. 5) Recargar: la categoría persiste.
-      await expect(screen.grid).toBeVisible()
+      await screen.searchBox.fill('NETFLIX')
+      await expect(screen.grid).toHaveAttribute('aria-rowcount', '4')
+      const rows = screen.grid.getByRole('row').filter({ hasText: 'NETFLIX' })
+      await expect(rows).toHaveCount(3)
+
+      await rows.first().click()
+      const detail = page.getByRole('dialog', { name: 'Movimiento' })
+      await expect(detail).toBeVisible()
+      await detail.getByLabel('Categoría').selectOption({ label: 'Ocio' })
       await expectNoA11yViolations(page)
+      await detail.getByRole('button', { name: 'Guardar' }).click()
+
+      const proposal = page.getByRole('dialog', { name: '¿Crear regla?' })
+      await expect(proposal).toBeVisible()
+      await expect(proposal.getByLabel('Texto que debe contener el concepto')).toHaveValue('NETFLIX.COM')
+      await expect(proposal).toContainText(/2 movimientos más/)
+      await expectNoA11yViolations(page)
+      await proposal.getByRole('button', { name: 'Crear regla' }).click()
+      await expect(proposal).toBeHidden()
+
+      // Los otros movimientos con el mismo concepto quedan categorizados, y persiste tras recargar.
+      for (const phase of ['antes de recargar', 'tras recargar']) {
+        await expect(rows, phase).toHaveCount(3)
+        for (let index = 0; index < 3; index += 1) {
+          await expect(rows.nth(index), phase).toContainText('Ocio')
+        }
+        if (phase === 'antes de recargar') await page.reload()
+        await expect(screen.heading).toBeVisible()
+      }
+      await expect(screen.searchBox).toHaveValue('NETFLIX')
     })
 
     test('lista de 100.000 movimientos: ≤ 100 filas en el DOM y búsqueda ≤ 200 ms (AC-031, AC-033)', async ({ page }) => {
