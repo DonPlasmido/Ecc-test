@@ -1,1 +1,74 @@
-{}
+{
+  "month": {
+    "label": "Month",
+    "previous": "Previous month",
+    "next": "Next month",
+    "current": "Go to current month"
+  },
+  "summary": {
+    "title": "Month summary",
+    "remaining": "Available",
+    "overspent": "Overspent",
+    "spentOfBudgeted": "{{spent}} spent of {{budgeted}} budgeted",
+    "allOk": "Everything is within budget.",
+    "overCount_one": "{{count}} category over budget",
+    "overCount_other": "{{count}} categories over budget",
+    "nearCount_one": "{{count}} close to the limit",
+    "nearCount_other": "{{count}} close to the limit"
+  },
+  "list": {
+    "title": "By category",
+    "label": "Budgets for {{month}}",
+    "remaining": "{{amount}} left",
+    "overBy": "{{amount}} over",
+    "edit": "Edit",
+    "editLabel": "Edit {{category}} budget",
+    "delete": "Delete",
+    "deleteLabel": "Delete {{category}} budget",
+    "add": "Add budget",
+    "allBudgeted": "Every expense category already has a budget this month."
+  },
+  "loading": "Loading budgets",
+  "loadError": "Budgets could not be loaded.",
+  "empty": {
+    "title": "No budgets in {{month}}",
+    "text": "Set a monthly limit for a category to see how much you have spent and how much is left."
+  },
+  "suggestions": {
+    "title": "Suggestions from your spending",
+    "intro": "Average spending over the last {{count}} months in your top categories.",
+    "average": "{{amount}} a month",
+    "create": "Create",
+    "createLabel": "Create {{category}} budget of {{amount}}"
+  },
+  "form": {
+    "createTitle": "New budget",
+    "editTitle": "Edit {{category}} budget",
+    "description": "The limit applies every month from {{month}}.",
+    "category": "Category",
+    "categoryPlaceholder": "Choose a category",
+    "categoryHint": "Only expense categories without a budget are listed.",
+    "limit": "Monthly limit (€)",
+    "limitHint": "Greater than zero, at most two decimals. Example: 300.00",
+    "save": "Save budget",
+    "saving": "Saving…",
+    "cancel": "Cancel",
+    "errors": {
+      "categoryRequired": "Choose a category.",
+      "required": "Enter the monthly limit.",
+      "format": "Enter a valid amount with at most two decimals, for example 300.00.",
+      "notPositive": "The limit must be greater than zero."
+    }
+  },
+  "delete": {
+    "title": "Delete the {{category}} budget?",
+    "description": "The limit is removed for every month. Your transactions do not change.",
+    "confirm": "Delete budget",
+    "cancel": "Cancel"
+  },
+  "toast": {
+    "saved": "{{category}} budget saved.",
+    "deleted": "{{category}} budget deleted.",
+    "over": "{{category}} budget exceeded."
+  }
+}
