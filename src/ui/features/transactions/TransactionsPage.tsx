@@ -17,7 +17,7 @@ import { errorMessage } from '@/ui/i18n/errorMessage';
 import { formatInteger } from '@/ui/i18n/format';
 import { useLanguage } from '@/ui/i18n/useLanguage';
 import { ROUTES } from '@/ui/routes';
-import { FilterablePage } from './FilterablePage';
+import { Page } from '@/ui/layout/Page';
 import { countActiveFilters, filterKey, toTransactionFilter } from './filterParams';
 import { RuleSuggestionDialog, type RuleProposal } from './RuleSuggestionDialog';
 import { TransactionDetailDialog, type TransactionChanges } from './TransactionDetailDialog';
@@ -164,7 +164,7 @@ export function TransactionsPage() {
   };
 
   return (
-    <FilterablePage title={tc('pages.transactions.title')} intro={tc('pages.transactions.intro')}>
+    <Page title={tc('pages.transactions.title')} intro={tc('pages.transactions.intro')}>
       <div className="tx-page stack">
         <TransactionFilters
           params={params}
@@ -210,7 +210,7 @@ export function TransactionsPage() {
           countContaining={countContaining}
         />
       ) : null}
-    </FilterablePage>
+    </Page>
   );
 }
 

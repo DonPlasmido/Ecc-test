@@ -13,8 +13,9 @@ type PageProps = {
 const INITIAL_LOCATION_KEY = 'default';
 
 /**
- * Estructura común de pantalla. Al navegar, el foco va al `<h1>` (a11y T6) para que
- * el lector anuncie la pantalla nueva y no quede en un enlace desmontado.
+ * Estructura común de pantalla. Al cambiar de pantalla (pathname), el foco va al `<h1>` (a11y T6)
+ * para que el lector anuncie la pantalla nueva. Los cambios de query (filtros en la URL) NO mueven
+ * el foco: si no, escribir en un buscador lo perdería a cada tecla (WCAG 3.2.2).
  */
 export function Page({ title, intro, children }: PageProps) {
   const { t } = useTranslation();
@@ -25,9 +26,15 @@ export function Page({ title, intro, children }: PageProps) {
     document.title = t('app.documentTitle', { page: title });
   }, [t, title]);
 
+  // Montaje: si se llega por navegación (no es la ubicación inicial del router), foco al h1.
+  const mountedByNavigation = useRef(location.key !== INITIAL_LOCATION_KEY);
+  const previousPathname = useRef<string | null>(null);
   useEffect(() => {
-    if (location.key !== INITIAL_LOCATION_KEY) headingRef.current?.focus();
-  }, [location.key]);
+    const isFirstRun = previousPathname.current === null;
+    const pathnameChanged = !isFirstRun && previousPathname.current !== location.pathname;
+    previousPathname.current = location.pathname;
+    if ((isFirstRun && mountedByNavigation.current) || pathnameChanged) headingRef.current?.focus();
+  }, [location.pathname]);
 
   return (
     <div className="stack stack--loose">
