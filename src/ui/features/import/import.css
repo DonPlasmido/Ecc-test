@@ -105,15 +105,22 @@
 
 /* Vista previa */
 .import-preview-card {
+  min-width: 0;
   gap: var(--space-5);
   animation: import-enter var(--duration-normal) var(--ease-smooth);
 }
 
+/* Solo desplazamiento: sin fundido, el texto nunca pasa por un contraste insuficiente. */
 @keyframes import-enter {
   from {
-    opacity: 0;
     transform: translateY(var(--motion-distance-sm));
   }
+}
+
+/* Los hijos de la tarjeta (flex) no deben crecer hasta el ancho mínimo de la tabla: solo la tabla se desplaza. */
+.import-preview-card > *,
+.import-preview-card .stack {
+  min-width: 0;
 }
 
 .import-file-name {
@@ -151,6 +158,11 @@
 
 .import-preview {
   max-height: 28rem;
+  /* Sin ancho intrínseco: la rejilla de .app-shell (columna auto) no debe ensancharse con la tabla. */
+  contain: inline-size;
+  /* Bloque contenedor de los textos `.visually-hidden` (absolutos) de las celdas: si no, escapan del
+     desplazamiento y ensanchan la página en móvil. */
+  position: relative;
 }
 
 .import-preview:focus-visible {
