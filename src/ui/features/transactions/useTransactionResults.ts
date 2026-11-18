@@ -25,7 +25,14 @@ export interface TransactionResults {
   /** `null` hasta la primera búsqueda. */
   readonly summary: SearchTransactionsOutput | null;
   readonly isSearching: boolean;
+  /** Error de la búsqueda vigente (la lista no se puede mostrar). */
   readonly error: unknown;
+  /** Error al cargar una página del resultado vigente (la lista y el resumen siguen siendo válidos). */
+  readonly pageError: unknown;
+  /** Repite la búsqueda fallida. */
+  readonly retry: () => void;
+  /** Repite la carga de las páginas fallidas del resultado vigente. */
+  readonly retryPages: () => void;
   readonly getRow: (index: number) => Transaction | undefined;
   readonly requestRange: (startIndex: number, endIndex: number) => void;
 }
@@ -53,12 +60,16 @@ export function useTransactionResults(
   const [search, setSearch] = useState<SearchState | null>(null);
   const [error, setError] = useState<unknown>(null);
   const [cache, setCache] = useState<PageCache | null>(null);
+  const [pageFailure, setPageFailure] = useState<{ resultId: string; reason: unknown } | null>(null);
+  const [attempt, setAttempt] = useState(0);
   const [fallback, setFallback] = useState<PageCache | null>(null);
   const inFlight = useRef(new Set<string>());
   const lastRange = useRef<readonly [number, number]>([0, TRANSACTION_PAGE_SIZE - 1]);
   const filterRef = useRef({ filter, sort });
   const cacheRef = useRef<PageCache | null>(null);
   const searchKeyRef = useRef<string | null>(null);
+  /** Resultado vigente: las respuestas y errores de cualquier otro se descartan. */
+  const currentResultRef = useRef<string | null>(null);
 
   useEffect(() => {
     filterRef.current = { filter, sort };
@@ -75,7 +86,9 @@ export function useTransactionResults(
         if (!isCurrent) return;
         const isSameQuery = searchKeyRef.current === queryKey;
         searchKeyRef.current = queryKey;
+        currentResultRef.current = summary.resultId;
         setError(null);
+        setPageFailure(null);
         setFallback(isSameQuery ? cacheRef.current : null);
         setSearch({ queryKey, summary });
       },
@@ -86,7 +99,7 @@ export function useTransactionResults(
     return () => {
       isCurrent = false;
     };
-  }, [queryTransactions, queryKey, version]);
+  }, [queryTransactions, queryKey, version, attempt]);
 
   const resultId = search?.summary.resultId ?? null;
 
@@ -101,13 +114,16 @@ export function useTransactionResults(
           .page({ resultId: id, offset: pageIndex * TRANSACTION_PAGE_SIZE, limit: TRANSACTION_PAGE_SIZE })
           .then(
             (rows) => {
+              if (currentResultRef.current !== id) return;
               const current = cacheRef.current;
               const base = current?.resultId === id ? current.pages : EMPTY_PAGES;
               const next: PageCache = { resultId: id, pages: new Map(base).set(pageIndex, rows) };
               cacheRef.current = next;
               setCache(next);
             },
-            (reason: unknown) => setError(reason),
+            (reason: unknown) => {
+              if (currentResultRef.current === id) setPageFailure({ resultId: id, reason });
+            },
           )
           .finally(() => inFlight.current.delete(flightKey));
       }
@@ -121,6 +137,15 @@ export function useTransactionResults(
     const [start, end] = lastRange.current;
     loadPages(resultId, start, end);
   }, [resultId, search?.summary.total, loadPages]);
+
+  const retry = useCallback(() => setAttempt((n) => n + 1), []);
+
+  const retryPages = useCallback(() => {
+    if (resultId === null) return;
+    setPageFailure(null);
+    const [start, end] = lastRange.current;
+    loadPages(resultId, start, end);
+  }, [resultId, loadPages]);
 
   const requestRange = useCallback(
     (startIndex: number, endIndex: number) => {
@@ -145,6 +170,9 @@ export function useTransactionResults(
     summary: search?.summary ?? null,
     isSearching: search === null || search.queryKey !== queryKey,
     error,
+    pageError: pageFailure !== null && pageFailure.resultId === resultId ? pageFailure.reason : null,
+    retry,
+    retryPages,
     getRow,
     requestRange,
   };
