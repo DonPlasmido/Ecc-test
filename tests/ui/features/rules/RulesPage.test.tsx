@@ -215,7 +215,10 @@ describe('RulesPage: categories', () => {
     renderPage();
     const list = await categoryList();
 
-    expect(within(list).getAllByRole('listitem')).toHaveLength(17);
+    const items = within(list).getAllByRole('listitem');
+    expect(items).toHaveLength(17);
+    expect(items[0]).toHaveTextContent('Sin categoría');
+    expect(items[1]).toHaveTextContent('Compras');
     expect(within(list).getByText('Sin categoría')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Editar categoría «Sin categoría»' })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Borrar categoría «Sin categoría»' })).not.toBeInTheDocument();

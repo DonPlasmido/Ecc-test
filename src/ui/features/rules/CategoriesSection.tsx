@@ -7,7 +7,7 @@ import { Dialog } from '@/ui/components/Dialog';
 import { useNotifications } from '@/ui/components/Toast';
 import { useContainer } from '@/ui/hooks/useContainer';
 import { errorMessage } from '@/ui/i18n/errorMessage';
-import { isFixedCategory } from './categoryModel';
+import { isFixedCategory, sortCategories } from './categoryModel';
 import { CategoryFormDialog } from './CategoryFormDialog';
 import { ConfirmDialog } from './ConfirmDialog';
 import { upsertById } from './rulesModel';
@@ -28,10 +28,11 @@ type Deleting =
 
 /** Categorías: color y nombre, alta, edición (renombrar, color, archivar) y borrado. */
 export function CategoriesSection({ categories, onCategoriesChange }: CategoriesSectionProps) {
-  const { t } = useTranslation('rules');
+  const { t, i18n } = useTranslation('rules');
   const { manageCatalog } = useContainer();
   const { notify } = useNotifications();
   const categoryName = useCategoryName();
+  const sorted = sortCategories(categories, categoryName, i18n.language);
   const [editing, setEditing] = useState<Editing>(null);
   const [deleting, setDeleting] = useState<Deleting>(null);
   const [isBusy, setIsBusy] = useState(false);
@@ -99,7 +100,7 @@ export function CategoriesSection({ categories, onCategoriesChange }: Categories
         </Button>
       </div>
       <ul className="rules-categories" aria-label={t('categories.listLabel')}>
-        {categories.map((category) => {
+        {sorted.map((category) => {
           const name = categoryName(category);
           const isFixed = isFixedCategory(category.id);
           return (

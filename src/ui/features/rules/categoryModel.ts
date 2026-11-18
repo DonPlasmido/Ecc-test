@@ -27,3 +27,16 @@ export function suggestColor(categories: readonly Category[]): ColorToken {
   const uses = (token: ColorToken) => categories.filter((c) => toColorToken(c.color) === token).length;
   return palette.reduce((best, token) => (uses(token) < uses(best) ? token : best), palette[0] ?? 'cat-1');
 }
+
+/** «Sin categoría» primero; el resto por nombre visible, según el idioma (sin mutar la entrada). */
+export function sortCategories(
+  categories: readonly Category[],
+  nameOf: (category: Category) => string,
+  locale: string,
+): readonly Category[] {
+  const collator = new Intl.Collator(locale, { sensitivity: 'base' });
+  return [...categories].sort((a, b) => {
+    if (isFixedCategory(a.id) !== isFixedCategory(b.id)) return isFixedCategory(a.id) ? -1 : 1;
+    return collator.compare(nameOf(a), nameOf(b));
+  });
+}

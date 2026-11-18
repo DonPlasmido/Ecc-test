@@ -11,7 +11,7 @@ import { Field } from '@/ui/components/Field';
 import { Select } from '@/ui/components/Select';
 import { useContainer } from '@/ui/hooks/useContainer';
 import { errorMessage } from '@/ui/i18n/errorMessage';
-import { ruleTargetCategories } from './categoryModel';
+import { ruleTargetCategories, sortCategories } from './categoryModel';
 import { PatternPreviewText } from './PatternPreviewText';
 import { MIN_PATTERN_LENGTH } from './ruleMatches';
 
@@ -77,7 +77,7 @@ type RuleFormProps = {
 };
 
 function RuleForm({ formId, rule, categories, patternRef, onSavingChange, onSaved }: RuleFormProps) {
-  const { t } = useTranslation('rules');
+  const { t, i18n } = useTranslation('rules');
   const { manageCatalog } = useContainer();
   const categoryName = useCategoryName();
   const categoryRef = useRef<HTMLSelectElement>(null);
@@ -89,7 +89,7 @@ function RuleForm({ formId, rule, categories, patternRef, onSavingChange, onSave
   const [errors, setErrors] = useState<FieldErrors>({});
   const accountId = rule?.accountId ?? null;
 
-  const targets = ruleTargetCategories(categories, rule?.categoryId ?? null);
+  const targets = sortCategories(ruleTargetCategories(categories, rule?.categoryId ?? null), categoryName, i18n.language);
   const categoryOptions: readonly { value: string; label: string; isDisabled: boolean }[] = [
     { value: NO_CATEGORY, label: t('ruleForm.categoryPlaceholder'), isDisabled: true },
     ...targets.map((c) => ({ value: c.id as string, label: categoryName(c), isDisabled: false })),
