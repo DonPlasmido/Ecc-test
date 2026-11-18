@@ -9,20 +9,31 @@ export interface TransactionFiltersState {
   readonly clear: () => void;
 }
 
-/** Filtros persistidos en la query del hash (a11y §2.5, 3.3.7: se conservan al volver). */
+/**
+ * Filtros persistidos en la query del hash (a11y §2.5, 3.3.7: se conservan al volver).
+ *
+ * React Router aplica la navegación dentro de `startTransition`: si los controles leyeran solo la URL, un
+ * radio o checkbox controlado volvería a su valor anterior hasta que la transición termina. Por eso se
+ * guarda también una copia local que se actualiza de inmediato y se resincroniza cuando la URL cambia.
+ */
 export function useTransactionFilters(): TransactionFiltersState {
   const [searchParams, setSearchParams] = useSearchParams();
   const serialized = searchParams.toString();
-  const params = useMemo(() => parseFilterParams(new URLSearchParams(serialized)), [serialized]);
+  const urlParams = useMemo(() => parseFilterParams(new URLSearchParams(serialized)), [serialized]);
+  const [local, setLocal] = useState({ from: serialized, params: urlParams });
+  if (local.from !== serialized) setLocal({ from: serialized, params: urlParams });
+  const params = local.from === serialized ? local.params : urlParams;
 
   const update = useCallback(
     (patch: Partial<FilterParams>) => {
+      setLocal((current) => ({ ...current, params: { ...current.params, ...patch } }));
       setSearchParams((current) => toSearchParams({ ...parseFilterParams(current), ...patch }), { replace: true });
     },
     [setSearchParams],
   );
 
   const clear = useCallback(() => {
+    setLocal((current) => ({ ...current, params: { ...EMPTY_FILTERS, sort: current.params.sort } }));
     setSearchParams((current) => toSearchParams({ ...EMPTY_FILTERS, sort: parseFilterParams(current).sort }), {
       replace: true,
     });

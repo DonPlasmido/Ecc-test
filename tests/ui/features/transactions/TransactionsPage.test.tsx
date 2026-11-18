@@ -76,7 +76,7 @@ describe('TransactionsPage: list, search and filters', () => {
 
     await waitFor(() => expect(summaryText()).toBe('1 movimiento'), SETTLE);
     expect(screen.getByRole('grid')).toHaveAttribute('aria-rowcount', '2');
-    expect(screen.getByTestId('location')).toHaveTextContent('?q=cafe');
+    await waitFor(() => expect(screen.getByTestId('location')).toHaveTextContent('?q=cafe'));
     // Aplicar el filtro no mueve el foco (a11y §2.5, 3.2.2).
     expect(screen.getByRole('searchbox')).toHaveFocus();
     await waitFor(() => expect(dataRows()[0]).toHaveTextContent('CAFÉ CENTRAL'), SETTLE);
@@ -120,8 +120,8 @@ describe('TransactionsPage: list, search and filters', () => {
 
     await user.type(screen.getByLabelText('Máximo'), '20');
     await waitFor(() => expect(summaryText()).toBe('2 movimientos'), SETTLE);
-    expect(screen.getByTestId('location')).toHaveTextContent('desde=2026-02-01');
-    expect(screen.getByTestId('location')).toHaveTextContent('max=20');
+    await waitFor(() => expect(screen.getByTestId('location')).toHaveTextContent('desde=2026-02-01'));
+    await waitFor(() => expect(screen.getByTestId('location')).toHaveTextContent('max=20'));
   });
 
   it('flags an invalid amount without applying it', async () => {
@@ -144,7 +144,7 @@ describe('TransactionsPage: list, search and filters', () => {
 
     await waitFor(() => expect(dataRows()[0]).toHaveTextContent('NÓMINA EMPRESA SA'), SETTLE);
     expect(screen.getByRole('columnheader', { name: 'Importe' })).toHaveAttribute('aria-sort', 'descending');
-    expect(screen.getByTestId('location')).toHaveTextContent('orden=amountDesc');
+    await waitFor(() => expect(screen.getByTestId('location')).toHaveTextContent('orden=amountDesc'));
   });
 
   it('removes a single filter from its chip and clears all filters returning focus to the search', async () => {
@@ -159,7 +159,7 @@ describe('TransactionsPage: list, search and filters', () => {
     await user.click(screen.getByRole('button', { name: 'Limpiar filtros' }));
     await waitFor(() => expect(summaryText()).toBe('10 movimientos'), SETTLE);
     expect(screen.getByRole('searchbox')).toHaveFocus();
-    expect(screen.getByTestId('location')).toBeEmptyDOMElement();
+    await waitFor(() => expect(screen.getByTestId('location')).toBeEmptyDOMElement());
   });
 });
 
