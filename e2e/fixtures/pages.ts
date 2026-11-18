@@ -28,7 +28,7 @@ export abstract class AppPage {
   }
 
   async goto(): Promise<void> {
-    await this.page.goto(this.path)
+    await this.page.goto(`./#${this.path}`)
     await this.expectLoaded()
   }
 
