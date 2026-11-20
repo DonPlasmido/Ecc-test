@@ -54,15 +54,19 @@ function DashboardError({ onRetry }: { onRetry: () => void }) {
 
 type DashboardContentProps = {
   view: DashboardView;
+  /** Mes pedido en la URL: el selector lo muestra ya, aunque el panel siga cargando. */
+  requested: YearMonth | null;
   /** Cargando otro mes: se mantiene lo anterior (sin perder el foco del selector). */
   isRefreshing: boolean;
   onMonthChange: (month: YearMonth) => void;
 };
 
-function DashboardContent({ view, isRefreshing, onMonthChange }: DashboardContentProps) {
+function DashboardContent({ view, requested, isRefreshing, onMonthChange }: DashboardContentProps) {
+  const months = pickerMonths(view);
+  const pickerValue = requested !== null && months.includes(requested) ? requested : view.month;
   return (
     <div className="dash" aria-busy={isRefreshing || undefined}>
-      <MonthPicker value={view.month} months={pickerMonths(view)} onChange={onMonthChange} />
+      <MonthPicker value={pickerValue} months={months} onChange={onMonthChange} />
       <SpendingHeadline month={view.month} monthly={view.trend.monthly} />
       <div className="dash-grid">
         <CategorySpending month={view.month} spending={view.current.spendingByCategory} categories={view.categories} />
@@ -97,7 +101,12 @@ export function DashboardPage() {
     if (!state) return <DashboardLoading />;
     if (state.kind === 'empty') return <DashboardEmpty />;
     return (
-      <DashboardContent view={state.view} isRefreshing={result.status === 'loading'} onMonthChange={handleMonthChange} />
+      <DashboardContent
+        view={state.view}
+        requested={requested}
+        isRefreshing={result.status === 'loading'}
+        onMonthChange={handleMonthChange}
+      />
     );
   })();
 
