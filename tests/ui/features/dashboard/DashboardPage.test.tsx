@@ -168,6 +168,34 @@ describe('DashboardPage', () => {
       expect(screen.getByRole('button', { name: 'Mes siguiente' })).toBeEnabled();
     });
 
+    it('shows the requested month in the picker while it loads, so fast clicks are not lost', async () => {
+      let release: () => void = () => undefined;
+      let gate: Promise<void> = Promise.resolve();
+      const slow: AppContainer = {
+        ...container,
+        buildDashboard: Object.assign(Object.create(container.buildDashboard) as AppContainer['buildDashboard'], {
+          execute: async (input: Parameters<AppContainer['buildDashboard']['execute']>[0]) => {
+            await gate;
+            return container.buildDashboard.execute(input);
+          },
+        }),
+      };
+      const user = userEvent.setup();
+      renderDashboard(slow);
+      await section('Gastado en marzo de 2026');
+      gate = new Promise<void>((resolve) => {
+        release = resolve;
+      });
+
+      await user.click(screen.getByRole('button', { name: 'Mes anterior' }));
+      expect(screen.getByRole('combobox', { name: 'Mes' })).toHaveValue('2026-02');
+      await user.click(screen.getByRole('button', { name: 'Mes anterior' }));
+
+      expect(screen.getByTestId('location')).toHaveTextContent('/?mes=2026-01');
+      release();
+      await section('Gastado en enero de 2026');
+    });
+
     it('opens the month given in the URL and ignores an invalid one', async () => {
       const { unmount } = renderDashboard(container, '/?mes=2025-10');
       expect(await section('Gastado en octubre de 2025')).toBeInTheDocument();
