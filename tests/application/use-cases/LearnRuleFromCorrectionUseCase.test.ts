@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { LearnRuleFromCorrectionUseCase } from '@/application/use-cases/LearnRuleFromCorrectionUseCase';
+import { createTransactionIndex } from '@/application/read-model/TransactionIndex';
 import { UNCATEGORIZED, type CategoryId } from '@/domain/category/Category';
 import type { RuleId } from '@/domain/rule/Rule';
 import type { RuleSuggestion } from '@/domain/rule/ruleSuggestion';
@@ -16,8 +17,11 @@ let w: World;
 let onDataChanged: ReturnType<typeof vi.fn<() => void>>;
 
 function useCase(): LearnRuleFromCorrectionUseCase {
+  const index = createTransactionIndex();
+  index.hydrate([...w.state.transactions.values()]);
   return new LearnRuleFromCorrectionUseCase({
     transactions: w.transactions,
+    index,
     rules: w.rules,
     categories: w.categories,
     clock: w.clock,
@@ -91,7 +95,7 @@ describe('LearnRuleFromCorrectionUseCase.correct', () => {
   it('works without onDataChanged', async () => {
     put('t0', NETFLIX);
 
-    const result = await new LearnRuleFromCorrectionUseCase({ transactions: w.transactions, rules: w.rules, categories: w.categories, clock: w.clock, ids: w.ids }).correct({ transactionId: 't0' as TransactionId, categoryId: LEISURE });
+    const result = await new LearnRuleFromCorrectionUseCase({ transactions: w.transactions, index: createTransactionIndex(), rules: w.rules, categories: w.categories, clock: w.clock, ids: w.ids }).correct({ transactionId: 't0' as TransactionId, categoryId: LEISURE });
 
     expect(result.ok).toBe(true);
   });
@@ -169,3 +173,19 @@ describe('LearnRuleFromCorrectionUseCase.accept cuando falla la recategorizació
     expect(onDataChanged).toHaveBeenCalled()
   })
 })
+
+describe('LearnRuleFromCorrectionUseCase sin escaneo completo', () => {
+  it('correct() y accept() no llaman a scan del repositorio', async () => {
+    put('t0', NETFLIX);
+    put('t1', { rawDescription: 'NETFLIX.COM 2000', normalizedDescription: 'NETFLIX.COM 2000' });
+    const scan = vi.spyOn(w.transactions, 'scan');
+    const uc = useCase();
+
+    const corrected = await uc.correct({ transactionId: 't0' as TransactionId, categoryId: LEISURE });
+    const accepted = await uc.accept({ suggestion: suggestion(), applyToExisting: true });
+
+    expect(corrected.ok && corrected.value.affectedCount).toBe(1);
+    expect(accepted.ok && accepted.value.recategorized).toBe(1);
+    expect(scan).not.toHaveBeenCalled();
+  });
+});

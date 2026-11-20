@@ -9,19 +9,23 @@ import type { CategoryRepository, RuleRepository } from '@/application/ports/out
 import type { ClockPort } from '@/application/ports/outbound/ClockPort';
 import type { IdGeneratorPort } from '@/application/ports/outbound/IdGeneratorPort';
 import type { TransactionRepository } from '@/application/ports/outbound/TransactionRepository';
-import { readAll, reapplyRules } from '@/application/use-cases/applyRules';
+import type { TransactionIndex } from '@/application/read-model/TransactionIndex';
+import { reapplyRules } from '@/application/use-cases/applyRules';
 import type { Rule, RuleId } from '@/domain/rule/Rule';
 import { suggestRule, type RuleSuggestion } from '@/domain/rule/ruleSuggestion';
 import { domainError, type DomainError } from '@/domain/shared/DomainError';
+import { matchesRulePattern } from '@/domain/rule/wordMatch';
 import { normalizeText } from '@/domain/shared/normalizeText';
 import { err, ok, type Result } from '@/domain/shared/Result';
-import { recategorize, type Transaction } from '@/domain/transaction/Transaction';
+import { recategorize, type Transaction, type TransactionId } from '@/domain/transaction/Transaction';
 
 /** Longitud mínima del patrón de una regla (AC-020: 1 carácter se rechaza). */
 const MIN_PATTERN_LENGTH = 2;
 
 export interface LearnRuleDeps {
   readonly transactions: TransactionRepository;
+  /** Índice en memoria: histórico y candidatos sin escanear el repositorio completo. */
+  readonly index: TransactionIndex;
   readonly rules: RuleRepository;
   readonly categories: CategoryRepository;
   readonly clock: ClockPort;
@@ -41,13 +45,15 @@ export class LearnRuleFromCorrectionUseCase implements LearnRuleFromCorrection {
 
     const corrected = recategorize(found, input.categoryId, 'manual', null, clock.now());
     await transactions.updateMany([corrected]);
+    this.deps.index.applyUpserts([corrected]);
     onDataChanged?.();
 
-    const others = (await readAll(transactions)).filter((t) => t.id !== corrected.id);
-    const suggestion = suggestRule(corrected, input.categoryId, others);
+    const history = this.deps.index.historyRows().filter((row) => row.id !== corrected.id);
+    const suggestion = suggestRule(corrected, input.categoryId, history);
     if (suggestion === null) return ok({ suggestion: null, affectedCount: 0 });
     const candidate = this.buildRule(suggestion, 'preview' as RuleId, await this.nextPriority());
-    const affected = this.recategorizedBy(others, [...(await rules.list()), candidate], candidate.id);
+    const candidateIds = this.candidateIds(candidate).filter((id) => id !== corrected.id);
+    const affected = this.recategorizedBy(await transactions.getByIds(candidateIds), [...(await rules.list()), candidate], candidate.id);
     return ok({ suggestion, affectedCount: affected.length });
   }
 
@@ -64,8 +70,12 @@ export class LearnRuleFromCorrectionUseCase implements LearnRuleFromCorrection {
     if (!input.applyToExisting) return ok({ ruleId: rule.id, recategorized: 0 });
 
     try {
-      const affected = this.recategorizedBy(await readAll(transactions), await rules.list(), rule.id);
-      if (affected.length > 0) await transactions.updateMany(affected);
+      const candidates = await transactions.getByIds(this.candidateIds(rule));
+      const affected = this.recategorizedBy(candidates, await rules.list(), rule.id);
+      if (affected.length > 0) {
+        await transactions.updateMany(affected);
+        this.deps.index.applyUpserts(affected);
+      }
       return ok({ ruleId: rule.id, recategorized: affected.length });
     } finally {
       // La regla ya está guardada: el índice se reconcilia aunque la recategorización falle.
@@ -80,6 +90,15 @@ export class LearnRuleFromCorrectionUseCase implements LearnRuleFromCorrection {
       const next = reapplyRules(tx, rules, now);
       return next !== null && next.ruleId === ruleId ? [next] : [];
     });
+  }
+
+  /** Ids del índice que la regla podría tocar (patrón y signo); `recategorizedBy` afina el resto. */
+  private candidateIds(rule: Rule): readonly TransactionId[] {
+    return this.deps.index.idsMatching(
+      (description, cents) =>
+        (rule.amountSign === 'any' || (rule.amountSign === 'expense' ? cents < 0 : cents > 0)) &&
+        matchesRulePattern(description, rule.pattern, rule.operator),
+    );
   }
 
   private buildRule(suggestion: RuleSuggestion, id: RuleId, priority: number): Rule {

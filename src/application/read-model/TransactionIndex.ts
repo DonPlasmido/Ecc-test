@@ -27,6 +27,13 @@ export type IndexRowPredicate = (
   accountIdx: number,
 ) => boolean;
 
+/** Fila mínima del histórico del índice. */
+export interface IndexHistoryRow {
+  readonly id: TransactionId;
+  readonly normalizedDescription: string;
+  readonly categoryId: CategoryId;
+}
+
 /** Saldo de una cuenta calculado por el índice. */
 export interface IndexAccountBalance {
   readonly accountId: AccountId;
@@ -61,6 +68,10 @@ export interface TransactionIndex {
   /** Saldo por cuenta (último saldo conocido más importes posteriores). */
   latestBalances(accountIds?: readonly AccountId[]): readonly IndexAccountBalance[];
   countMatching(predicate: IndexRowPredicate): number;
+  /** Ids de las filas que cumplen el predicado (sin leer del repositorio). */
+  idsMatching(predicate: IndexRowPredicate): readonly TransactionId[];
+  /** Descripción normalizada y categoría de todas las filas vivas (histórico ligero para sugerir reglas). */
+  historyRows(): readonly IndexHistoryRow[];
   /** Avisa tras cada cambio; devuelve la función para cancelar. */
   onChange(listener: () => void): () => void;
   readonly size: number;
@@ -274,6 +285,29 @@ class ColumnarTransactionIndex implements TransactionIndex {
       }
     }
     return count;
+  }
+
+  idsMatching(predicate: IndexRowPredicate): readonly TransactionId[] {
+    const result: TransactionId[] = [];
+    for (let slot = 0; slot < this.usedSlots; slot += 1) {
+      if (this.alive[slot] === 1 && predicate(this.normalized[slot] as string, this.cents[slot] as number, this.accountIdx[slot] as number)) {
+        result.push(this.ids[slot] as TransactionId);
+      }
+    }
+    return result;
+  }
+
+  historyRows(): readonly IndexHistoryRow[] {
+    const rows: IndexHistoryRow[] = [];
+    for (let slot = 0; slot < this.usedSlots; slot += 1) {
+      if (this.alive[slot] !== 1) continue;
+      rows.push({
+        id: this.ids[slot] as TransactionId,
+        normalizedDescription: this.normalized[slot] as string,
+        categoryId: this.categories.names[this.categoryIdx[slot] as number] as CategoryId,
+      });
+    }
+    return rows;
   }
 
   private collectBalances(

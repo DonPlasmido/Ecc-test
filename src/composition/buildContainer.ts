@@ -81,7 +81,7 @@ export async function buildContainer(ports: ContainerPorts): Promise<AppContaine
       onDataChanged,
     }),
     categorizeTransactions: new CategorizeTransactionsUseCase({ transactions, rules, clock, onDataChanged }),
-    learnRuleFromCorrection: new LearnRuleFromCorrectionUseCase({ transactions, rules, categories, clock, ids, onDataChanged }),
+    learnRuleFromCorrection: new LearnRuleFromCorrectionUseCase({ transactions, index, rules, categories, clock, ids, onDataChanged }),
     evaluateBudgets: new EvaluateBudgetsUseCase({ budgets: ports.budgets, transactions }),
     buildDashboard: new BuildDashboardUseCase({ index }),
     exportEncryptedBackup: new ExportEncryptedBackupUseCase({
