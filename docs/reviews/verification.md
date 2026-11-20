@@ -8,7 +8,7 @@ Fecha: 2026-11-20 · Rama `claude/plugin-list-tzcdt3` · Veredicto: **PASS** (co
 | Tipos | `npm run typecheck` | 0 errores |
 | Lint | `npx eslint src tests e2e` | 0 errores (incluye react-hooks y jsx-a11y) |
 | Tests | `npx vitest run` | 1134 passed |
-| Cobertura | `npm run test:coverage` | 99,1 % sentencias · 96,6 % ramas · 99,8 % funciones (umbral 80 %) |
+| Cobertura | `npm run test:coverage` | 99,07 % sentencias · 96,26 % ramas · 99,77 % funciones (umbral 80 %) |
 | Benchmarks | `npm run bench` | 5/5 dentro de umbral (filtro 100k p95 ≤ 50 ms) |
 | E2E | `CI=1 npx playwright test` (Pixel 7) | 18/18 passed, incluida importación real de 100.000 movimientos |
 | Seguridad (grep) | innerHTML/eval/fetch externo/secretos/console.log | sin hallazgos |

@@ -128,7 +128,7 @@ Los scripts `build`, `test`, `test:coverage`, `typecheck` y `bench` se han ejecu
 Cifras de la revisión del 2026-11-20 (`npx vitest run` y `npm run test:coverage`):
 
 - **1.133 tests** en **70 archivos** de test, todos en verde.
-- **Cobertura** de `src/domain`, `src/application` e `src/infrastructure`: 99,11 % sentencias, 96,59 % ramas,
+- **Cobertura** de `src/domain`, `src/application` e `src/infrastructure`: 99,07 % sentencias, 96,26 % ramas,
   99,77 % funciones y 99,68 % líneas.
 - **E2E**: 8 archivos de especificación (`e2e/*.spec.ts`) con 17 bloques `test`, sobre Pixel 7 y con axe.
   No se han ejecutado en esta revisión.
