@@ -785,3 +785,29 @@ recorre `src/domain` y `src/application` fallando si aparece un import de librer
 | Clave de dedup frágil si el banco cambia el concepto | Saldo en la huella, aviso de "posibles duplicados", deshacer lote | Coincidencia difusa opcional (misma fecha+importe) con confirmación |
 | @tanstack/react-virtual: cambios de API o regresiones | Versión exacta 3.14.25, altura fija, uso confinado en `VirtualTransactionList` | Hook propio de altura fija detrás del mismo componente |
 | Desalojo de IndexedDB por el navegador | `storage.persist()`, recordatorio de copia | — (la copia cifrada es la recuperación) |
+
+## Desviaciones respecto al diseño original
+
+> Sincronizado con el código el 2026-11-20 (`src/`, `eslint.config.js`, `tests/`). El texto de las secciones 1-14
+> se conserva tal cual para trazar la propuesta. Donde el código difiere, se anota aquí. La cabecera «Estado:
+> propuesta» está desfasada: el código ya existe y se describe en `docs/CODEMAPS/`.
+
+| Sección | Diseño original | Implementación real | Motivo / estado |
+|---|---|---|---|
+| §4, §11 Rutas | `#/transactions`, `#/import`, `#/categories`, `#/budgets`, `#/settings` | `#/` · `#/movimientos` · `#/importar` · `#/presupuestos` · `#/reglas` · `#/ajustes` (`src/ui/routes.ts`) | Nombres en español. No hay ruta de categorías: se gestionan dentro de `#/reglas` (`features/rules/CategoriesSection.tsx`). |
+| §4 Router | `ui/router.tsx` con `createHashRouter` | `HashRouter` en `src/ui/App.tsx`; rutas en `src/ui/AppRoutes.tsx` | Mismo principio (hash, ADR-0005), distinto archivo y API. |
+| §4 Nombres de infraestructura | `system/CryptoIdGenerator.ts`, `system/BrowserStoragePersistence.ts` | `CryptoRandomIdGenerator.ts`, `NavigatorStoragePersistence.ts` | Renombrados en la implementación. |
+| §4 Hooks | `useAsyncQuery.ts`, `useDataVersion.ts`, `useVirtualRows.ts` | No existen. Están `useAsync.ts`, `useTransactionIndex.ts` (`useSyncExternalStore` sobre `TransactionIndexStore`) y `useContainer.ts` | La virtualización vive en `components/VirtualTransactionList.tsx`. |
+| §4 Features | `categories/`, `transactions/EditTransactionDialog.tsx`, `import/ColumnMappingEditor.tsx`, `import/ImportPreviewTable.tsx`, `dashboard/charts/*.tsx` | `rules/CategoriesSection.tsx`; `transactions/TransactionDetailDialog.tsx`; `import/MappingEditor.tsx`; `import/PreviewTable.tsx`; gráficos en `components/charts/` (`BarChart`, `LineChart`, `ChartTable`) | Ubicación y nombres reales; sin `features/categories`. |
+| §4 Componentes | `DataTable`, `StatusBadge` | No existen | No había necesidad. |
+| §4 Estilos y tema | `ui/theme/tokens.css` | `ui/styles/tokens.css` (+ `base.css`, `components.css`, `app.css`); `ui/theme/theme.ts`, `ThemeProvider.tsx` | — |
+| §4 i18n | Namespaces `backup`, sin `settings` ni `rules` | 8 namespaces: `common`, `errors`, `dashboard`, `transactions`, `import`, `budgets`, `rules`, `settings` (`ui/i18n/i18n.ts`) | La copia cifrada usa los textos de `settings`. |
+| §4 Tests | `test/` con `fakes`, `contracts`, `fixtures`, `factories` | `tests/` con `fakes`, `fixtures`, `application`, `composition`, `domain`, `infrastructure`, `ui`. No hay `contracts/` ni `factories/`. | Las suites de contrato por puerto no se han escrito. |
+| §3, §13 Guardas de arquitectura | Reglas `no-restricted-imports` por carpeta en `eslint.config.js` y un test que recorre `src/domain` y `src/application` | **No implementado.** `eslint.config.js` solo tiene reglas de React, a11y y `no-console`; ningún test escanea imports. | Pendiente. La regla de dependencias se cumple por convención y revisión. |
+| §8 Metadatos | `meta.lastBackupAt` como clave propia | `lastBackupAt` se guarda dentro del objeto `settings` (`ExportEncryptedBackupUseCase`, línea 37) | Simplifica la migración de ajustes. Las claves de `meta` son `settings` y `schemaVersion`. |
+| §9 Tras importar | El caso de uso llama a `TransactionIndex.applyUpserts(nuevos)` | `ImportStatementUseCase.commit` llama a `onDataChanged` y `IndexSync` reconcilia el índice leyendo IndexedDB por tramos (upserts y borrados) | Más robusto ante fallos parciales (reintentos 200/1000/3000 ms). Coste: una lectura completa tras cada cambio. |
+| §9, §7 Edición de movimientos | Todas las escrituras pasan por `onDataChanged` | `QueryTransactionsUseCase.update` (descripción y nota) llama a `index.applyUpserts` directamente | Excepción para edición puntual sin releer la base. Pendiente de unificar con el resto. |
+| §10 Cifrado | Compresión `CompressionStream('gzip')` antes de cifrar | **No implementado.** El JSON se cifra sin comprimir (`WebCryptoBackupCipher`, `backupEnvelope.ts`) | Pendiente. Afecta al tamaño de la copia, no a la seguridad. |
+| §11 CSP | `default-src 'self'; connect-src 'self'; object-src 'none'` | Política completa en `index.html`: además `img-src 'self' data: blob:`, `style-src 'self' 'unsafe-inline'`, `script-src 'self'`, `worker-src 'self' blob:`, `base-uri 'self'`, `form-action 'none'`. Lo verifica `tests/indexHtml.csp.test.ts`. | El resumen de §11 era parcial; la política real es la del HTML. |
+| §12 Composition root | `createContainer(): Promise<AppContainer>` | `createContainer(options?: { dbName? })`; `AppContainer` además expone `deleteAllData`, `settings`, `storage`, `whenIndexIdle`, `dispose` | Necesario para tests y para borrar datos. |
+| §12 Arranque | `main.tsx`: `createContainer()` + `<App/>` | `main.tsx` carga el contenedor con `import()` dinámico, muestra `BootError` si falla y registra el service worker con `registerSW` | Mejora el primer pintado y los errores de arranque. |

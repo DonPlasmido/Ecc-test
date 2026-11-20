@@ -1,0 +1,82 @@
+{
+  "$schema": "https://aka.ms/codetour-schema",
+  "title": "Onboarding: de main.tsx al dominio",
+  "description": "Recorrido para una persona nueva: desde el arranque de la PWA hasta las reglas de dominio puras, siguiendo una importación como hilo conductor. Lectura de unos 20 minutos.",
+  "steps": [
+    {
+      "directory": "src",
+      "title": "Punto de partida",
+      "description": "Todo el código de la app vive en src/ en cuatro capas que dependen hacia dentro: domain (puro), application (casos de uso y puertos), infrastructure (IndexedDB, parsers, WebCrypto) y ui, más composition, que es el único sitio que conoce a los adaptadores concretos. Si una importación de un módulo de infrastructure aparece en domain, es un error de diseño."
+    },
+    {
+      "file": "src/main.tsx",
+      "line": 26,
+      "title": "Arranque",
+      "description": "bootstrap() aplica tema e idioma antes del primer render (para que no haya parpadeo) y luego monta la app. Si el contenedor falla, se muestra BootError en lugar de una pantalla en blanco. Gotcha: el service worker se registra aparte, en registerSW, y sus errores solo llegan a consola."
+    },
+    {
+      "file": "src/main.tsx",
+      "line": 36,
+      "title": "Composición diferida",
+      "description": "El contenedor real (IndexedDB, índice, casos de uso) se carga con import() dinámico dentro de loadContainer(). Así el primer pintado no espera a la base de datos. Implicación: cualquier cambio en composition/ afecta al arranque aunque no toques la UI."
+    },
+    {
+      "file": "src/ui/App.tsx",
+      "line": 25,
+      "title": "Router por hash",
+      "description": "La app usa HashRouter (ADR-0005): las rutas viven tras el #, lo que funciona en GitHub Pages sin reglas de servidor y mantiene los filtros enlazables en la query del hash."
+    },
+    {
+      "file": "src/ui/AppRoutes.tsx",
+      "line": 23,
+      "title": "Rutas y carga diferida",
+      "description": "Cada página se carga con lazy(). Las rutas están definidas en src/ui/routes.ts (ROUTES), con nombres en español: /importar, /movimientos, /presupuestos, /reglas, /ajustes. Gotcha: el nombre de la ruta no es el de la carpeta de feature."
+    },
+    {
+      "file": "src/ui/features/import/ImportPage.tsx",
+      "line": 39,
+      "title": "La UI llama al caso de uso a través de un hook",
+      "description": "Las páginas no importan adaptadores: useImportFlow() obtiene los casos de uso del contenedor de contexto y guarda el estado de la importación. Así la UI se puede probar con un contenedor falso (createTestContainer)."
+    },
+    {
+      "file": "src/composition/createContainer.ts",
+      "line": 28,
+      "title": "Composition root",
+      "description": "createContainer() abre IndexedDB con openDatabase() y delega en buildContainer() los adaptadores reales. Es el único lugar donde se decide qué implementación concreta sustituye a cada puerto."
+    },
+    {
+      "file": "src/composition/buildContainer.ts",
+      "line": 73,
+      "title": "Inyección de dependencias a mano",
+      "description": "Cada caso de uso recibe sus puertos por constructor (parser, transactions, rules, clock, ids, onDataChanged). Antes de devolver el contenedor, buildContainer() llama a sync.hydrate() (línea 66) para que el índice en memoria esté cargado. Gotcha: la hidratación es asíncrona y su progreso se publica en el store del índice (IndexSync.hydrate, línea 31), no en el contenedor."
+    },
+    {
+      "file": "src/application/ports/inbound/ImportStatement.ts",
+      "line": 44,
+      "title": "Contrato de entrada",
+      "description": "ImportStatement define lo que la UI puede pedir: preview(file) y commit(input). Son los puertos de entrada: el contrato que ve la interfaz, sin detalles de IndexedDB ni de los parsers."
+    },
+    {
+      "file": "src/application/use-cases/ImportStatementUseCase.ts",
+      "line": 66,
+      "title": "Orquestación de la importación",
+      "description": "La clase orquesta sin contener reglas de formato: parsea, detecta el mapeo de columnas, normaliza, calcula claves de deduplicación, categoriza y persiste. Todo lo que es 'cómo' se delega en domain o en puertos de salida."
+    },
+    {
+      "file": "src/application/ports/outbound/TransactionRepository.ts",
+      "line": 15,
+      "title": "Puerto de salida",
+      "description": "existingDedupKeys() es un puerto de salida: el caso de uso pregunta qué claves ya existen sin saber si la respuesta sale de IndexedDB, de un índice de memoria o de un fake de test. La implementación real es IdbTransactionRepository."
+    },
+    {
+      "file": "src/domain/transaction/DedupKey.ts",
+      "line": 28,
+      "title": "Dominio puro",
+      "description": "assignDedupKeys() es una función pura sin efectos ni librerías: huella canónica (cuenta, fecha, céntimos, concepto normalizado, saldo) más un contador de ocurrencias para movimientos idénticos legítimos. Es el sitio ideal para empezar a leer el dominio: se prueba sin navegador. Ver ADR-0010."
+    },
+    {
+      "title": "Siguiente paso",
+      "description": "Ya puedes seguir una importación de extremo a extremo con el tour 'Flujo de importación' (.tours/flujo-importacion.tour). Para el mapa por capas, consulta docs/CODEMAPS/INDEX.md."
+    }
+  ]
+}
