@@ -124,10 +124,16 @@ export class ImportStatementUseCase implements ImportStatement {
       } catch (error) {
         return quotaErrorOrRethrow(error);
       }
+      // Los movimientos ya están guardados: el índice debe enterarse pase lo que pase después.
+      this.deps.onDataChanged?.();
     }
-    await this.rememberMapping(retained.table, input);
     this.previews.delete(input.previewId);
-    this.deps.onDataChanged?.();
+    try {
+      await this.rememberMapping(retained.table, input);
+    } catch (error: unknown) {
+      // Recordar el mapeo es una comodidad: si falla, la importación sigue siendo válida.
+      console.warn('No se pudo recordar el mapeo de columnas', error);
+    }
     return ok({
       batchId,
       inserted: transactions.length,

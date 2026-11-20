@@ -292,3 +292,16 @@ describe('ImportStatementUseCase.commit', () => {
     expect(result.ok).toBe(true);
   });
 });
+
+describe('ImportStatementUseCase.commit cuando falla guardar el perfil (silent-failures ALTA-3)', () => {
+  it('la importación ya guardada se informa como éxito y se avisa al índice', async () => {
+    vi.spyOn(w.profiles, 'save').mockRejectedValue(new Error('quota'))
+    vi.spyOn(console, 'warn').mockImplementation(() => undefined)
+
+    const result = await importRows([COFFEE, SALARY])
+
+    expect(result.inserted).toBe(2)
+    expect(w.state.transactions.size).toBe(2)
+    expect(onDataChanged).toHaveBeenCalled()
+  })
+})
