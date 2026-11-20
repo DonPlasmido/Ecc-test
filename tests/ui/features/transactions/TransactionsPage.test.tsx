@@ -245,3 +245,49 @@ describe('TransactionsPage: editing and rule suggestion (AC-019, AC-035)', () =>
     expect(corrected?.categorySource).toBe('manual');
   });
 });
+
+describe('TransactionsPage: error recovery', () => {
+  it('offers Reintentar when the search fails and recovers on retry', async () => {
+    const container = await seededContainer(DATASET, ACCOUNTS);
+    let shouldFail = true;
+    const flaky: AppContainer = {
+      ...container,
+      queryTransactions: Object.assign(Object.create(container.queryTransactions) as AppContainer['queryTransactions'], {
+        search: (input: Parameters<AppContainer['queryTransactions']['search']>[0]) =>
+          shouldFail ? Promise.reject(new Error('boom')) : container.queryTransactions.search(input),
+      }),
+    };
+    const user = userEvent.setup();
+    renderTransactionsPage(flaky);
+
+    const retry = await screen.findByRole('button', { name: 'Reintentar' }, SETTLE);
+    shouldFail = false;
+    await user.click(retry);
+
+    expect(await screen.findByRole('grid', { name: 'Movimientos' }, SETTLE)).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Reintentar' })).not.toBeInTheDocument();
+  });
+
+  it('shows a local alert with Reintentar when a page fails, keeping the summary', async () => {
+    const container = await seededContainer(DATASET, ACCOUNTS);
+    let shouldFail = true;
+    const flaky: AppContainer = {
+      ...container,
+      queryTransactions: Object.assign(Object.create(container.queryTransactions) as AppContainer['queryTransactions'], {
+        page: (input: Parameters<AppContainer['queryTransactions']['page']>[0]) =>
+          shouldFail ? Promise.reject(new Error('boom')) : container.queryTransactions.page(input),
+      }),
+    };
+    const user = userEvent.setup();
+    renderTransactionsPage(flaky);
+
+    const retry = await screen.findByRole('button', { name: 'Reintentar' }, SETTLE);
+    expect(retry.closest('[role="alert"]')).not.toBeNull();
+    expect(summaryText()).not.toBe('');
+    shouldFail = false;
+    await user.click(retry);
+
+    await waitFor(() => expect(dataRows().length).toBeGreaterThan(0), SETTLE);
+    expect(screen.queryByRole('button', { name: 'Reintentar' })).not.toBeInTheDocument();
+  });
+});

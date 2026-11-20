@@ -71,9 +71,14 @@ function DeleteAllDataDialog({ onClose, onDeleted }: { onClose: () => void; onDe
     onDeleted();
   };
 
+  // Con la operación en curso no se puede cerrar (ni con Escape ni con la X): seguiría ejecutándose sin avisar.
+  const handleClose = () => {
+    if (!isBusy) onClose();
+  };
+
   const footer = (
     <>
-      <Button variant="quiet" onClick={onClose}>
+      <Button variant="quiet" onClick={onClose} disabled={isBusy}>
         {t('actions.cancel')}
       </Button>
       <Button variant="danger" type="submit" form={formId} isBusy={isBusy}>
@@ -85,7 +90,7 @@ function DeleteAllDataDialog({ onClose, onDeleted }: { onClose: () => void; onDe
   return (
     <Dialog
       isOpen
-      onClose={onClose}
+      onClose={handleClose}
       title={t('delete.dialogTitle')}
       description={t('delete.description')}
       footer={footer}

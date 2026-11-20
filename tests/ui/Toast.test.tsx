@@ -1,6 +1,7 @@
 import { act, fireEvent, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { Button } from '@/ui/components/Button';
+import { Dialog } from '@/ui/components/Dialog';
 import { TOAST_DURATION_MS, TOAST_EXIT_MS, useNotifications, type ToastInput } from '@/ui/components/Toast';
 import { renderWithProviders, setupI18n } from './renderWithProviders';
 
@@ -76,5 +77,37 @@ describe('Notifications', () => {
     act(() => vi.advanceTimersByTime(100));
 
     expect(screen.getByRole('status')).toHaveTextContent('1.234 movimientos encontrados');
+  });
+
+  it('keeps live regions and toasts inside the open modal dialog so they are not inert', () => {
+    renderWithProviders(
+      <>
+        <Trigger toast={{ message: 'Copia guardada' }} announcement="Hecho" />
+        <Dialog isOpen onClose={() => undefined} title="Confirmar">
+          <p>contenido</p>
+        </Dialog>
+      </>,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'avisar' }));
+    fireEvent.click(screen.getByRole('button', { name: 'anunciar' }));
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
+
+    const dialog = document.querySelector('dialog') as HTMLDialogElement;
+    expect(dialog).toContainElement(screen.getByRole('status'));
+    expect(dialog).toContainElement(screen.getByRole('region', { name: 'Notificaciones' }));
+    expect(screen.getByRole('status')).toHaveTextContent('Hecho');
+    expect(dialog).toContainElement(screen.getByText('Copia guardada'));
+  });
+
+  it('returns the regions to the page when the dialog closes', () => {
+    const { rerender } = renderWithProviders(
+      <Dialog isOpen onClose={() => undefined} title="Confirmar" />,
+    );
+    rerender(<Dialog isOpen={false} onClose={() => undefined} title="Confirmar" />);
+
+    expect(document.querySelector('dialog')).not.toContainElement(screen.getByRole('status'));
   });
 });

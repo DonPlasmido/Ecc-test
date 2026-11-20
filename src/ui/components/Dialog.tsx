@@ -1,6 +1,7 @@
 import { useEffect, useId, useRef, type ReactNode, type RefObject } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from './Button';
+import { useRegisterDialogHost } from './Toast';
 import { IconClose } from './icons';
 
 type DialogProps = {
@@ -43,6 +44,7 @@ export function Dialog({ isOpen, onClose, title, description, children, footer, 
   const { t } = useTranslation();
   const dialogRef = useRef<HTMLDialogElement>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
+  const registerHost = useRegisterDialogHost();
   const onCloseRef = useRef(onClose);
   const baseId = useId();
   const titleId = `${baseId}-title`;
@@ -57,6 +59,7 @@ export function Dialog({ isOpen, onClose, title, description, children, footer, 
     if (!dialog || !isOpen) return undefined;
     const opener = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     openModal(dialog);
+    const unregisterHost = registerHost?.(dialog);
     (initialFocusRef?.current ?? titleRef.current)?.focus();
 
     const handleCancel = (event: Event) => {
@@ -66,10 +69,11 @@ export function Dialog({ isOpen, onClose, title, description, children, footer, 
     dialog.addEventListener('cancel', handleCancel);
     return () => {
       dialog.removeEventListener('cancel', handleCancel);
+      unregisterHost?.();
       closeModal(dialog);
       if (opener?.isConnected) opener.focus();
     };
-  }, [isOpen, initialFocusRef]);
+  }, [isOpen, initialFocusRef, registerHost]);
 
   return (
     <dialog

@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { screen, waitFor, within } from '@testing-library/react';
+import { cleanup, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { AppContainer } from '@/composition/container.types';
@@ -81,6 +81,15 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
+/** Alerta con texto dentro de `scope` (ignora la región viva global, que también vive en el diálogo abierto). */
+async function alertIn(scope: HTMLElement): Promise<HTMLElement> {
+  return waitFor(() => {
+    const found = within(scope).getAllByRole('alert').find((element) => element.textContent);
+    if (!found) throw new Error('no alert with text');
+    return found;
+  });
+}
+
 describe('SettingsPage: encrypted backup', () => {
   it('exports a real backup, deletes everything and restores it with the password', async () => {
     // Arrange
@@ -132,7 +141,7 @@ describe('SettingsPage: encrypted backup', () => {
     await user.click(within(restore).getByRole('button', { name: 'Restaurar copia' }));
 
     // Assert
-    const alert = await within(restore).findByRole('alert');
+    const alert = await alertIn(restore);
     expect(alert).toHaveTextContent('La contraseña no es correcta o el archivo está dañado.');
     expect(password).toBeInvalid();
     expect(password).toHaveAccessibleDescription(expect.stringContaining('La contraseña no es correcta'));
@@ -156,7 +165,7 @@ describe('SettingsPage: encrypted backup', () => {
     await user.click(within(restore).getByRole('button', { name: 'Restaurar copia' }));
 
     // Assert
-    expect(await within(restore).findByRole('alert')).toHaveTextContent('La contraseña no es correcta o el archivo está dañado.');
+    expect(await alertIn(restore)).toHaveTextContent('La contraseña no es correcta o el archivo está dañado.');
     expect(await transactionCount(container)).toBe(SAMPLE_TRANSACTIONS);
   });
 
@@ -171,7 +180,7 @@ describe('SettingsPage: encrypted backup', () => {
     await user.click(within(restore).getByRole('button', { name: 'Restaurar copia' }));
 
     // Assert
-    expect(await within(restore).findByRole('alert')).toHaveTextContent('El archivo no es una copia de Cuentas Claras.');
+    expect(await alertIn(restore)).toHaveTextContent('El archivo no es una copia de Cuentas Claras.');
   });
 
   it('asks for confirmation before replacing data and cancelling does nothing', async () => {
@@ -250,7 +259,7 @@ describe('SettingsPage: export password dialog', () => {
     // Act + Assert: 7 caracteres
     await user.type(password, '1234567');
     await user.click(submit);
-    expect(within(dialog).getByRole('alert')).toHaveTextContent('La contraseña debe tener al menos 12 caracteres. Añade 5 más.');
+    expect(await alertIn(dialog)).toHaveTextContent('La contraseña debe tener al menos 12 caracteres. Añade 5 más.');
     expect(password).toBeInvalid();
     expect(password).toHaveFocus();
 
@@ -258,7 +267,7 @@ describe('SettingsPage: export password dialog', () => {
     await user.type(password, '89012');
     await user.type(confirmation, '123456789099');
     await user.click(submit);
-    expect(within(dialog).getByRole('alert')).toHaveTextContent('Las contraseñas no coinciden.');
+    expect(await alertIn(dialog)).toHaveTextContent('Las contraseñas no coinciden.');
     expect(confirmation).toHaveFocus();
     expect(exportSpy).not.toHaveBeenCalled();
   });
@@ -376,7 +385,65 @@ describe('SettingsPage: last backup, storage, privacy and delete', () => {
     await user.click(within(dialog).getByRole('button', { name: 'Borrar todo' }));
 
     // Assert
-    expect(within(dialog).getByRole('alert')).toHaveTextContent('Escribe BORRAR exactamente para confirmar.');
+    expect(await alertIn(dialog)).toHaveTextContent('Escribe BORRAR exactamente para confirmar.');
     expect(await transactionCount(container)).toBe(SAMPLE_TRANSACTIONS);
+  });
+});
+
+describe('SettingsPage: destructive dialogs while busy', () => {
+  function gated<T extends { execute: (...args: never[]) => Promise<unknown> }>(port: T) {
+    let release: () => void = () => undefined;
+    const gate = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    const wrapped = Object.assign(Object.create(port) as T, {
+      execute: async (...args: Parameters<T['execute']>) => {
+        await gate;
+        return port.execute(...args);
+      },
+    });
+    return { wrapped, release };
+  }
+
+  function expectCannotClose(dialog: HTMLElement): void {
+    expect(within(dialog).getByRole('button', { name: 'Cancelar' })).toBeDisabled();
+    const escape = new Event('cancel', { cancelable: true });
+    fireEvent(dialog, escape);
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Cerrar' }));
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+  }
+
+  it('cannot close the delete dialog while the deletion is running', async () => {
+    await seedSample(container);
+    const { wrapped, release } = gated(container.deleteAllData);
+    const user = userEvent.setup();
+    renderWithProviders(<SettingsPage />, { container: { ...container, deleteAllData: wrapped }, route: '/ajustes' });
+    await user.click(screen.getByRole('button', { name: 'Borrar todos los datos…' }));
+    const dialog = await screen.findByRole('dialog', { name: '¿Borrar todos los datos?' });
+    await user.type(within(dialog).getByRole('textbox', { name: /Escribe BORRAR/ }), 'BORRAR');
+    await user.click(within(dialog).getByRole('button', { name: 'Borrar todo' }));
+
+    expectCannotClose(dialog);
+
+    release();
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+  });
+
+  it('cannot close the restore dialog while the restore is running', async () => {
+    await seedSample(container);
+    const user = userEvent.setup();
+    renderWithProviders(<SettingsPage />, { container, route: '/ajustes' });
+    const file = await exportBackup(user);
+    cleanup();
+    const { wrapped, release } = gated(container.importEncryptedBackup);
+    renderWithProviders(<SettingsPage />, { container: { ...container, importEncryptedBackup: wrapped }, route: '/ajustes' });
+    const restore = await startRestore(userEvent.setup(), file);
+    await userEvent.setup().type(within(restore).getByLabelText('Contraseña'), PASSWORD);
+    await userEvent.setup().click(within(restore).getByRole('button', { name: 'Restaurar copia' }));
+
+    expectCannotClose(restore);
+
+    release();
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
   });
 });

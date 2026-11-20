@@ -1,4 +1,4 @@
-import { useEffect, useId, useState, type RefObject } from 'react';
+import { useEffect, useId, useRef, useState, type RefObject } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { TransactionSortKey } from '@/application/ports/inbound/QueryTransactions';
 import type { Account } from '@/domain/account/Account';
@@ -38,15 +38,19 @@ type TransactionFiltersProps = {
 /** Sincroniza los borradores (texto, importes) con la URL tras `SEARCH_DEBOUNCE_MS`. */
 export function useDraftSync(drafts: FilterDrafts, params: FilterParams, onChange: (patch: Partial<FilterParams>) => void) {
   const debounced = useDebouncedValue(drafts, SEARCH_DEBOUNCE_MS);
+  // Últimos `params`/`onChange` vistos: el efecto de abajo solo debe reaccionar al borrador retrasado.
+  const latest = useRef({ params, onChange });
   useEffect(() => {
+    latest.current = { params, onChange };
+  });
+  useEffect(() => {
+    const { params: currentParams, onChange: emit } = latest.current;
     const patch: Partial<FilterParams> = {
-      ...(debounced.q !== params.q ? { q: debounced.q } : {}),
-      ...(debounced.min !== params.min && parseEuros(debounced.min) !== undefined ? { min: debounced.min } : {}),
-      ...(debounced.max !== params.max && parseEuros(debounced.max) !== undefined ? { max: debounced.max } : {}),
+      ...(debounced.q !== currentParams.q ? { q: debounced.q } : {}),
+      ...(debounced.min !== currentParams.min && parseEuros(debounced.min) !== undefined ? { min: debounced.min } : {}),
+      ...(debounced.max !== currentParams.max && parseEuros(debounced.max) !== undefined ? { max: debounced.max } : {}),
     };
-    if (Object.keys(patch).length > 0) onChange(patch);
-    // Solo reacciona al borrador retrasado; `params` se lee en el momento.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    if (Object.keys(patch).length > 0) emit(patch);
   }, [debounced]);
 }
 
