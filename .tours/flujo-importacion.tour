@@ -1,0 +1,83 @@
+{
+  "$schema": "https://aka.ms/codetour-schema",
+  "title": "Flujo de importación de extractos",
+  "description": "Recorrido de un extracto desde el selector de archivos hasta el índice en memoria: FilePicker, ImportStatementUseCase, parsers, detección de columnas, deduplicación, IndexedDB y reconciliación del índice. Tour de referencia para cambios en importación.",
+  "steps": [
+    {
+      "file": "src/ui/features/import/FilePicker.tsx",
+      "line": 24,
+      "title": "Entrada: el selector de archivos",
+      "description": "FilePicker es un <input type=\"file\"> nativo con etiqueta visible (a11y). Recibe el File por onFile y no interpreta nada del contenido. Gotcha: el botón de ejemplo no pasa por este input: ImportPage.tsx (línea 29) descarga bbva.csv desde public/samples con fetch."
+    },
+    {
+      "file": "src/ui/features/import/useImportFlow.ts",
+      "line": 69,
+      "title": "Primera llamada: preview",
+      "description": "El hook lee los bytes del archivo y llama a importStatement.preview({ name, bytes }). El resultado es un Result: los errores esperados (formato, tamaño) llegan como valores, no como excepciones."
+    },
+    {
+      "file": "src/application/use-cases/ImportStatementUseCase.ts",
+      "line": 71,
+      "title": "Preview: parsear y sugerir mapeo",
+      "description": "preview() parsea el archivo, detecta la fila de cabecera y propone un mapeo de columnas. Guarda la tabla en memoria (this.previews, línea 67) con un id: commit() no vuelve a recibir el archivo, solo ese id."
+    },
+    {
+      "file": "src/infrastructure/parsing/CompositeStatementParser.ts",
+      "line": 43,
+      "title": "Elegir parser por formato",
+      "description": "route() (línea 21) mira la extensión y la firma de bytes: ZIP (XLSX) va a xlsx; .xls antiguo, OLE2 y PDF se rechazan; el resto se prueba como CSV. Antes, checkFileSize rechaza archivos vacíos o de más de MAX_FILE_BYTES (20 MB). Los rechazos devuelven import.unsupportedFormat."
+    },
+    {
+      "file": "src/infrastructure/parsing/decodeText.ts",
+      "line": 7,
+      "title": "Decodificación de texto",
+      "description": "Se intenta UTF-8 estricto (con BOM quitado) y, si falla, windows-1252, habitual en bancos españoles. PapaCsvParser.parse (línea 59) llama aquí antes de dejar que Papaparse trabaje. Gotcha: los importes nunca pasan por parseFloat; se convierten con parseSpanishAmount en el dominio."
+    },
+    {
+      "file": "src/domain/import/detectColumnMapping.ts",
+      "line": 132,
+      "title": "Detección de columnas (dominio)",
+      "description": "detectColumnMapping puntúa cada columna frente a sinónimos en español e inglés. Es pura: recibe una RawTable y devuelve la sugerencia con su puntuación. La UI la muestra en MappingEditor para que la persona corrija antes de confirmar."
+    },
+    {
+      "file": "src/ui/features/import/useImportFlow.ts",
+      "line": 125,
+      "title": "Segunda llamada: commit",
+      "description": "Cuando la persona confirma el mapeo, el hook llama a importStatement.commit con previewId, cuenta y mapeo. Por eso el commit no reenvía el archivo: usa la tabla que quedó guardada en preview."
+    },
+    {
+      "file": "src/domain/transaction/DedupKey.ts",
+      "line": 28,
+      "title": "Clave de deduplicación",
+      "description": "assignDedupKeys añade a cada fila una clave `huella#ocurrencia`. Dos cafés idénticos el mismo día se distinguen por el contador, no por el orden de las filas. Es la pieza que hace que reimportar un extracto solapado no duplique movimientos (ADR-0010)."
+    },
+    {
+      "file": "src/application/use-cases/ImportStatementUseCase.ts",
+      "line": 105,
+      "title": "Filtrar lo ya existente",
+      "description": "existingDedupKeys consulta en lote las claves ya guardadas y se descartan las filas repetidas (línea 106). Gotcha: un cambio en el texto del concepto entre exportaciones genera duplicados; por eso el resultado incluye contadores de duplicados y no solo de insertados."
+    },
+    {
+      "file": "src/infrastructure/indexeddb/IdbTransactionRepository.ts",
+      "line": 57,
+      "title": "Persistencia en una sola transacción",
+      "description": "insertImport escribe el lote (importBatches) y sus movimientos (transactions) en una única transacción readwrite de IndexedDB: o entra todo o no entra nada. El índice único byDedupKey es la última barrera contra duplicados."
+    },
+    {
+      "file": "src/application/use-cases/ImportStatementUseCase.ts",
+      "line": 128,
+      "title": "Aviso al índice",
+      "description": "Tras guardar, se llama a onDataChanged. El caso de uso no toca el índice en memoria: solo avisa. Esta línea va justo después de insertImport, para que el índice se entere pase lo que pase después."
+    },
+    {
+      "file": "src/composition/IndexSync.ts",
+      "line": 48,
+      "title": "Reconciliación del índice",
+      "description": "notifyDataChanged marca una pasada pendiente y drain() la ejecuta sin solapar pasadas. reconcile() (línea 95) lee la base por tramos y llama a index.applyUpserts (línea 98) y applyDeletes (línea 103). Ver docs/architecture.md, sección 9, y la desviación documentada en esa sección."
+    },
+    {
+      "title": "Siguiente paso",
+      "description": "Con este flujo puedes tocar un parser sin tocar el caso de uso, o cambiar la regla de deduplicación sin tocar la UI. Las pruebas de referencia están en tests/application y tests/domain/import.test.ts."
+    }
+  ]
+}
