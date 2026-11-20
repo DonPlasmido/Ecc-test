@@ -106,7 +106,10 @@ test.describe('Ajustes (Pixel 7)', () => {
     await expect(restorePassword).toHaveAttribute('autocomplete', 'current-password')
     await restorePassword.fill('una contraseña que no es')
     await restoreDialog.getByRole('button', { name: 'Restaurar copia' }).click()
-    await expect(restoreDialog.getByRole('alert')).toHaveText('La contraseña no es correcta o el archivo está dañado.')
+    // Dentro del diálogo modal viven también las regiones vivas globales (role=alert vacía): se filtra por texto.
+    await expect(
+      restoreDialog.getByRole('alert').filter({ hasText: 'La contraseña no es correcta o el archivo está dañado.' }),
+    ).toBeVisible()
     await restorePassword.fill(PASSWORD)
     await restoreDialog.getByRole('button', { name: 'Restaurar copia' }).click()
     await expect(page.getByText(`Copia restaurada: ${SAMPLE_TRANSACTION_COUNT} movimientos`)).toBeVisible()
