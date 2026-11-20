@@ -79,8 +79,6 @@ de cada banco.
 - **Almacenamiento del navegador**: si el sistema borra los datos del sitio, se pierden. La app pide almacenamiento
   persistente, pero conviene hacer copias periódicas.
 - **Sin integración bancaria**: no hay conexión con los bancos ni descarga automática de movimientos.
-- **Lint en rojo**: `npm run lint` falla con 4 errores de `no-undef` en `scripts/generate-samples.mjs`
-  (el script usa `console` sin entorno Node en la configuración de ESLint).
 - **Guardas de arquitectura pendientes**: no hay regla de ESLint ni test que impida importar librerías en `domain`
   y `application`. Ver las desviaciones en [`docs/architecture.md`](docs/architecture.md).
 
@@ -102,12 +100,12 @@ npm run dev          # http://localhost:5173/Ecc-test/
 | `npm run test:watch` | Vitest en modo observación |
 | `npm run test:coverage` | Tests con cobertura y umbral del 80 % en `domain`, `application` e `infrastructure` |
 | `npm run typecheck` | Solo comprobación de tipos |
-| `npm run lint` | ESLint (ver limitaciones: actualmente falla) |
+| `npm run lint` | ESLint (incluye reglas de React hooks y accesibilidad jsx-a11y) |
 | `npm run e2e` | Playwright con el perfil Pixel 7 sobre una build en `dist-e2e/`, puerto `E2E_PORT` (4173) |
 | `npm run bench` | Benchmarks con tinybench (índice, dedup, parseo) |
 
-Los scripts `build`, `test`, `test:coverage`, `typecheck` y `bench` se han ejecutado en esta revisión.
-`npm run e2e` no se ha ejecutado aquí, porque requiere el navegador de Playwright.
+Todos los scripts (`lint`, `typecheck`, `test:coverage`, `bench`, `build` y `e2e`) se ejecutan en CI en cada push;
+`CI=1 npm run e2e` pasa 18/18 en Chromium con el perfil Pixel 7 (ver `docs/reviews/verification.md`).
 
 ## Arquitectura
 
@@ -130,7 +128,7 @@ Cifras de la revisión del 2026-11-20 (`npx vitest run` y `npm run test:coverage
 - **1.133 tests** en **70 archivos** de test, todos en verde.
 - **Cobertura** de `src/domain`, `src/application` e `src/infrastructure`: 99,07 % sentencias, 96,26 % ramas,
   99,77 % funciones y 99,68 % líneas.
-- **E2E**: 8 archivos de especificación (`e2e/*.spec.ts`) con 17 bloques `test`, sobre Pixel 7 y con axe.
+- **E2E**: 8 archivos de especificación (`e2e/*.spec.ts`), 18 tests en verde sobre Pixel 7 y con axe, incluida una importación real de 100.000 movimientos.
   No se han ejecutado en esta revisión.
 - **Build** de producción correcto. En esta revisión, `dist/index.html` referencia `/Ecc-test/assets/` (el paso de CI
   lo comprueba con `grep`).
