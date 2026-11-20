@@ -17,7 +17,10 @@
 /* Selector: zona de soltar con borde discontinuo; el input nativo sigue visible y accesible. */
 .import-drop {
   display: grid;
+  /* minmax(0, 1fr) + min-width: 0 → el input de archivo y el botón largo encogen a 320px. */
+  grid-template-columns: minmax(0, 1fr);
   justify-items: start;
+  min-width: 0;
   gap: var(--space-2);
   padding: var(--space-4);
   border: 2px dashed var(--color-border-strong);
@@ -44,6 +47,7 @@
 }
 
 .import-drop__input {
+  width: 100%;
   max-width: 100%;
   min-height: var(--hit-target);
   font-size: var(--text-sm);
@@ -261,4 +265,12 @@
   .import-summary {
     animation-name: none;
   }
+}
+
+/* El botón "Probar con un extracto de ejemplo" puede partir línea en pantallas estrechas. */
+.import-sample .btn,
+.import-drop .btn {
+  max-width: 100%;
+  white-space: normal;
+  text-align: start;
 }

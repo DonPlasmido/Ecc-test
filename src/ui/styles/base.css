@@ -167,8 +167,15 @@ samp {
 /* ---------- Layout móvil ---------- */
 .app-shell {
   display: grid;
+  /* minmax(0, 1fr): sin esto la columna implícita es `auto` y una tabla ancha estira toda la página
+     (scroll horizontal en móvil). Las tablas desplazan dentro de su propio .table-wrap. */
+  grid-template-columns: minmax(0, 1fr);
   grid-template-rows: auto 1fr auto;
   min-height: 100dvh;
+}
+
+.app-shell > main {
+  min-width: 0;
 }
 
 .app-header {
@@ -209,7 +216,8 @@ samp {
   z-index: var(--z-nav);
   display: grid;
   grid-auto-flow: column;
-  grid-auto-columns: 1fr;
+  /* minmax(0, 1fr): con `1fr` (= minmax(auto, 1fr)) las etiquetas largas impiden encoger a 320px. */
+  grid-auto-columns: minmax(0, 1fr);
   min-height: var(--nav-height);
   padding-bottom: env(safe-area-inset-bottom);
   background-color: var(--color-surface);
@@ -217,6 +225,7 @@ samp {
 }
 
 .bottom-nav__item {
+  min-width: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -390,5 +399,13 @@ samp {
   *::after {
     animation-iteration-count: 1 !important;
     scroll-behavior: auto !important;
+  }
+}
+
+/* Pantallas muy estrechas (320–359px): la etiqueta más larga ("Presupuestos") cabe sin desbordar. */
+@media (max-width: 359.98px) {
+  .bottom-nav__item {
+    font-size: 0.625rem;
+    letter-spacing: -0.01em;
   }
 }
