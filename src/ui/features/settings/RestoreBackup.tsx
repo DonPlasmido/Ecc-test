@@ -160,9 +160,14 @@ function RestorePasswordDialog({ file, onClose, onRestored }: RestorePasswordDia
     onRestored();
   };
 
+  // Con la restauración en curso no se puede cerrar (ni con Escape ni con la X).
+  const handleClose = () => {
+    if (!isBusy) onClose();
+  };
+
   const footer = (
     <>
-      <Button variant="quiet" onClick={onClose}>
+      <Button variant="quiet" onClick={onClose} disabled={isBusy}>
         {t('actions.cancel')}
       </Button>
       <Button variant="danger" type="submit" form={formId} isBusy={isBusy}>
@@ -174,7 +179,7 @@ function RestorePasswordDialog({ file, onClose, onRestored }: RestorePasswordDia
   return (
     <Dialog
       isOpen
-      onClose={onClose}
+      onClose={handleClose}
       title={t('restore.title')}
       description={t('restore.description', { file: file.name })}
       footer={footer}
