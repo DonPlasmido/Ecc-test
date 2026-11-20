@@ -1,3 +1,4 @@
+import { createPortal } from 'react-dom';
 import { createContext, use, useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from './Button';
@@ -112,10 +113,23 @@ function ToastItem({ toast, onDismiss }: ToastItemProps) {
  * Regiones vivas globales y persistentes (a11y §8 y §13): se montan una vez en la raíz,
  * nunca con su contenido, y solo se reescribe el texto.
  */
+type RegisterDialogHost = (element: HTMLElement) => () => void;
+
+const DialogHostContext = createContext<RegisterDialogHost | null>(null);
+
+/**
+ * Un `<dialog>` modal vuelve inerte todo lo que queda fuera de él: mientras está abierto, las regiones
+ * vivas y los avisos se montan dentro del diálogo superior para que sigan anunciándose.
+ */
+export function useRegisterDialogHost(): RegisterDialogHost | null {
+  return use(DialogHostContext);
+}
+
 export function NotificationsProvider({ children }: { children: ReactNode }) {
   const { t } = useTranslation();
   const [toasts, setToasts] = useState<readonly ToastItemData[]>([]);
   const [messages, setMessages] = useState<Readonly<Record<AnnouncePriority, string>>>({ polite: '', assertive: '' });
+  const [dialogHosts, setDialogHosts] = useState<readonly HTMLElement[]>([]);
   const nextId = useRef(1);
   const timers = useRef(new Set<number>());
 
@@ -163,22 +177,33 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
   );
 
   const value = useMemo(() => ({ notify, announce }), [notify, announce]);
+  const registerDialogHost = useCallback<RegisterDialogHost>((element) => {
+    setDialogHosts((current) => [...current, element]);
+    return () => setDialogHosts((current) => current.filter((host) => host !== element));
+  }, []);
+  const activeHost = dialogHosts.at(-1) ?? null;
   const visible = toasts.slice(0, MAX_VISIBLE_TOASTS);
+
+  const regions = (
+    <>
+        <div className="visually-hidden" role="status" aria-live="polite" aria-atomic="true">
+          {messages.polite}
+        </div>
+        <div className="visually-hidden" role="alert" aria-atomic="true">
+          {messages.assertive}
+        </div>
+        <section className="toast-region" aria-label={t('toast.region')} aria-live="polite" aria-relevant="additions text">
+          {visible.map((toast) => (
+            <ToastItem key={toast.id} toast={toast} onDismiss={dismiss} />
+          ))}
+        </section>
+    </>
+  );
 
   return (
     <NotificationsContext value={value}>
-      {children}
-      <div className="visually-hidden" role="status" aria-live="polite" aria-atomic="true">
-        {messages.polite}
-      </div>
-      <div className="visually-hidden" role="alert" aria-atomic="true">
-        {messages.assertive}
-      </div>
-      <section className="toast-region" aria-label={t('toast.region')} aria-live="polite" aria-relevant="additions text">
-        {visible.map((toast) => (
-          <ToastItem key={toast.id} toast={toast} onDismiss={dismiss} />
-        ))}
-      </section>
+      <DialogHostContext value={registerDialogHost}>{children}</DialogHostContext>
+      {activeHost ? createPortal(regions, activeHost) : regions}
     </NotificationsContext>
   );
 }
