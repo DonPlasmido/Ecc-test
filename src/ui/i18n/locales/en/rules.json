@@ -1,0 +1,130 @@
+{
+  "title": "Rules and categories",
+  "intro": "Rules assign a category to transactions based on their description. They are tried in order and the first match wins.",
+  "loading": "Loading rules and categories",
+  "loadError": "Rules and categories could not be loaded.",
+  "actions": {
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "delete": "Delete"
+  },
+  "operator": {
+    "contains": "Description contains",
+    "startsWith": "Description starts with",
+    "equals": "Description is exactly"
+  },
+  "summary": {
+    "contains": "Contains “{{pattern}}”",
+    "startsWith": "Starts with “{{pattern}}”",
+    "equals": "Is exactly “{{pattern}}”"
+  },
+  "sign": {
+    "any": "Expenses and income",
+    "expense": "Expenses only",
+    "income": "Income only"
+  },
+  "kind": {
+    "expense": "Expense",
+    "income": "Income",
+    "transfer": "Transfer"
+  },
+  "color": {
+    "cat-1": "Blue",
+    "cat-2": "Rust",
+    "cat-3": "Green",
+    "cat-4": "Plum",
+    "cat-5": "Ochre",
+    "cat-6": "Teal",
+    "cat-7": "Crimson",
+    "cat-8": "Indigo",
+    "neutral": "Grey"
+  },
+  "rules": {
+    "heading": "Rules",
+    "add": "New rule",
+    "lead": "If two rules match a transaction, the one higher up wins. Categories you set by hand are never changed.",
+    "emptyTitle": "No rules yet",
+    "emptyText": "Create a rule so that transactions with some text in their description always get the same category.",
+    "listLabel": "Rules by priority",
+    "position": "Rule {{position}} of {{total}}:",
+    "assigns": "Assigns",
+    "missingCategory": "Deleted category",
+    "learned": "Learned",
+    "disabled": "Disabled",
+    "counting": "Counting transactions…",
+    "countUnavailable": "Count unavailable",
+    "matches_one": "{{count}} transaction matches",
+    "matches_other": "{{count}} transactions match",
+    "moveUp": "Move “{{pattern}}” up",
+    "moveDown": "Move “{{pattern}}” down",
+    "moved": "“{{pattern}}” is now rule {{position}} of {{total}}",
+    "moveError": "The order could not be changed. The previous order is kept.",
+    "edit": "Edit rule “{{pattern}}”",
+    "delete": "Delete rule “{{pattern}}”",
+    "created": "Rule “{{pattern}}” created. Press “Apply rules now” to use it on the transactions you already have.",
+    "updated": "Rule “{{pattern}}” saved",
+    "deleted": "Rule “{{pattern}}” deleted",
+    "deleteTitle": "Delete the rule?",
+    "deleteText": "The rule “{{pattern}}” will stop applying. Categorized transactions keep their category until you apply the rules again.",
+    "deleteConfirm": "Delete rule"
+  },
+  "ruleForm": {
+    "createTitle": "New rule",
+    "editTitle": "Edit rule",
+    "submit": "Save rule",
+    "pattern": "Description text",
+    "patternHint": "At least 2 characters. Ignores case and accents and matches whole words: “BAR” does not match “BARCELONA”.",
+    "patternTooShort": "Type at least 2 characters.",
+    "operator": "Condition",
+    "category": "Category to assign",
+    "categoryPlaceholder": "Choose a category",
+    "categoryRequired": "Choose the category this rule assigns.",
+    "sign": "Apply to",
+    "enabled": "Rule enabled"
+  },
+  "preview": {
+    "tooShort": "Type at least 2 characters to see which transactions match.",
+    "loading": "Looking for matches…",
+    "error": "Matches could not be counted.",
+    "matches_one": "Matches {{count}} transaction",
+    "matches_other": "Matches {{count}} transactions",
+    "samplesLabel": "Sample matching descriptions"
+  },
+  "apply": {
+    "text": "Apply all rules again to your transactions, except the ones you categorized by hand.",
+    "button": "Apply rules now",
+    "running": "Applying rules…",
+    "result_one": "Done: {{count}} transaction changed category.",
+    "result_other": "Done: {{count}} transactions changed category.",
+    "error": "The rules could not be applied. Please try again."
+  },
+  "categories": {
+    "heading": "Categories",
+    "add": "New category",
+    "listLabel": "Categories",
+    "archived": "Archived",
+    "fixed": "Fixed",
+    "edit": "Edit category “{{name}}”",
+    "delete": "Delete category “{{name}}”",
+    "created": "Category “{{name}}” created",
+    "updated": "Category “{{name}}” saved",
+    "deleted": "Category “{{name}}” deleted",
+    "archivedDone": "Category “{{name}}” archived",
+    "deleteTitle": "Delete the category?",
+    "deleteText": "“{{name}}” will be deleted. This cannot be undone.",
+    "deleteConfirm": "Delete category",
+    "inUseTitle": "“{{name}}” is in use",
+    "inUseText": "Some transactions, rules or budgets use this category, so it cannot be deleted without leaving them orphaned. You can archive it instead: it stops being offered in rules and your data is kept.",
+    "archive": "Archive category"
+  },
+  "categoryForm": {
+    "createTitle": "New category",
+    "editTitle": "Edit category",
+    "submit": "Save category",
+    "name": "Name",
+    "nameRequired": "Type a name for the category.",
+    "kind": "Type",
+    "color": "Colour",
+    "archived": "Archived (not offered for new rules)"
+  }
+}

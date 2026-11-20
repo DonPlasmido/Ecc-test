@@ -1,0 +1,113 @@
+{
+  "title": "Importar extracto",
+  "intro": "Carga un extracto CSV o Excel de tu banco. Los datos no salen de tu dispositivo.",
+  "file": {
+    "heading": "Elige el extracto",
+    "label": "Archivo del extracto (CSV o XLSX)",
+    "hint": "Formatos admitidos: CSV y Excel (.xlsx), hasta 20 MB. El archivo se lee en tu dispositivo.",
+    "drop": "También puedes arrastrar el archivo aquí.",
+    "dropActive": "Suelta el archivo para leerlo",
+    "sample": "Probar con un extracto de ejemplo",
+    "sampleHint": "Extracto ficticio de BBVA con 50 movimientos inventados.",
+    "reading": "Leyendo extracto…"
+  },
+  "uiErrors": {
+    "unexpected": "No se ha podido leer el archivo. Inténtalo de nuevo.",
+    "sampleUnavailable": "No se ha podido cargar el extracto de ejemplo. Comprueba la conexión e inténtalo de nuevo."
+  },
+  "detection": {
+    "heading": "Vista previa",
+    "fileName": "Archivo: {{name}}",
+    "remembered": "Formato reconocido: se usa el mapeo que confirmaste la última vez para este banco.",
+    "auto": "Columnas detectadas automáticamente (confianza {{percent}}).",
+    "lowConfidence": "La detección no es segura: revisa qué contiene cada columna antes de importar.",
+    "headerRow": "Cabecera en la fila {{row}} del archivo.",
+    "noHeader": "No se ha encontrado cabecera: las columnas se han deducido por su contenido."
+  },
+  "mapping": {
+    "heading": "Columnas",
+    "intro": "Indica qué contiene cada columna. Los cambios actualizan la vista previa al momento.",
+    "columnLabel": "Columna {{number}} ({{header}}): usar como",
+    "columnLabelNoHeader": "Columna {{number}}: usar como",
+    "example": "Ejemplo: {{value}}",
+    "noExample": "Columna sin datos",
+    "roles": {
+      "date": "Fecha",
+      "valueDate": "Fecha valor",
+      "description": "Concepto",
+      "amount": "Importe (con signo)",
+      "debit": "Debe (cargos)",
+      "credit": "Haber (abonos)",
+      "balance": "Saldo",
+      "ignore": "No usar esta columna"
+    },
+    "convention": {
+      "label": "Cómo vienen los importes",
+      "hint": "Con signo: los gastos llevan «-». Debe y Haber: los cargos restan y los abonos suman.",
+      "signed": "Una columna con signo",
+      "debitCredit": "Columnas Debe y Haber separadas"
+    },
+    "updated": "Vista previa actualizada: {{valid}} filas válidas y {{errors}} con errores."
+  },
+  "dates": {
+    "heading": "Fechas ambiguas",
+    "text": "Todas las fechas se pueden leer como día/mes o como mes/día (por ejemplo, 03/04/2026). Se interpretarán como día/mes, el formato de los bancos españoles.",
+    "confirm": "Confirmo que las fechas están en formato día/mes/año (dd/mm/aaaa)"
+  },
+  "warnings": {
+    "heading": "Revisa estos avisos",
+    "ambiguousAmount": "Línea {{line}}: el importe «{{value}}» es ambiguo; se lee con punto de miles (formato español).",
+    "duplicatesNote": "Los movimientos que ya tengas guardados se detectan al confirmar y no se duplican."
+  },
+  "table": {
+    "caption": "Vista previa de las primeras {{count}} filas del extracto",
+    "counts": "En las primeras filas leídas: {{valid}} válidas y {{errors}} con errores.",
+    "line": "Línea",
+    "date": "Fecha",
+    "description": "Concepto",
+    "amount": "Importe",
+    "balance": "Saldo",
+    "status": "Estado",
+    "valid": "Válida",
+    "warning": "Revisar importe",
+    "error": "No se importará",
+    "unavailable": "Completa las columnas obligatorias para ver la vista previa."
+  },
+  "account": {
+    "heading": "Cuenta destino",
+    "label": "Guardar los movimientos en",
+    "new": "Nueva cuenta…",
+    "newName": "Nombre de la nueva cuenta",
+    "defaultName": "Cuenta principal",
+    "loading": "Cargando cuentas…",
+    "loadError": "No se han podido cargar las cuentas."
+  },
+  "blockers": {
+    "heading": "Antes de importar:",
+    "dates": "Confirma el formato de las fechas.",
+    "accountName": "Escribe un nombre para la nueva cuenta.",
+    "accounts": "Espera a que se carguen las cuentas."
+  },
+  "actions": {
+    "confirm": "Importar",
+    "cancel": "Cancelar",
+    "another": "Importar otro extracto",
+    "goToTransactions": "Ver movimientos"
+  },
+  "status": {
+    "previewReady": "Vista previa lista: {{valid}} filas válidas y {{errors}} con errores.",
+    "cancelled": "Importación cancelada. No se ha guardado nada.",
+    "committing": "Importando movimientos…"
+  },
+  "summary": {
+    "heading": "Importación completada",
+    "announce": "Importados {{inserted}} movimientos, {{duplicates}} duplicados omitidos y {{categorized}} categorizados por reglas.",
+    "inserted": "Movimientos importados",
+    "duplicates": "Duplicados omitidos",
+    "categorized": "Categorizados por reglas",
+    "rowErrors": "Filas con error",
+    "nothingNew": "No había movimientos nuevos: todo el extracto ya estaba importado.",
+    "rowErrorsHeading": "Filas no importadas",
+    "rowError": "Línea {{line}}: {{message}}"
+  }
+}

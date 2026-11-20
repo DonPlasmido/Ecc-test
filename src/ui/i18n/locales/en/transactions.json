@@ -1,0 +1,110 @@
+{
+  "loading": "Loading transactions",
+  "list": {
+    "label": "Transactions"
+  },
+  "search": {
+    "label": "Search transactions",
+    "hint": "By description; ignores case and accents."
+  },
+  "filters": {
+    "region": "Search and filters",
+    "toggle": "Filters",
+    "toggleCount": "Filters ({{count}})",
+    "dates": "Dates",
+    "from": "From",
+    "to": "To",
+    "type": "Type",
+    "categories": "Categories",
+    "accounts": "Accounts",
+    "amount": "Amount in euros (unsigned)",
+    "min": "Minimum",
+    "max": "Maximum",
+    "amountInvalid": "Enter an amount such as 12.50.",
+    "active": "Active filters",
+    "remove": "Remove filter: {{name}}",
+    "clear": "Clear filters"
+  },
+  "chips": {
+    "text": "“{{value}}”",
+    "from": "From {{value}}",
+    "to": "To {{value}}",
+    "min": "Min. €{{value}}",
+    "max": "Max. €{{value}}",
+    "category": "category {{value}}"
+  },
+  "sign": {
+    "any": "All",
+    "expense": "Expenses",
+    "income": "Income"
+  },
+  "sort": {
+    "label": "Sort by",
+    "dateDesc": "Newest first",
+    "dateAsc": "Oldest first",
+    "amountDesc": "Amount: high to low",
+    "amountAsc": "Amount: low to high"
+  },
+  "summary": {
+    "count_one": "{{formatted}} transaction",
+    "count_other": "{{formatted}} transactions",
+    "sum": "Total:"
+  },
+  "announce": {
+    "found_one": "{{formatted}} transaction found",
+    "found_other": "{{formatted}} transactions found",
+    "all_one": "{{formatted}} transaction",
+    "all_other": "{{formatted}} transactions",
+    "none": "No transactions match"
+  },
+  "empty": {
+    "title": "No transactions yet",
+    "text": "Import a statement from your bank to see them here. Your data never leaves your device.",
+    "action": "Import statement"
+  },
+  "noResults": {
+    "title": "No transactions match",
+    "text": "Try different text or remove a filter."
+  },
+  "pageError": {
+    "text": "Some transactions could not be loaded."
+  },
+  "error": {
+    "title": "Transactions could not be loaded",
+    "text": "Your data is still stored on this device. Reload the page to try again."
+  },
+  "detail": {
+    "title": "Transaction",
+    "original": "Bank description",
+    "date": "Date",
+    "amount": "Amount",
+    "account": "Account",
+    "readOnly": "Date and amount come from the statement and cannot be edited.",
+    "category": "Category",
+    "description": "Display description",
+    "descriptionHint": "Only changes how you see it; rules keep using the bank description.",
+    "descriptionRequired": "The description cannot be empty.",
+    "note": "Note",
+    "cancel": "Cancel",
+    "save": "Save",
+    "saved": "Changes saved",
+    "categoryChanged": "Category changed to {{category}}"
+  },
+  "rule": {
+    "title": "Create a rule?",
+    "description": "If the description contains “{{pattern}}”, assign {{category}}.",
+    "pattern": "Text the description must contain",
+    "patternHint": "Ignores case and accents. At least 2 characters.",
+    "patternTooShort": "The text must be at least 2 characters long.",
+    "affects_one": "It would affect {{formatted}} more transaction.",
+    "affects_other": "It would affect {{formatted}} more transactions.",
+    "affectsApprox_one": "About {{formatted}} transaction contains this text.",
+    "affectsApprox_other": "About {{formatted}} transactions contain this text.",
+    "previewLoading": "Working out how many transactions it would affect…",
+    "applyExisting": "Also apply to existing transactions",
+    "create": "Create rule",
+    "dismiss": "Not now",
+    "created_one": "Rule created. {{formatted}} transaction recategorised.",
+    "created_other": "Rule created. {{formatted}} transactions recategorised."
+  }
+}

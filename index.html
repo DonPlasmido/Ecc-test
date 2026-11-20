@@ -2,18 +2,20 @@
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; connect-src 'self'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; script-src 'self'; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'none'"
+    />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <meta name="theme-color" content="#1f6f5c" />
-    <meta name="description" content="Operaciones rápidas con Excel y Word desde el móvil" />
+    <meta name="theme-color" content="#0f5c4d" />
+    <meta name="description" content="Tus finanzas personales, en tu dispositivo. Importa extractos, categoriza y controla presupuestos." />
     <link rel="icon" href="icon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="icon-192.png" />
-    <title>Navaja Office</title>
+    <title>Cuentas Claras</title>
   </head>
   <body>
-    <header class="topbar">
-      <a href="#" class="brand">Navaja Office</a>
-    </header>
-    <main id="app" class="container"></main>
-    <script type="module" src="/src/main.ts"></script>
+    <div id="root"></div>
+    <noscript>Cuentas Claras necesita JavaScript.</noscript>
+    <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

@@ -1,0 +1,59 @@
+{
+  "unexpected": "Something unexpected went wrong. Please try again.",
+  "money": {
+    "notInteger": "The amount must be a whole number of cents.",
+    "outOfRange": "The amount is too large.",
+    "invalidAmount": "The amount “{{value}}” is not recognised."
+  },
+  "date": {
+    "invalidFormat": "The date format “{{value}}” is not recognised.",
+    "invalidDate": "The date “{{value}}” does not exist."
+  },
+  "import": {
+    "emptyFile": "The file is empty.",
+    "unsupportedFormat": "Unsupported format. Use a CSV or Excel (.xlsx) file.",
+    "corruptFile": "The file could not be read. It may be damaged.",
+    "headerNotFound": "The header row with the statement columns was not found.",
+    "missingDateColumn": "Choose the column that holds the date.",
+    "missingDescriptionColumn": "Choose the column that holds the description.",
+    "missingAmountColumn": "Choose the column that holds the amount (or the debit and credit columns).",
+    "invalidMapping": "The column mapping is not valid. Make sure no column is used twice.",
+    "emptyDescription": "The row has no description.",
+    "previewNotFound": "The preview has expired. Load the file again.",
+    "accountNotFound": "The selected account no longer exists."
+  },
+  "transaction": {
+    "notFound": "The transaction no longer exists."
+  },
+  "account": {
+    "notFound": "The account does not exist.",
+    "invalidName": "Enter a name for the account.",
+    "inUse": "An account with transactions cannot be deleted."
+  },
+  "category": {
+    "notFound": "The category does not exist.",
+    "invalidName": "Enter a name for the category.",
+    "inUse": "The category is in use. Archive it instead of deleting it."
+  },
+  "rule": {
+    "notFound": "The rule does not exist.",
+    "invalidPattern": "Enter the text the description must contain."
+  },
+  "budget": {
+    "notFound": "The budget does not exist.",
+    "invalidLimit": "The monthly limit must be greater than zero.",
+    "invalidRange": "The end month cannot be before the start month.",
+    "duplicateCategory": "There is already a budget for that category in those months."
+  },
+  "backup": {
+    "invalidFormat": "The file is not a Cuentas Claras backup.",
+    "unsupportedVersion": "The backup was created with an incompatible version.",
+    "wrongPasswordOrCorrupted": "The password is wrong or the file is damaged.",
+    "weakPassword": "The password must be at least {{expected}} characters long.",
+    "invalidSnapshot": "The backup contains invalid data and was not restored."
+  },
+  "storage": {
+    "quotaExceeded": "There is no space left on the device to save your data.",
+    "unavailable": "Browser storage is not available (private mode?)."
+  }
+}

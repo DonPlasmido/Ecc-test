@@ -1,0 +1,110 @@
+{
+  "loading": "Cargando movimientos",
+  "list": {
+    "label": "Movimientos"
+  },
+  "search": {
+    "label": "Buscar movimientos",
+    "hint": "Por concepto; no distingue mayúsculas ni tildes."
+  },
+  "filters": {
+    "region": "Búsqueda y filtros",
+    "toggle": "Filtros",
+    "toggleCount": "Filtros ({{count}})",
+    "dates": "Fechas",
+    "from": "Desde",
+    "to": "Hasta",
+    "type": "Tipo",
+    "categories": "Categorías",
+    "accounts": "Cuentas",
+    "amount": "Importe en euros (sin signo)",
+    "min": "Mínimo",
+    "max": "Máximo",
+    "amountInvalid": "Escribe un importe como 12,50.",
+    "active": "Filtros activos",
+    "remove": "Quitar filtro: {{name}}",
+    "clear": "Limpiar filtros"
+  },
+  "chips": {
+    "text": "«{{value}}»",
+    "from": "Desde {{value}}",
+    "to": "Hasta {{value}}",
+    "min": "Mín. {{value}} €",
+    "max": "Máx. {{value}} €",
+    "category": "categoría {{value}}"
+  },
+  "sign": {
+    "any": "Todos",
+    "expense": "Gastos",
+    "income": "Ingresos"
+  },
+  "sort": {
+    "label": "Ordenar por",
+    "dateDesc": "Más recientes primero",
+    "dateAsc": "Más antiguos primero",
+    "amountDesc": "Importe: de mayor a menor",
+    "amountAsc": "Importe: de menor a mayor"
+  },
+  "summary": {
+    "count_one": "{{formatted}} movimiento",
+    "count_other": "{{formatted}} movimientos",
+    "sum": "Total:"
+  },
+  "announce": {
+    "found_one": "{{formatted}} movimiento encontrado",
+    "found_other": "{{formatted}} movimientos encontrados",
+    "all_one": "{{formatted}} movimiento",
+    "all_other": "{{formatted}} movimientos",
+    "none": "Ningún movimiento coincide"
+  },
+  "empty": {
+    "title": "Aún no hay movimientos",
+    "text": "Importa un extracto de tu banco para verlos aquí. Los datos no salen de tu dispositivo.",
+    "action": "Importar extracto"
+  },
+  "noResults": {
+    "title": "Ningún movimiento coincide",
+    "text": "Prueba con otro texto o quita algún filtro."
+  },
+  "pageError": {
+    "text": "No se han podido cargar algunos movimientos."
+  },
+  "error": {
+    "title": "No se han podido cargar los movimientos",
+    "text": "Tus datos siguen guardados en este dispositivo. Recarga la página para intentarlo de nuevo."
+  },
+  "detail": {
+    "title": "Movimiento",
+    "original": "Concepto del banco",
+    "date": "Fecha",
+    "amount": "Importe",
+    "account": "Cuenta",
+    "readOnly": "La fecha y el importe vienen del extracto y no se pueden editar.",
+    "category": "Categoría",
+    "description": "Concepto visible",
+    "descriptionHint": "Solo cambia cómo lo ves; las reglas siguen usando el concepto del banco.",
+    "descriptionRequired": "El concepto no puede quedar vacío.",
+    "note": "Nota",
+    "cancel": "Cancelar",
+    "save": "Guardar",
+    "saved": "Cambios guardados",
+    "categoryChanged": "Categoría cambiada a {{category}}"
+  },
+  "rule": {
+    "title": "¿Crear regla?",
+    "description": "Si el concepto contiene «{{pattern}}», asignar {{category}}.",
+    "pattern": "Texto que debe contener el concepto",
+    "patternHint": "No distingue mayúsculas ni tildes. Mínimo 2 caracteres.",
+    "patternTooShort": "El texto debe tener al menos 2 caracteres.",
+    "affects_one": "Afectaría a {{formatted}} movimiento más.",
+    "affects_other": "Afectaría a {{formatted}} movimientos más.",
+    "affectsApprox_one": "Aprox. {{formatted}} movimiento contiene este texto.",
+    "affectsApprox_other": "Aprox. {{formatted}} movimientos contienen este texto.",
+    "previewLoading": "Calculando cuántos movimientos afectaría…",
+    "applyExisting": "Aplicar también a los movimientos existentes",
+    "create": "Crear regla",
+    "dismiss": "Ahora no",
+    "created_one": "Regla creada. {{formatted}} movimiento recategorizado.",
+    "created_other": "Regla creada. {{formatted}} movimientos recategorizados."
+  }
+}

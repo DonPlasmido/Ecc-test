@@ -1,0 +1,74 @@
+{
+  "month": {
+    "label": "Mes",
+    "previous": "Mes anterior",
+    "next": "Mes siguiente",
+    "current": "Ir al mes actual"
+  },
+  "summary": {
+    "title": "Resumen del mes",
+    "remaining": "Disponible",
+    "overspent": "Excedido",
+    "spentOfBudgeted": "{{spent}} gastados de {{budgeted}} presupuestados",
+    "allOk": "Todo dentro del presupuesto.",
+    "overCount_one": "{{count}} categoría superada",
+    "overCount_other": "{{count}} categorías superadas",
+    "nearCount_one": "{{count}} cerca del límite",
+    "nearCount_other": "{{count}} cerca del límite"
+  },
+  "list": {
+    "title": "Por categoría",
+    "label": "Presupuestos de {{month}}",
+    "remaining": "Quedan {{amount}}",
+    "overBy": "Te has pasado {{amount}}",
+    "edit": "Editar",
+    "editLabel": "Editar presupuesto de {{category}}",
+    "delete": "Borrar",
+    "deleteLabel": "Borrar presupuesto de {{category}}",
+    "add": "Añadir presupuesto",
+    "allBudgeted": "Todas las categorías de gasto ya tienen presupuesto este mes."
+  },
+  "loading": "Cargando presupuestos",
+  "loadError": "No se han podido cargar los presupuestos.",
+  "empty": {
+    "title": "Sin presupuestos en {{month}}",
+    "text": "Pon un límite mensual a una categoría y verás cuánto llevas gastado y cuánto te queda."
+  },
+  "suggestions": {
+    "title": "Sugerencias según tu gasto",
+    "intro": "Gasto medio de los últimos {{count}} meses en tus categorías principales.",
+    "average": "{{amount}} al mes",
+    "create": "Crear",
+    "createLabel": "Crear presupuesto de {{category}} con {{amount}}"
+  },
+  "form": {
+    "createTitle": "Nuevo presupuesto",
+    "editTitle": "Editar presupuesto de {{category}}",
+    "description": "El límite se aplica cada mes desde {{month}}.",
+    "category": "Categoría",
+    "categoryPlaceholder": "Elige una categoría",
+    "categoryHint": "Solo aparecen las categorías de gasto que aún no tienen presupuesto.",
+    "limit": "Límite mensual (€)",
+    "limitHint": "Mayor que cero, con dos decimales como máximo. Ejemplo: 300,00",
+    "save": "Guardar presupuesto",
+    "saving": "Guardando…",
+    "cancel": "Cancelar",
+    "errors": {
+      "categoryRequired": "Elige una categoría.",
+      "required": "Escribe el límite mensual.",
+      "format": "Escribe un importe válido con dos decimales como máximo, por ejemplo 300,00.",
+      "notPositive": "El límite debe ser mayor que cero."
+    }
+  },
+  "delete": {
+    "title": "¿Borrar el presupuesto de {{category}}?",
+    "description": "Se borra el límite de todos los meses. Tus movimientos no cambian.",
+    "confirm": "Borrar presupuesto",
+    "cancel": "Cancelar"
+  },
+  "toast": {
+    "saved": "Presupuesto de {{category}} guardado.",
+    "deleted": "Presupuesto de {{category}} borrado.",
+    "over": "Presupuesto de {{category}} superado."
+  }
+}

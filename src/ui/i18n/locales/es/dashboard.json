@@ -1,0 +1,61 @@
+{
+  "picker": {
+    "label": "Mes",
+    "previous": "Mes anterior",
+    "next": "Mes siguiente"
+  },
+  "headline": {
+    "title": "Gastado en {{month}}",
+    "more": "{{percent}} más que en {{month}}",
+    "less": "{{percent}} menos que en {{month}}",
+    "same": "Lo mismo que en {{month}}",
+    "noBaseline": "Sin gastos en {{month}} para comparar",
+    "delta": "({{amount}})",
+    "income": "Ingresos",
+    "expense": "Gastos",
+    "net": "Ahorro"
+  },
+  "categories": {
+    "heading": "¿En qué se ha ido?",
+    "chartTitle": "Gasto por categoría, {{month}}",
+    "column": "Categoría",
+    "valueColumn": "Gasto",
+    "other": "Otras"
+  },
+  "trend": {
+    "heading": "¿Mejor o peor que otros meses?",
+    "chartTitle": "Ingresos y gastos, {{from}} – {{to}}",
+    "column": "Mes",
+    "income": "Ingresos",
+    "expense": "Gastos",
+    "average": "Gasto medio de los meses con movimientos: {{amount}}."
+  },
+  "budgets": {
+    "heading": "¿Qué presupuesto se me va?",
+    "none": "Aún no tienes presupuestos. Pon un límite mensual a una categoría y verás aquí cuándo te acercas.",
+    "create": "Crear un presupuesto",
+    "allOk": "Todos tus presupuestos van bien en {{month}}.",
+    "seeAll": "Ver todos los presupuestos"
+  },
+  "balances": {
+    "heading": "¿Cuánto tengo?",
+    "asOf": "a {{date}}",
+    "estimated": "estimado",
+    "estimatedNote": "Estimado: el último movimiento no traía saldo, así que sumamos los posteriores al último saldo conocido.",
+    "total": "Total en {{count}} cuentas",
+    "none": "Tus extractos no traían saldo, así que no podemos mostrarlo.",
+    "unknownAccount": "Cuenta"
+  },
+  "empty": {
+    "title": "Tu libro de cuentas está vacío",
+    "text": "Importa el extracto de tu banco y en un par de minutos verás cuánto gastas y en qué. Todo se queda en este dispositivo.",
+    "stepsLabel": "Cómo empezar",
+    "step1": "Descarga el extracto de tu banco en CSV o Excel.",
+    "step2": "Impórtalo aquí: detectamos las columnas por ti.",
+    "step3": "Vuelve al panel y mira en qué se va el dinero.",
+    "import": "Importar extracto",
+    "sample": "Probar con datos de ejemplo"
+  },
+  "loading": "Cargando el panel",
+  "error": "No se ha podido calcular el panel."
+}

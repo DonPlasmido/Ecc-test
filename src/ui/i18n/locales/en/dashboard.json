@@ -1,0 +1,61 @@
+{
+  "picker": {
+    "label": "Month",
+    "previous": "Previous month",
+    "next": "Next month"
+  },
+  "headline": {
+    "title": "Spent in {{month}}",
+    "more": "{{percent}} more than in {{month}}",
+    "less": "{{percent}} less than in {{month}}",
+    "same": "The same as in {{month}}",
+    "noBaseline": "No spending in {{month}} to compare with",
+    "delta": "({{amount}})",
+    "income": "Income",
+    "expense": "Spending",
+    "net": "Saved"
+  },
+  "categories": {
+    "heading": "Where did it go?",
+    "chartTitle": "Spending by category, {{month}}",
+    "column": "Category",
+    "valueColumn": "Spent",
+    "other": "Other"
+  },
+  "trend": {
+    "heading": "Better or worse than other months?",
+    "chartTitle": "Income and spending, {{from}} – {{to}}",
+    "column": "Month",
+    "income": "Income",
+    "expense": "Spending",
+    "average": "Average spending in months with activity: {{amount}}."
+  },
+  "budgets": {
+    "heading": "Which budget is slipping?",
+    "none": "You have no budgets yet. Set a monthly limit for a category and you will see here when you get close.",
+    "create": "Create a budget",
+    "allOk": "All your budgets are on track in {{month}}.",
+    "seeAll": "See all budgets"
+  },
+  "balances": {
+    "heading": "How much do I have?",
+    "asOf": "as of {{date}}",
+    "estimated": "estimated",
+    "estimatedNote": "Estimated: the latest transaction had no balance, so we added the later ones to the last known balance.",
+    "total": "Total across {{count}} accounts",
+    "none": "Your statements had no balance column, so we cannot show it.",
+    "unknownAccount": "Account"
+  },
+  "empty": {
+    "title": "Your ledger is empty",
+    "text": "Import your bank statement and in a couple of minutes you will see how much you spend and on what. Everything stays on this device.",
+    "stepsLabel": "How to start",
+    "step1": "Download your bank statement as CSV or Excel.",
+    "step2": "Import it here: we detect the columns for you.",
+    "step3": "Come back to the dashboard and see where the money goes.",
+    "import": "Import statement",
+    "sample": "Try with sample data"
+  },
+  "loading": "Loading the dashboard",
+  "error": "The dashboard could not be calculated."
+}

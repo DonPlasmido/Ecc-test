@@ -1,0 +1,168 @@
+/* =========================================================
+   Presupuestos: selector de mes, resumen, lista por riesgo
+   ========================================================= */
+
+/* ---------- Selector de mes ---------- */
+.budgets-month {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.budgets-month__label {
+  min-width: 10ch;
+  font-size: var(--text-lg);
+  font-weight: var(--weight-semibold);
+  text-align: center;
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+.budgets-month__label::first-letter {
+  text-transform: uppercase;
+}
+
+.budgets-month__today {
+  margin-inline-start: auto;
+}
+
+/* ---------- Resumen del mes ---------- */
+.budgets-summary {
+  gap: var(--space-2);
+  background-color: var(--color-surface-raised);
+}
+
+.budgets-summary__figure {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.budgets-summary__caption {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+.budgets-summary__totals {
+  color: var(--color-text-muted);
+  text-wrap: pretty;
+}
+
+.budgets-summary__risks {
+  padding-top: var(--space-2);
+  border-top: var(--border-width) solid var(--color-border);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  text-wrap: pretty;
+}
+
+.budgets-summary__risks[data-has-risks='true'] {
+  color: var(--color-negative);
+}
+
+/* ---------- Lista ---------- */
+.budgets-list__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.budgets-list__title {
+  font-size: var(--text-lg);
+  font-weight: var(--weight-semibold);
+  text-wrap: balance;
+}
+
+.budgets-list {
+  display: grid;
+  gap: var(--space-3);
+  padding: 0;
+  list-style: none;
+}
+
+/* Tarjeta con un filete lateral del color del estado (además del texto e icono de la barra) */
+.budgets-card {
+  --card-accent: var(--color-positive);
+
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  padding-inline-start: calc(var(--space-4) + 2px);
+  background-color: var(--color-surface);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm), inset 3px 0 0 var(--card-accent);
+}
+
+.budgets-card[data-status='near'] {
+  --card-accent: var(--color-warning);
+}
+
+.budgets-card[data-status='over'] {
+  --card-accent: var(--color-negative);
+}
+
+.budgets-card__footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.budgets-card__remaining {
+  font-weight: var(--weight-medium);
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+.budgets-card[data-status='over'] .budgets-card__remaining {
+  color: var(--color-negative);
+}
+
+.budgets-card__actions {
+  display: flex;
+  gap: var(--space-1);
+}
+
+/* Botones pequeños con objetivo táctil completo (AC-053) */
+.budgets-card__actions .btn,
+.budgets-suggestions__item .btn {
+  min-height: var(--hit-target);
+}
+
+.budgets-card__delete {
+  color: var(--color-negative);
+}
+
+/* ---------- Sugerencias del estado vacío ---------- */
+.budgets-suggestions__list {
+  display: grid;
+  padding: 0;
+  list-style: none;
+}
+
+.budgets-suggestions__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding-block: var(--space-2);
+}
+
+.budgets-suggestions__item + .budgets-suggestions__item {
+  border-top: var(--border-width) solid var(--color-border);
+}
+
+.budgets-suggestions__name {
+  display: grid;
+  min-width: 0;
+}
+
+/* ---------- Error de carga ---------- */
+.budgets-error {
+  display: grid;
+  justify-items: start;
+  gap: var(--space-3);
+}

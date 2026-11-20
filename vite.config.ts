@@ -1,25 +1,28 @@
 /// <reference types="vitest/config" />
+import { fileURLToPath } from 'node:url'
 import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 
-// GitHub Pages sirve el proyecto en https://<usuario>.github.io/Ecc-test/
+// GitHub Pages sirve el proyecto en https://donplasmido.github.io/Ecc-test/
 const base = process.env.BASE_PATH ?? '/Ecc-test/'
 
 export default defineConfig({
   base,
-  // ExcelJS pesa ~1 MB, pero solo se descarga al abrir una herramienta (import dinámico).
+  resolve: { alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) } },
   build: { chunkSizeWarningLimit: 1500 },
   plugins: [
+    react(),
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['icon.svg'],
       manifest: {
-        name: 'Navaja Office',
-        short_name: 'Navaja',
-        description: 'Operaciones rápidas con Excel y Word desde el móvil',
+        name: 'Cuentas Claras',
+        short_name: 'Cuentas',
+        description: 'Tus finanzas personales, en tu dispositivo',
         lang: 'es',
-        theme_color: '#1f6f5c',
-        background_color: '#f6f7f5',
+        theme_color: '#0f5c4d',
+        background_color: '#f5f6f4',
         display: 'standalone',
         start_url: base,
         scope: base,
@@ -30,17 +33,20 @@ export default defineConfig({
         ],
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,svg,png,docx,xlsx}'],
+        globPatterns: ['**/*.{js,css,html,svg,png,csv,json}'],
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
       },
     }),
   ],
   test: {
-    environment: 'node',
-    include: ['tests/**/*.test.ts'],
+    environment: 'jsdom',
+    include: ['tests/**/*.test.{ts,tsx}', 'src/**/*.test.{ts,tsx}'],
+    setupFiles: ['tests/setup.ts'],
+    benchmark: { include: ['bench/**/*.bench.ts'] },
     coverage: {
       provider: 'v8',
-      include: ['src/core/**', 'src/io/**'],
+      include: ['src/domain/**', 'src/application/**', 'src/infrastructure/**'],
+      exclude: ['**/*.test.*', '**/index.ts'],
       thresholds: { lines: 80, functions: 80, branches: 80, statements: 80 },
     },
   },

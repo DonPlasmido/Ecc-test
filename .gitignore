@@ -1,9 +1,10 @@
-node_modules/
+node_modules
 dist/
 dist-e2e/
 coverage/
 dev-dist/
-*.log
-.DS_Store
 test-results/
 playwright-report/
+*.log
+.DS_Store
+.claude/worktrees/

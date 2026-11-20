@@ -1,0 +1,186 @@
+{
+  "$schema": "https://design-tokens.github.io/community-group/format/",
+  "$description": "Cuentas Claras — tokens de diseño. Formato DTCG. Implementación: src/ui/styles/tokens.css (prefijo --color-, --space-, etc.). Justificación: docs/design/DESIGN.md.",
+  "color": {
+    "$type": "color",
+    "light": {
+      "bg": { "$value": "#F5F2EA", "$description": "Papel de fondo" },
+      "surface": { "$value": "#FFFDF8" },
+      "surface-sunken": { "$value": "#ECE7DB" },
+      "surface-raised": { "$value": "#FFFFFF" },
+      "text": { "$value": "#1D1B16", "$description": "16.92:1 sobre surface" },
+      "text-muted": { "$value": "#5E5A50", "$description": "6.76:1 sobre surface, 5.57:1 sobre sunken" },
+      "text-disabled": { "$value": "#8E897C", "$description": "Exento de contraste (WCAG 1.4.3, componentes inactivos)" },
+      "border": { "$value": "#DDD6C6", "$description": "Separadores decorativos" },
+      "border-strong": { "$value": "#8A8473", "$description": "Bordes de controles: 3.67:1 sobre surface" },
+      "accent": { "$value": "#1F4E89", "$description": "Azul tinta: 8.23:1 sobre surface" },
+      "accent-hover": { "$value": "#173D6E" },
+      "accent-active": { "$value": "#112F56" },
+      "on-accent": { "$value": "#FFFFFF", "$description": "8.37:1 sobre accent" },
+      "accent-soft": { "$value": "#E4EBF5" },
+      "focus": { "$value": "#1F4E89" },
+      "positive": { "$value": "#1B6B3A", "$description": "Ingresos / ok: 6.43:1 surface, 5.85:1 bg, 5.60:1 positive-soft" },
+      "positive-soft": { "$value": "#E3F1E6" },
+      "negative": { "$value": "#B42318", "$description": "Gastos / superado / error: 6.47:1 surface, 5.88:1 bg, 5.49:1 negative-soft" },
+      "negative-soft": { "$value": "#FBE6E3" },
+      "warning": { "$value": "#8A5300", "$description": "Cerca del límite: 6.23:1 surface, 5.37:1 warning-soft" },
+      "warning-soft": { "$value": "#F8EBD3" },
+      "cat-1": { "$value": "#2F6DB5", "$description": "5.20:1 surface / 4.28:1 sunken" },
+      "cat-2": { "$value": "#C2410C", "$description": "5.09 / 4.20" },
+      "cat-3": { "$value": "#2E7D4F", "$description": "4.96 / 4.09" },
+      "cat-4": { "$value": "#9A3D8F", "$description": "6.01 / 4.95" },
+      "cat-5": { "$value": "#A16207", "$description": "4.84 / 3.99" },
+      "cat-6": { "$value": "#0E7C86", "$description": "4.87 / 4.01" },
+      "cat-7": { "$value": "#B4233C", "$description": "6.36 / 5.24" },
+      "cat-8": { "$value": "#5B5BD6", "$description": "5.28 / 4.35" },
+      "cat-other": { "$value": "#6B6457", "$description": "Otras / sin categoría: 5.76 / 4.75" }
+    },
+    "dark": {
+      "bg": { "$value": "#121210" },
+      "surface": { "$value": "#1B1A17" },
+      "surface-sunken": { "$value": "#24231F" },
+      "surface-raised": { "$value": "#23221E" },
+      "text": { "$value": "#EEEAE0", "$description": "14.49:1 sobre surface" },
+      "text-muted": { "$value": "#A9A496", "$description": "6.99:1 surface, 6.32:1 sunken" },
+      "text-disabled": { "$value": "#6F6B61" },
+      "border": { "$value": "#36342E" },
+      "border-strong": { "$value": "#7A7567", "$description": "3.79:1 sobre surface" },
+      "accent": { "$value": "#8CB4EE", "$description": "8.19:1 sobre surface" },
+      "accent-hover": { "$value": "#A9C8F4" },
+      "accent-active": { "$value": "#C3D8F7" },
+      "on-accent": { "$value": "#0F1B2D", "$description": "8.13:1 sobre accent" },
+      "accent-soft": { "$value": "#1D2A3D" },
+      "focus": { "$value": "#8CB4EE" },
+      "positive": { "$value": "#6CCB8C", "$description": "8.75:1 surface, 9.43:1 bg, 7.14:1 positive-soft" },
+      "positive-soft": { "$value": "#17301F" },
+      "negative": { "$value": "#FF8E80", "$description": "7.82:1 surface, 8.42:1 bg, 6.94:1 negative-soft" },
+      "negative-soft": { "$value": "#3A1C18" },
+      "warning": { "$value": "#E9B44C", "$description": "9.20:1 surface, 7.65:1 warning-soft" },
+      "warning-soft": { "$value": "#33280F" },
+      "cat-1": { "$value": "#6FA3E8", "$description": "6.70:1 surface / 6.05:1 sunken" },
+      "cat-2": { "$value": "#F08A4B", "$description": "7.00 / 6.32" },
+      "cat-3": { "$value": "#5FC28A", "$description": "7.93 / 7.17" },
+      "cat-4": { "$value": "#D98BD0", "$description": "7.09 / 6.41" },
+      "cat-5": { "$value": "#D9A93A", "$description": "8.03 / 7.25" },
+      "cat-6": { "$value": "#4CC3CC", "$description": "8.27 / 7.48" },
+      "cat-7": { "$value": "#F07A8C", "$description": "6.52 / 5.89" },
+      "cat-8": { "$value": "#9D9DF5", "$description": "7.11 / 6.42" },
+      "cat-other": { "$value": "#B3AD9F", "$description": "7.79 / 7.04" }
+    },
+    "chart": {
+      "income": { "$value": "{color.positive}" },
+      "expense": { "$value": "{color.negative}" },
+      "balance": { "$value": "{color.accent}" },
+      "grid": { "$value": "{color.border}" },
+      "axis": { "$value": "{color.text-muted}" }
+    }
+  },
+  "font": {
+    "family": {
+      "$type": "fontFamily",
+      "sans": { "$value": ["system-ui", "-apple-system", "Segoe UI", "Roboto", "Noto Sans", "Helvetica Neue", "Arial", "sans-serif"] },
+      "figures": { "$value": ["Iowan Old Style", "Charter", "Noto Serif", "Georgia", "Times New Roman", "serif"], "$description": "Solo cifras destacadas (saldo, totales)" },
+      "mono": { "$value": ["ui-monospace", "SFMono-Regular", "Roboto Mono", "Noto Sans Mono", "Menlo", "Consolas", "monospace"] }
+    },
+    "size": {
+      "$type": "dimension",
+      "xs": { "$value": "0.75rem" },
+      "sm": { "$value": "0.875rem" },
+      "md": { "$value": "1rem" },
+      "lg": { "$value": "1.125rem" },
+      "xl": { "$value": "1.375rem" },
+      "2xl": { "$value": "1.75rem" },
+      "3xl": { "$value": "2.25rem" }
+    },
+    "weight": {
+      "$type": "fontWeight",
+      "regular": { "$value": 400 },
+      "medium": { "$value": 500 },
+      "semibold": { "$value": 600 },
+      "bold": { "$value": 700 }
+    },
+    "leading": {
+      "$type": "number",
+      "tight": { "$value": 1.2 },
+      "snug": { "$value": 1.35 },
+      "normal": { "$value": 1.5 }
+    }
+  },
+  "space": {
+    "$type": "dimension",
+    "0": { "$value": "0" },
+    "1": { "$value": "0.25rem" },
+    "2": { "$value": "0.5rem" },
+    "3": { "$value": "0.75rem" },
+    "4": { "$value": "1rem" },
+    "5": { "$value": "1.25rem" },
+    "6": { "$value": "1.5rem" },
+    "8": { "$value": "2rem" },
+    "10": { "$value": "2.5rem" },
+    "12": { "$value": "3rem" },
+    "16": { "$value": "4rem" }
+  },
+  "layout": {
+    "$type": "dimension",
+    "gutter": { "$value": "1rem" },
+    "content-max": { "$value": "40rem" },
+    "content-wide": { "$value": "64rem" },
+    "hit-target": { "$value": "2.75rem", "$description": "44 px" },
+    "hit-target-min": { "$value": "1.5rem", "$description": "24 px, WCAG 2.5.8" },
+    "control-height": { "$value": "2.75rem" },
+    "control-height-sm": { "$value": "2.25rem" },
+    "row-height": { "$value": "3.5rem", "$description": "Fila fija de la lista virtualizada (ADR-0008)" },
+    "nav-height": { "$value": "4rem" },
+    "breakpoint-md": { "$value": "40rem" },
+    "breakpoint-lg": { "$value": "64rem" }
+  },
+  "radius": {
+    "$type": "dimension",
+    "xs": { "$value": "4px" },
+    "sm": { "$value": "6px" },
+    "md": { "$value": "10px" },
+    "lg": { "$value": "16px" },
+    "pill": { "$value": "999px" }
+  },
+  "shadow": {
+    "$type": "shadow",
+    "sm": { "$value": "0 1px 1px rgb(29 27 22 / 0.04), 0 1px 2px rgb(29 27 22 / 0.06)" },
+    "md": { "$value": "0 1px 2px rgb(29 27 22 / 0.05), 0 4px 12px -2px rgb(29 27 22 / 0.1)" },
+    "lg": { "$value": "0 2px 4px rgb(29 27 22 / 0.06), 0 16px 40px -8px rgb(29 27 22 / 0.22)" }
+  },
+  "motion": {
+    "duration": {
+      "$type": "duration",
+      "instant": { "$value": "80ms", "$description": "reduce: 0ms" },
+      "fast": { "$value": "180ms", "$description": "reduce: 120ms" },
+      "normal": { "$value": "350ms", "$description": "reduce: 150ms" },
+      "slow": { "$value": "600ms", "$description": "reduce: 150ms" },
+      "exit": { "$value": "150ms", "$description": "reduce: 100ms" }
+    },
+    "easing": {
+      "$type": "cubicBezier",
+      "smooth": { "$value": [0.22, 1, 0.36, 1] },
+      "sharp": { "$value": [0.4, 0, 0.2, 1] },
+      "bounce": { "$value": [0.34, 1.56, 0.64, 1] },
+      "linear": { "$value": [0, 0, 1, 1] }
+    },
+    "distance": {
+      "$type": "dimension",
+      "xs": { "$value": "4px", "$description": "reduce: 0px" },
+      "sm": { "$value": "8px", "$description": "reduce: 0px" },
+      "md": { "$value": "16px", "$description": "reduce: 0px" }
+    },
+    "scale": {
+      "$type": "number",
+      "press": { "$value": 0.97, "$description": "reduce: 1" },
+      "subtle": { "$value": 0.98, "$description": "reduce: 1" }
+    }
+  },
+  "z": {
+    "$type": "number",
+    "sticky": { "$value": 10 },
+    "nav": { "$value": 20 },
+    "dialog": { "$value": 40 },
+    "toast": { "$value": 50 }
+  }
+}
