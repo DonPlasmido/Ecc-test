@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Skeleton } from '@/ui/components/Skeleton';
 import { BottomNav } from './BottomNav';
 import { ErrorBoundary } from './ErrorBoundary';
+import { IndexStatusBanner } from './IndexStatusBanner';
 
 function PageFallback() {
   return (
@@ -35,6 +36,7 @@ export function AppLayout() {
         <p className="app-header__title">{t('app.name')}</p>
       </header>
       <main id="main" ref={mainRef} tabIndex={-1} className="container page">
+        <IndexStatusBanner />
         <ErrorBoundary resetKey={location.pathname}>
           <Suspense fallback={<PageFallback />}>
             <Outlet />
