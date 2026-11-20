@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { EMPTY_FILTERS, parseFilterParams, toSearchParams, type FilterParams } from './filterParams';
 
@@ -24,20 +24,26 @@ export function useTransactionFilters(): TransactionFiltersState {
   if (local.from !== serialized) setLocal({ from: serialized, params: urlParams });
   const params = local.from === serialized ? local.params : urlParams;
 
-  const update = useCallback(
-    (patch: Partial<FilterParams>) => {
-      setLocal((current) => ({ ...current, params: { ...current.params, ...patch } }));
-      setSearchParams((current) => toSearchParams({ ...parseFilterParams(current), ...patch }), { replace: true });
+  // El updater funcional de setSearchParams recibe la URL del último render, no la de la llamada anterior:
+  // dos cambios en el mismo tick (marcar «Gastos» y cambiar el orden) perdían el primero. Se encadenan
+  // sobre la última petición, que se resincroniza con la URL cuando esta cambia por otra vía.
+  const latest = useRef(urlParams);
+  useEffect(() => {
+    latest.current = urlParams;
+  }, [urlParams]);
+
+  const apply = useCallback(
+    (next: FilterParams) => {
+      latest.current = next;
+      setLocal((current) => ({ ...current, params: next }));
+      setSearchParams(toSearchParams(next), { replace: true });
     },
     [setSearchParams],
   );
 
-  const clear = useCallback(() => {
-    setLocal((current) => ({ ...current, params: { ...EMPTY_FILTERS, sort: current.params.sort } }));
-    setSearchParams((current) => toSearchParams({ ...EMPTY_FILTERS, sort: parseFilterParams(current).sort }), {
-      replace: true,
-    });
-  }, [setSearchParams]);
+  const update = useCallback((patch: Partial<FilterParams>) => apply({ ...latest.current, ...patch }), [apply]);
+
+  const clear = useCallback(() => apply({ ...EMPTY_FILTERS, sort: latest.current.sort }), [apply]);
 
   return { params, update, clear };
 }

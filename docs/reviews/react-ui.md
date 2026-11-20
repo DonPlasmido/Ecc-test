@@ -34,3 +34,7 @@ Corregidos con commit RED y GREEN (tests en `tests/ui`):
 - LOW: RestoreBackup y DeleteAllData no se cierran (botón, X, Escape) mientras la operación está en curso.
 
 Pendiente (LOW, no triviales): rollback de reordenación de reglas, recuentos de reglas, `useImportFlow.commit` con estado capturado, doble `update()` de filtros en el mismo tick.
+
+### Actualización 2026-11-20
+- LOW «dos `update()` de filtros en el mismo tick pierden el primero»: **arreglado** tras aflorar en CI
+  (E2E de filtros en Movimientos). Test: `tests/ui/features/transactions/useTransactionFilters.test.tsx`.

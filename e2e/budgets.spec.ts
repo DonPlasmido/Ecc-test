@@ -6,7 +6,7 @@ const BUDGETS_URL = '/#/presupuestos'
 
 /** Espera a que acabe la animación de entrada del diálogo (axe mediría colores a medio fundido). */
 async function settled(dialog: Locator): Promise<void> {
-  await dialog.evaluate((el) => Promise.all(el.getAnimations({ subtree: true }).map((a) => a.finished)))
+  await dialog.evaluate((el) => Promise.allSettled(el.getAnimations({ subtree: true }).map((a) => a.finished)))
 }
 
 test.describe('presupuestos', () => {

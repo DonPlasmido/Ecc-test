@@ -9,8 +9,9 @@ async function openRules(page: Page): Promise<void> {
 
 /** Espera a que terminen las animaciones de entrada (diálogo, toasts): axe mide colores con opacidad parcial. */
 async function checkA11y(page: Page): Promise<void> {
+  // allSettled: `finished` se rechaza con AbortError si una animación se cancela (pasó en CI).
   await page.evaluate(() =>
-    Promise.all(
+    Promise.allSettled(
       document
         .getAnimations()
         .filter((animation) => animation.effect?.getTiming().iterations !== Infinity)

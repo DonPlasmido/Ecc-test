@@ -19,7 +19,7 @@ import { TransactionsScreen } from './fixtures/pages/transactionsPage'
 
 /** Axe mide el contraste a mitad de la animación de entrada del diálogo (falso positivo intermitente): se espera a que acabe. */
 async function settleAnimations(dialog: Locator): Promise<void> {
-  await dialog.evaluate((el) => Promise.all(el.getAnimations({ subtree: true }).map((animation) => animation.finished)))
+  await dialog.evaluate((el) => Promise.allSettled(el.getAnimations({ subtree: true }).map((animation) => animation.finished)))
 }
 
 test.describe('Movimientos (Pixel 7)', () => {
