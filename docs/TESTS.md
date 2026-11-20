@@ -2,11 +2,13 @@
 
 > Este registro responde: ¿qué tests existen?, ¿qué reglas requieren protección?, ¿dónde está la evidencia?
 > Fuente de los criterios: `docs/acceptance-criteria.md` (no se copian aquí). Historias: `docs/stories/`.
-> Estado de todos los TEST-IDs: **pendiente** (equivale a `missing` en la skill `test-collaboration`): aún no existe código ni evidencia.
+> Estado (2026-11-20): el proyecto existe y los puntos de entrada de abajo funcionan. Las filas marcadas
+> «parcial (E2E)» tienen evidencia; el resto de TEST-IDs no se ha conciliado uno a uno con los tests
+> existentes (1.134 unitarios/integración, 18 E2E): ver `docs/reviews/verification.md`.
 
 ## 1. Puntos de entrada de test
 
-Previstos; ninguno existe todavía (no hay `package.json`). Se confirmarán al crear el proyecto.
+Todos existen en `package.json` y se ejecutan en CI (`.github/workflows/ci.yml`).
 
 | Grupo de ejecución | Comando previsto | Cuándo ejecutar | Dependencias externas |
 |---|---|---|---|

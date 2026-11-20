@@ -16,4 +16,11 @@ export default tseslint.config(
       'no-console': ['error', { allow: ['warn', 'error'] }],
     },
   },
+  {
+    // Scripts de Node (generación de extractos de ejemplo): globales de Node, consola permitida.
+    files: ['scripts/**/*.{js,mjs,cjs}'],
+    languageOptions: {
+      globals: { Buffer: 'readonly', console: 'readonly', process: 'readonly', URL: 'readonly' },
+    },
+  },
 )
