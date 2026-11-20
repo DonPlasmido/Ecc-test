@@ -9,6 +9,11 @@ import type { TransactionId } from '@/domain/transaction/Transaction';
  * con `notifyDataChanged` (sin detalle), así que se reconcilia: upsert de todo lo que hay y borrado de lo
  * que ya no existe. Las pasadas se serializan y las avisadas durante una pasada se agrupan en una más.
  */
+/** Esperas entre reintentos de una reconciliación fallida (IndexedDB abortada, otra pestaña…). */
+const DEFAULT_RETRY_DELAYS_MS: readonly number[] = [200, 1000, 3000];
+
+const wait = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
+
 export class IndexSync {
   private readonly known = new Set<string>();
   private running: Promise<void> = Promise.resolve();
@@ -19,6 +24,7 @@ export class IndexSync {
     private readonly repository: TransactionRepository,
     private readonly index: TransactionIndex,
     private readonly store: WritableTransactionIndexStore,
+    private readonly retryDelaysMs: readonly number[] = DEFAULT_RETRY_DELAYS_MS,
   ) {}
 
   /** Hidratación inicial con progreso en el store. */
@@ -31,8 +37,10 @@ export class IndexSync {
         this.store.setHydration({ status: 'hydrating', loaded });
       });
       this.store.setHydration({ status: 'ready' });
-    } catch {
-      this.store.setHydration({ status: 'failed', error: domainError('storage.unavailable') });
+    } catch (error: unknown) {
+      this.fail('hydrate', error);
+      // Reintento en segundo plano: si va bien, el store vuelve a 'ready'.
+      this.notifyDataChanged();
     }
   }
 
@@ -53,15 +61,35 @@ export class IndexSync {
     try {
       while (this.pending) {
         this.pending = false;
-        try {
-          await this.reconcile(() => undefined);
-        } catch {
-          this.store.setHydration({ status: 'failed', error: domainError('storage.unavailable') });
-        }
+        await this.reconcileWithRetry();
       }
     } finally {
       this.active = false;
     }
+  }
+
+  /**
+   * Una pasada con reintentos acotados. Una pasada correcta recalcula los borrados contra el conjunto
+   * completo (`known` solo se actualiza al terminar bien), así que corrige cualquier pasada parcial previa.
+   */
+  private async reconcileWithRetry(): Promise<void> {
+    for (let attempt = 0; ; attempt++) {
+      try {
+        await this.reconcile(() => undefined);
+        if (this.store.getSnapshot().hydration.status !== 'ready') this.store.setHydration({ status: 'ready' });
+        return;
+      } catch (error: unknown) {
+        this.fail('reconcile', error);
+        const delay = this.retryDelaysMs[attempt];
+        if (delay === undefined) return;
+        await wait(delay);
+      }
+    }
+  }
+
+  private fail(phase: 'hydrate' | 'reconcile', error: unknown): void {
+    console.error(`IndexSync ${phase} failed`, error);
+    this.store.setHydration({ status: 'failed', error: domainError('storage.unavailable') });
   }
 
   private async reconcile(onBatch: (count: number) => void): Promise<void> {
