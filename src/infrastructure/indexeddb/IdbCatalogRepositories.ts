@@ -40,6 +40,12 @@ export class IdbCategoryRepository implements CategoryRepository {
     await this.db.put('categories', c);
   }
 
+  async saveMany(categories: readonly Category[]): Promise<void> {
+    if (categories.length === 0) return;
+    const tx = this.db.transaction('categories', 'readwrite');
+    await Promise.all([...categories.map((c) => tx.store.put(c)), tx.done]);
+  }
+
   async delete(id: CategoryId): Promise<void> {
     await this.db.delete('categories', id);
   }

@@ -15,6 +15,8 @@ export interface AccountRepository {
 export interface CategoryRepository {
   list(): Promise<readonly Category[]>;
   save(c: Category): Promise<void>;
+  /** Guarda varias en una sola transacción (todas o ninguna). */
+  saveMany(c: readonly Category[]): Promise<void>;
   delete(id: CategoryId): Promise<void>;
 }
 

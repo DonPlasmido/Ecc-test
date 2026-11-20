@@ -42,6 +42,11 @@ export class InMemoryCategoryRepository implements CategoryRepository {
     return Promise.resolve();
   }
 
+  saveMany(categories: readonly Category[]): Promise<void> {
+    for (const c of categories) this.state.categories.set(c.id, copy(c));
+    return Promise.resolve();
+  }
+
   delete(id: CategoryId): Promise<void> {
     this.state.categories.delete(id);
     return Promise.resolve();

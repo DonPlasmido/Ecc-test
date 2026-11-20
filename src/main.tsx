@@ -51,5 +51,9 @@ async function bootstrap(): Promise<void> {
   }
 }
 
-registerSW({ immediate: true });
+registerSW({
+  immediate: true,
+  // Sin esto, un fallo de registro o actualización del service worker sería invisible (silent-failures 7).
+  onRegisterError: (error: unknown) => console.error('Service worker registration failed', error),
+});
 void bootstrap();

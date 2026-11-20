@@ -47,9 +47,13 @@ export interface ContainerPorts {
   readonly dispose?: () => void;
 }
 
-async function seedDefaultCategories(categories: CategoryRepository): Promise<void> {
+/**
+ * Siembra las categorías por defecto solo con el catálogo vacío (respeta las que la persona borre) y en
+ * una sola transacción: un fallo no puede dejar un catálogo a medias (silent-failures MEDIA-8).
+ */
+export async function seedDefaultCategories(categories: CategoryRepository): Promise<void> {
   if ((await categories.list()).length > 0) return;
-  for (const category of DEFAULT_CATEGORIES) await categories.save(category);
+  await categories.saveMany(DEFAULT_CATEGORIES);
 }
 
 /** Cableado común: índice, store, casos de uso singleton y `onDataChanged` → reconciliación del índice. */
