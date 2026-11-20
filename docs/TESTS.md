@@ -287,7 +287,7 @@ Estado de todos: **pendiente**. Campos `Archivo`, `Nodo`, `Comando` y `Evidencia
 
 #### TEST-CAT-005 — Propuesta de regla al recategorizar
 
-- Estado: pendiente
+- Estado: parcial (E2E)
 - Propósito: critical path
 - Fuente: AC-019 (`docs/acceptance-criteria.md`) · historia `categorization-3`
 - Entrada representativa: ver «Escenario» de AC-019
@@ -295,8 +295,8 @@ Estado de todos: **pendiente**. Campos `Archivo`, `Nodo`, `Comando` y `Evidencia
 - Nivel: unit, E2E
 - Grupo de ejecución: tests por defecto / E2E especializado
 - Frontera: UI real
-- Archivo: `e2e/rules.spec.ts` (previsto) · Nodo: pendiente · Comando: pendiente
-- Evidencia: pendiente
+- Archivo: `e2e/transactions.spec.ts` · Nodo: «busca, abre un movimiento, cambia su categoría…» · Comando: `CI=1 npx playwright test e2e/transactions.spec.ts`
+- Evidencia: pasa: al cambiar NETFLIX.COM a «Ocio» se propone `NETFLIX.COM` («Afectaría a 2 movimientos más»); al aceptar, los otros 2 quedan en «Ocio». Axe sin violaciones en ambos diálogos. Pendiente: rechazar no crea regla (E2E).
 
 #### TEST-CAT-006 — Validación de reglas y categorías
 
@@ -449,7 +449,7 @@ Estado de todos: **pendiente**. Campos `Archivo`, `Nodo`, `Comando` y `Evidencia
 
 #### TEST-LIST-001 — Lista virtualizada con 100.000 movimientos
 
-- Estado: pendiente
+- Estado: parcial (E2E)
 - Propósito: specialized protection, critical path
 - Fuente: AC-031 (`docs/acceptance-criteria.md`) · historia `transaction-list-1`
 - Entrada representativa: ver «Escenario» de AC-031
@@ -457,8 +457,8 @@ Estado de todos: **pendiente**. Campos `Archivo`, `Nodo`, `Comando` y `Evidencia
 - Nivel: E2E
 - Grupo de ejecución: E2E especializado
 - Frontera: navegador real, datos sembrados
-- Archivo: `e2e/transactions.spec.ts` (previsto) · Nodo: pendiente · Comando: pendiente
-- Evidencia: pendiente
+- Archivo: `e2e/transactions.spec.ts` · Nodo: «lista de 100.000 movimientos…» · Comando: `CI=1 npx playwright test e2e/transactions.spec.ts`
+- Evidencia: pasa. CSV sintético de 100.000 filas (formato Santander, 8,6 MB) importado por la UI (sin sembrar IndexedDB): DOM ≤ 101 `[role=row]` (100 + cabecera) al inicio y tras desplazarse al final; la fila 99.999 es visible. Pendiente: el criterio pide BD sembrada; aquí se importa por la UI.
 
 #### TEST-LIST-002 — Benchmark de filtrado de 100.000 movimientos
 
@@ -475,7 +475,7 @@ Estado de todos: **pendiente**. Campos `Archivo`, `Nodo`, `Comando` y `Evidencia
 
 #### TEST-LIST-003 — Respuesta de la UI al buscar
 
-- Estado: pendiente
+- Estado: parcial (E2E)
 - Propósito: specialized protection
 - Fuente: AC-033 (`docs/acceptance-criteria.md`) · historia `transaction-list-2`
 - Entrada representativa: ver «Escenario» de AC-033
@@ -483,8 +483,8 @@ Estado de todos: **pendiente**. Campos `Archivo`, `Nodo`, `Comando` y `Evidencia
 - Nivel: E2E
 - Grupo de ejecución: E2E especializado
 - Frontera: navegador real; umbral sensible al hardware
-- Archivo: `e2e/transactions.spec.ts` (previsto) · Nodo: pendiente · Comando: pendiente
-- Evidencia: pendiente
+- Archivo: `e2e/transactions.spec.ts` · Nodo: «lista de 100.000 movimientos…» · Comando: `CI=1 npx playwright test e2e/transactions.spec.ts`
+- Evidencia: pasa con p95 ≤ 200 ms (10 búsquedas, desde el fin del debounce de 250 ms hasta que cambia el contador, `performance.now()`; sin ralentizar CPU). Importación 100k por la UI: vista previa ~0,4 s, confirmación ~14 s. Con CPU ×4 (perfil de AC-033) se anota sin aserción: 110-340 ms según la carga del runner, no cumple de forma fiable. Pendientes: hidratación ≤ 1.500 ms y tareas largas en scroll.
 
 #### TEST-LIST-004 — Búsqueda y filtros combinables
 
@@ -501,7 +501,7 @@ Estado de todos: **pendiente**. Campos `Archivo`, `Nodo`, `Comando` y `Evidencia
 
 #### TEST-LIST-005 — Edición de movimiento
 
-- Estado: pendiente
+- Estado: parcial (E2E)
 - Propósito: critical path, rule protection
 - Fuente: AC-035 (`docs/acceptance-criteria.md`) · historia `transaction-list-3`
 - Entrada representativa: ver «Escenario» de AC-035
@@ -509,8 +509,8 @@ Estado de todos: **pendiente**. Campos `Archivo`, `Nodo`, `Comando` y `Evidencia
 - Nivel: integration, E2E
 - Grupo de ejecución: tests por defecto / E2E especializado
 - Frontera: fake-indexeddb y navegador real
-- Archivo: `e2e/transactions.spec.ts` (previsto) · Nodo: pendiente · Comando: pendiente
-- Evidencia: pendiente
+- Archivo: `e2e/transactions.spec.ts` · Nodo: «busca, abre un movimiento, cambia su categoría…» · Comando: `CI=1 npx playwright test e2e/transactions.spec.ts`
+- Evidencia: pasa (20 repeticiones sin fallos): cambia la categoría de un movimiento y la categoría persiste tras recargar. Pendiente: edición de concepto/nota y no duplicar en reimportación.
 
 ### Copia cifrada
 
