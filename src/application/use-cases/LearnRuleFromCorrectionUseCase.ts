@@ -63,10 +63,14 @@ export class LearnRuleFromCorrectionUseCase implements LearnRuleFromCorrection {
     await rules.save(rule);
     if (!input.applyToExisting) return ok({ ruleId: rule.id, recategorized: 0 });
 
-    const affected = this.recategorizedBy(await readAll(transactions), await rules.list(), rule.id);
-    if (affected.length > 0) await transactions.updateMany(affected);
-    onDataChanged?.();
-    return ok({ ruleId: rule.id, recategorized: affected.length });
+    try {
+      const affected = this.recategorizedBy(await readAll(transactions), await rules.list(), rule.id);
+      if (affected.length > 0) await transactions.updateMany(affected);
+      return ok({ ruleId: rule.id, recategorized: affected.length });
+    } finally {
+      // La regla ya está guardada: el índice se reconcilia aunque la recategorización falle.
+      onDataChanged?.();
+    }
   }
 
   /** Movimientos que cambiarían a la regla indicada (nunca los manuales ni los reasignados por otras reglas). */
