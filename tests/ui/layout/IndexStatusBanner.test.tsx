@@ -11,7 +11,7 @@ describe('IndexStatusBanner (silent-failures ALTA-1)', () => {
 
   it('no muestra nada mientras el índice está listo', () => {
     renderWithProviders(<IndexStatusBanner />)
-    expect(screen.queryByRole('alert')).toBeNull()
+    expect(screen.queryByText(/no se han podido cargar/i)).toBeNull()
   })
 
   it('avisa con un alert y ofrece recargar cuando el índice falla, y desaparece al recuperarse', () => {
@@ -19,10 +19,11 @@ describe('IndexStatusBanner (silent-failures ALTA-1)', () => {
     renderWithProviders(<IndexStatusBanner />, { container: createFakeContainer({ indexStore }) })
 
     act(() => indexStore.bump({ hydration: { status: 'failed', error: domainError('storage.unavailable') } }))
-    expect(screen.getByRole('alert')).toHaveTextContent(/no se han podido cargar/i)
+    // Hay además una región global role=alert (notificaciones), así que se busca por su texto.
+    expect(screen.getByText(/no se han podido cargar/i).closest('[role="alert"]')).not.toBeNull()
     expect(screen.getByRole('button', { name: /recargar/i })).toBeInTheDocument()
 
     act(() => indexStore.bump({ hydration: { status: 'ready' } }))
-    expect(screen.queryByRole('alert')).toBeNull()
+    expect(screen.queryByText(/no se han podido cargar/i)).toBeNull()
   })
 })

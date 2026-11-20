@@ -137,5 +137,9 @@
   "boot": {
     "failedTitle": "No se ha podido abrir la aplicación",
     "reload": "Recargar"
+  },
+  "indexFailed": {
+    "message": "No se han podido cargar tus movimientos. Lo reintentamos automáticamente; si persiste, recarga la página.",
+    "reload": "Recargar"
   }
 }

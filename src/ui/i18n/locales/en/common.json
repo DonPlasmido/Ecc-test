@@ -137,5 +137,9 @@
   "boot": {
     "failedTitle": "The app could not be opened",
     "reload": "Reload"
+  },
+  "indexFailed": {
+    "message": "Your transactions could not be loaded. We retry automatically; if it persists, reload the page.",
+    "reload": "Reload"
   }
 }
