@@ -157,3 +157,15 @@ describe('LearnRuleFromCorrectionUseCase.accept', () => {
     expect(w.state.rules.size).toBe(0);
   });
 });
+
+describe('LearnRuleFromCorrectionUseCase.accept cuando falla la recategorización (silent-failures ALTA-4)', () => {
+  it('avisa al índice porque la regla ya se guardó', async () => {
+    put('t1', NETFLIX)
+    vi.spyOn(w.transactions, 'updateMany').mockRejectedValue(new Error('aborted'))
+
+    await expect(useCase().accept({ suggestion: suggestion(), applyToExisting: true })).rejects.toThrow('aborted')
+
+    expect(w.state.rules.size).toBe(1)
+    expect(onDataChanged).toHaveBeenCalled()
+  })
+})
