@@ -18,9 +18,10 @@ export default tseslint.config(
   },
   {
     // Scripts de Node (generación de extractos de ejemplo): globales de Node, consola permitida.
-    files: ['scripts/**/*.{js,mjs,cjs}'],
+    files: ['scripts/**/*.{js,mjs,cjs}', 'tests/fixtures/**/*.cjs'],
     languageOptions: {
-      globals: { Buffer: 'readonly', console: 'readonly', process: 'readonly', URL: 'readonly' },
+      globals: { Buffer: 'readonly', console: 'readonly', process: 'readonly', URL: 'readonly', require: 'readonly' },
     },
+    rules: { '@typescript-eslint/no-require-imports': 'off' },
   },
 )

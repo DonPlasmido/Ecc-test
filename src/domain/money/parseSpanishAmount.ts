@@ -3,7 +3,9 @@ import { domainError, type DomainError } from '@/domain/shared/DomainError'
 import { err, type Result } from '@/domain/shared/Result'
 
 const MAX_REPORTED_LENGTH = 50
-const CURRENCY_MARKS = /€|\bEUR\b/giu
+// «EUR» puede ir pegado al número («-3,20EUR»): no se exige límite de palabra, solo que no forme parte
+// de otra palabra (EUROPA).
+const CURRENCY_MARKS = /€|(?<!\p{L})EUR(?!\p{L})/giu
 const MINUS_SIGNS = /[−‒–]/gu
 /** Entero con miles opcionales (1.234.567) o sin ellos. */
 const INTEGER_PART = /^(?:\d{1,3}(?:\.\d{3})+|\d+)$/u

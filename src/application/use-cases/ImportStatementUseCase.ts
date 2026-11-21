@@ -79,7 +79,10 @@ export class ImportStatementUseCase implements ImportStatement {
     const detection = detectColumnMapping(table);
     const headers = headersOf(table, detection.mapping.headerRowIndex);
     const profile = headers === null ? null : await profiles.find(headerSignature(headers));
-    const mapping = profile?.mapping ?? detection.mapping;
+    // Del perfil recordado se reutilizan las columnas, pero la fila de cabecera es la de ESTE archivo: el
+    // mismo banco puede exportar XLSX con títulos encima y CSV sin ellos (misma firma de cabeceras). Con la
+    // fila del perfil se descartaban en silencio las primeras filas de datos.
+    const mapping = profile === null ? detection.mapping : { ...profile.mapping, headerRowIndex: detection.mapping.headerRowIndex };
     const previewId = ids.next();
     this.previews.set(previewId, { table, fileName: file.name });
     return ok({
