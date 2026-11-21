@@ -18,6 +18,10 @@ const FLOAT_TOLERANCE = 1e-6
 
 type Row = readonly RawCell[]
 
+const MAX_REPORTED_LENGTH = 50
+/** Filas de resumen al final del extracto («TOTAL INGRESOS», «SALDO FINAL»…): no son movimientos. */
+const SUMMARY_LABEL = /^(?:TOTAL(?:ES)?|SALDO (?:INICIAL|FINAL)|RESUMEN)(?: |$)/u
+
 function cellText(cell: RawCell | undefined): string {
   if (cell === undefined || cell.kind === 'empty') return ''
   return cell.kind === 'number' ? String(cell.value) : cell.value.trim()
@@ -125,7 +129,6 @@ function toDraft(row: Row, mapping: ColumnMapping, accountId: AccountId, line: n
 }
 
 const AMOUNT_ROLES: readonly ColumnRole[] = ['amount', 'debit', 'credit']
-const MAX_REPORTED_LENGTH = 50
 
 function ambiguousAmountWarnings(row: Row, mapping: ColumnMapping, line: number): readonly RowWarning[] {
   return AMOUNT_ROLES.flatMap((role): RowWarning[] => {
@@ -133,6 +136,14 @@ function ambiguousAmountWarnings(row: Row, mapping: ColumnMapping, line: number)
     if (cell?.kind !== 'text' || !isAmbiguousAmount(cell.value)) return []
     return [{ line, code: 'ambiguousAmount', value: cell.value.trim().slice(0, MAX_REPORTED_LENGTH) }]
   })
+}
+
+/** Fila sin fecha cuya descripción es una etiqueta de resumen: se ignora con un aviso informativo. */
+function summaryRowWarning(row: Row, mapping: ColumnMapping, line: number): RowWarning | null {
+  if (cellText(row[mapping.columns.indexOf('date')]) !== '') return null
+  const label = cellText(row[mapping.columns.indexOf('description')])
+  if (!SUMMARY_LABEL.test(normalizeText(label))) return null
+  return { line, code: 'summaryRowIgnored', value: label.slice(0, MAX_REPORTED_LENGTH) }
 }
 
 /** Convierte las filas de datos en borradores válidos; las filas malas se descartan con su `RowError`. */
@@ -145,6 +156,11 @@ export function normalizeRows(table: RawTable, mapping: ColumnMapping, accountId
   table.rows.forEach((row, index) => {
     if (index <= mapping.headerRowIndex || row.every((cell) => cellText(cell) === '')) return
     const line = index + 1
+    const summary = summaryRowWarning(row, mapping, line)
+    if (summary !== null) {
+      warnings.push(summary)
+      return
+    }
     const result = toDraft(row, mapping, accountId, line)
     if (result.ok) {
       drafts.push(result.value)

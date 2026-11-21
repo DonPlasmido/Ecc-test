@@ -41,6 +41,8 @@ describe('los 7 extractos de ejemplo se importan solos, sin tocar el mapeo', () 
 
     expect(committed.value.rowErrors).toEqual([])
     expect(committed.value.inserted).toBe(EXPECTED_ROWS)
+    const summaries = (committed.value.warnings ?? []).filter((w) => w.code === 'summaryRowIgnored')
+    expect(summaries).toHaveLength(name === 'sabadell.csv' ? 2 : 0)
     const dashboard = await container.buildDashboard.execute(ALL_TIME)
     const balance = dashboard.balances.find((b) => b.accountId === saved.value.id)
     expect(balance?.balance).toEqual({ cents: EXPECTED_BALANCE_CENTS })
