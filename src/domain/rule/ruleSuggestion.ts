@@ -35,6 +35,8 @@ const NOISE_WORDS: ReadonlySet<string> = new Set([
   'BIZUM', 'ADEUDO', 'DOMICILIACION', 'CARGO', 'ABONO', 'EN', 'DE', 'DEL', 'LA', 'EL', 'LOS', 'LAS', 'POR', 'CON',
   'REF', 'REFERENCIA', 'NUM', 'SL', 'SA', 'SLU', 'SAU', 'SLL', 'CARD', 'PURCHASE', 'PAYMENT', 'TRANSFER', 'DEBIT',
   'CREDIT', 'THE', 'AND', 'FOR', 'WITH', 'FROM', 'LTD', 'INC', 'LLC',
+  // Monederos y verbos de Bizum: dicen cómo se pagó, no a quién (prueba con extracto estilo imagin).
+  'APPLE', 'GOOGLE', 'SAMSUNG', 'PAY', 'GPAY', 'CONTACTLESS', 'ENVIADO', 'ENVIADA', 'RECIBIDO', 'RECIBIDA',
 ])
 
 const EDGE_PUNCTUATION = /^[^\p{L}\p{N}]+|[^\p{L}\p{N}]+$/gu

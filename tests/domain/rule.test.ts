@@ -233,3 +233,27 @@ describe('suggestRule', () => {
     expect(matchRule(t, [generated])).toBe(generated)
   })
 })
+
+describe('suggestRule con medios de pago (prueba con extracto estilo imagin)', () => {
+  const history = (items: readonly [string, CategoryId][]) =>
+    items.map(([normalizedDescription, categoryId]) => ({ normalizedDescription, categoryId }))
+
+  it('propone el comercio y no el monedero (APPLE PAY) aunque este aparezca en más movimientos', () => {
+    const past = history([
+      ['COMPRA APPLE PAY MERCADONA', UNCATEGORIZED],
+      ['COMPRA APPLE PAY MERCADONA', UNCATEGORIZED],
+      ['COMPRA APPLE PAY LIDL', UNCATEGORIZED],
+      ['COMPRA APPLE PAY LIDL', UNCATEGORIZED],
+    ])
+    const suggestion = suggestRule(tx({ normalizedDescription: 'COMPRA APPLE PAY MERCADONA' }), GROCERIES, past)
+    expect(suggestion?.pattern).toBe('MERCADONA')
+  })
+
+  it.each([
+    ['COMPRA GOOGLE PAY ZARA', 'ZARA'],
+    ['PAGO SAMSUNG PAY GLOVO', 'GLOVO'],
+    ['BIZUM ENVIADO A PABLO CENA', 'PABLO'],
+  ])('en %j propone %j', (description, expected) => {
+    expect(suggestRule(tx({ normalizedDescription: description }), GROCERIES)?.pattern).toBe(expected)
+  })
+})

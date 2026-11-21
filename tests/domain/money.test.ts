@@ -163,3 +163,20 @@ describe('isAmbiguousAmount', () => {
     expect(isAmbiguousAmount(input)).toBe(false)
   })
 })
+
+describe('parseSpanishAmount con «EUR» pegado al número (prueba con extracto estilo imagin)', () => {
+  it.each([
+    ['-3,20EUR', -320],
+    ['1.450,00EUR', 145_000],
+    ['25,00eur', 2_500],
+    ['-50,38 EUR', -5_038],
+    ['EUR-3,20', -320],
+  ])('convierte %j en %i céntimos', (text, cents) => {
+    const result = parseSpanishAmount(text)
+    expect(result.ok && result.value.cents).toBe(cents)
+  })
+
+  it('no confunde un texto que contiene EUR dentro de una palabra', () => {
+    expect(parseSpanishAmount('EUROPA').ok).toBe(false)
+  })
+})
