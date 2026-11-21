@@ -27,6 +27,7 @@ export interface TransactionRecord {
   note: string;
   dedupKey: string;
   importBatchId: string;
+  sourceLine?: number;
   createdAt: string;
   updatedAt: string;
 }

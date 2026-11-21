@@ -36,6 +36,8 @@ export interface Transaction {
   readonly note: string;
   readonly dedupKey: DedupKey;
   readonly importBatchId: ImportBatchId;
+  /** Línea del extracto de origen (orden dentro del lote); ausente en datos antiguos. */
+  readonly sourceLine?: number;
   /** ISO datetime. */
   readonly createdAt: string;
   /** ISO datetime. */
