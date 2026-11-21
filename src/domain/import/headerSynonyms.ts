@@ -5,7 +5,7 @@ import { normalizeText } from '@/domain/shared/normalizeText'
 /** Sinónimos de cabecera (ya normalizados: mayúsculas, sin tildes ni puntuación) de bancos españoles. */
 const SYNONYMS: Readonly<Record<Exclude<ColumnRole, 'ignore'>, readonly string[]>> = {
   date: [
-    'FECHA', 'FECHA OPERACION', 'FECHA DE OPERACION', 'F OPERACION', 'FECHA OPER', 'F OPER', 'FECHA CONTABLE',
+    'FECHA', 'FECHA OPERACION', 'FECHA DE OPERACION', 'F OPERACION', 'FECHA OPER', 'F OPER', 'F OPERATIVA', 'FECHA OPERATIVA', 'FECHA CONTABLE',
     'FECHA CONTABILIZACION', 'FECHA CONT', 'FECHA MOVIMIENTO', 'DATE', 'BOOKING DATE', 'TRANSACTION DATE',
   ],
   valueDate: ['FECHA VALOR', 'FECHA DE VALOR', 'F VALOR', 'FEC VALOR', 'VALUE DATE'],
