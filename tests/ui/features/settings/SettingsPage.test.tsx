@@ -175,12 +175,11 @@ describe('SettingsPage: encrypted backup', () => {
     renderWithProviders(<SettingsPage />, { container, route: '/ajustes' });
 
     // Act
-    const restore = await startRestore(user, new File(['fecha;concepto;importe'], 'extracto.ccbackup'));
-    await user.type(within(restore).getByLabelText('Contraseña'), PASSWORD);
-    await user.click(within(restore).getByRole('button', { name: 'Restaurar copia' }));
+    await user.upload(screen.getByLabelText(FILE_LABEL), new File(['fecha;concepto;importe'], 'extracto.ccbackup'));
 
-    // Assert
-    expect(await alertIn(restore)).toHaveTextContent('El archivo no es una copia de Cuentas Claras.');
+    // Assert: se rechaza antes de pedir confirmación o contraseña
+    expect(await screen.findByText('El archivo no es una copia de Cuentas Claras.')).toBeInTheDocument();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
   it('asks for confirmation before replacing data and cancelling does nothing', async () => {
@@ -190,7 +189,7 @@ describe('SettingsPage: encrypted backup', () => {
     renderWithProviders(<SettingsPage />, { container, route: '/ajustes' });
 
     // Act
-    await user.upload(screen.getByLabelText(FILE_LABEL), new File(['x'], 'copia.ccbackup'));
+    await user.upload(screen.getByLabelText(FILE_LABEL), new File(['CCBKx'], 'copia.ccbackup'));
     const confirm = await screen.findByRole('dialog', { name: '¿Reemplazar todos tus datos?' });
 
     // Assert
