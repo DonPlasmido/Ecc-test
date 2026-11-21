@@ -110,6 +110,8 @@
     "updated": "Category “{{name}}” saved",
     "deleted": "Category “{{name}}” deleted",
     "archivedDone": "Category “{{name}}” archived",
+    "rulesDisabled_one": "{{count}} rule turned off: it pointed to an archived category",
+    "rulesDisabled_other": "{{count}} rules turned off: they pointed to an archived category",
     "deleteTitle": "Delete the category?",
     "deleteText": "“{{name}}” will be deleted. This cannot be undone.",
     "deleteConfirm": "Delete category",

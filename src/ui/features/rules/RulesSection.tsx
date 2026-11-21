@@ -148,7 +148,7 @@ export function RulesSection({ rules, categories, onRulesChange }: RulesSectionP
           ))}
         </ol>
       )}
-      <ApplyRules />
+      <ApplyRules rules={rules} />
       <RuleFormDialog
         isOpen={editing !== null}
         rule={editing?.rule ?? null}

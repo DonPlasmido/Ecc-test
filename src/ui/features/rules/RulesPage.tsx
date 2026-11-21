@@ -34,7 +34,7 @@ export function RulesPage() {
       {state.status === 'ready' ? (
         <>
           <RulesSection rules={state.rules} categories={state.categories} onRulesChange={updateRules} />
-          <CategoriesSection categories={state.categories} onCategoriesChange={updateCategories} />
+          <CategoriesSection categories={state.categories} rules={state.rules} onRulesChange={updateRules} onCategoriesChange={updateCategories} />
         </>
       ) : null}
     </Page>

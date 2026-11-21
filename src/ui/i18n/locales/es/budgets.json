@@ -45,6 +45,7 @@
     "createTitle": "Nuevo presupuesto",
     "editTitle": "Editar presupuesto de {{category}}",
     "description": "El límite se aplica cada mes desde {{month}}.",
+    "startMonth": "Aplicar desde",
     "category": "Categoría",
     "categoryPlaceholder": "Elige una categoría",
     "categoryHint": "Solo aparecen las categorías de gasto que aún no tienen presupuesto.",

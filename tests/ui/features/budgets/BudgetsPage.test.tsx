@@ -1,4 +1,4 @@
-import { screen, waitFor, within } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeAll, describe, expect, it } from 'vitest';
 import type { AppContainer } from '@/composition/container.types';
@@ -149,6 +149,41 @@ describe('BudgetsPage', () => {
     expect(await screen.findByText('Presupuesto de Supermercado guardado.')).toBeInTheDocument();
     const [budget] = await container.manageCatalog.listBudgets();
     expect(budget).toMatchObject({ categoryId: cat('groceries'), monthlyLimit: { cents: 30_000 }, startMonth: MARCH, endMonth: null });
+  });
+
+  it('creates only one budget when the form is submitted twice in the same tick', async () => {
+    const user = userEvent.setup();
+    const container = await containerWith();
+    renderPage(container);
+    await user.click(await screen.findByRole('button', { name: 'Añadir presupuesto' }));
+    const dialog = await screen.findByRole('dialog', { name: 'Nuevo presupuesto' });
+    await user.selectOptions(within(dialog).getByRole('combobox', { name: /categoría/i }), 'Supermercado');
+    await user.type(within(dialog).getByRole('textbox', { name: /límite mensual/i }), '300');
+
+    const form = dialog.querySelector('form') as HTMLFormElement;
+    fireEvent.submit(form);
+    fireEvent.submit(form);
+
+    await budgetList();
+    await waitFor(async () => expect(await container.manageCatalog.listBudgets()).toHaveLength(1));
+  });
+
+  it('lets a new budget start in an earlier month than the one being viewed', async () => {
+    const user = userEvent.setup();
+    const container = await containerWith();
+    renderPage(container);
+    await user.click(await screen.findByRole('button', { name: 'Añadir presupuesto' }));
+    const dialog = await screen.findByRole('dialog', { name: 'Nuevo presupuesto' });
+    await user.selectOptions(within(dialog).getByRole('combobox', { name: /aplicar desde/i }), '2025-12');
+    await user.selectOptions(within(dialog).getByRole('combobox', { name: /categoría/i }), 'Supermercado');
+    await user.type(within(dialog).getByRole('textbox', { name: /límite mensual/i }), '300');
+
+    await user.click(within(dialog).getByRole('button', { name: 'Guardar presupuesto' }));
+
+    await waitFor(async () => {
+      const [budget] = await container.manageCatalog.listBudgets();
+      expect(budget?.startMonth).toBe('2025-12');
+    });
   });
 
   it('does not offer categories that already have a budget', async () => {

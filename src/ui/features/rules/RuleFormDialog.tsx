@@ -81,6 +81,7 @@ function RuleForm({ formId, rule, categories, patternRef, onSavingChange, onSave
   const { manageCatalog } = useContainer();
   const categoryName = useCategoryName();
   const categoryRef = useRef<HTMLSelectElement>(null);
+  const isSubmittingRef = useRef(false);
   const [pattern, setPattern] = useState(rule?.pattern ?? '');
   const [operator, setOperator] = useState<RuleOperator>(rule?.operator ?? 'contains');
   const [amountSign, setAmountSign] = useState<AmountSign>(rule?.amountSign ?? 'any');
@@ -114,11 +115,13 @@ function RuleForm({ formId, rule, categories, patternRef, onSavingChange, onSave
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (isSubmittingRef.current) return;
     const invalid = validate();
     if (invalid.pattern || invalid.category) {
       showErrors(invalid);
       return;
     }
+    isSubmittingRef.current = true;
     onSavingChange(true);
     try {
       const result = await manageCatalog.saveRule({
@@ -135,6 +138,7 @@ function RuleForm({ formId, rule, categories, patternRef, onSavingChange, onSave
     } catch {
       setErrors({ form: errorMessage(t, null) });
     } finally {
+      isSubmittingRef.current = false;
       onSavingChange(false);
     }
   };
