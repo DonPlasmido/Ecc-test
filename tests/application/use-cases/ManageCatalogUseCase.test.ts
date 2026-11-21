@@ -258,6 +258,50 @@ describe('budgets', () => {
   });
 });
 
+describe('atomic uniqueness under concurrent submits', () => {
+  it('saves only one budget when the same budget is submitted twice in the same tick', async () => {
+    const c = catalog();
+    const [a, b] = await Promise.all([c.saveBudget(budgetInput()), c.saveBudget(budgetInput())]);
+
+    expect([a.ok, b.ok].sort()).toEqual([false, true]);
+    expect(await w.budgets.list()).toHaveLength(1);
+  });
+
+  it('saves only one category when the same name is submitted twice in the same tick', async () => {
+    const c = catalog();
+    const input = { name: 'Mascotas', kind: 'expense' as const, color: 'chart-1', archived: false };
+    const [a, b] = await Promise.all([c.saveCategory(input), c.saveCategory({ ...input, name: ' mascotas ' })]);
+
+    expect([a.ok, b.ok].sort()).toEqual([false, true]);
+    const failed = a.ok ? b : a;
+    expect(!failed.ok && failed.error.code).toBe('category.duplicateName');
+  });
+
+  it('allows re-saving a category with its own name', async () => {
+    const c = catalog();
+    const created = await c.saveCategory({ name: 'Mascotas', kind: 'expense', color: 'chart-1', archived: false });
+    if (!created.ok) throw new Error('create');
+    const again = await c.saveCategory({ id: created.value.id, name: 'Mascotas', kind: 'expense', color: 'chart-2', archived: false });
+    expect(again.ok).toBe(true);
+  });
+});
+
+describe('archiving a category', () => {
+  it('disables the rules that point to it and leaves the others enabled', async () => {
+    const c = catalog();
+    await c.saveRule(ruleInput({ pattern: 'mercadona', categoryId: FOOD }));
+    await c.saveRule(ruleInput({ pattern: 'cine', categoryId: FUN }));
+    const food = (await w.categories.list()).find((x) => x.id === FOOD)!;
+
+    const result = await c.saveCategory({ ...food, archived: true });
+
+    expect(result.ok).toBe(true);
+    const rules = await w.rules.list();
+    expect(rules.find((r) => r.categoryId === FOOD)?.enabled).toBe(false);
+    expect(rules.find((r) => r.categoryId === FUN)?.enabled).toBe(true);
+  });
+});
+
 describe('without onDataChanged', () => {
   it('still works', async () => {
     const useCase = new ManageCatalogUseCase({ accounts: w.accounts, categories: w.categories, rules: w.rules, budgets: w.budgets, transactions: w.transactions, clock: w.clock, ids: w.ids });

@@ -29,6 +29,7 @@ export const DOMAIN_ERROR_CODES = [
   'category.notFound',
   'category.invalidName',
   'category.inUse',
+  'category.duplicateName',
   'rule.notFound',
   'rule.invalidPattern',
   'budget.notFound',

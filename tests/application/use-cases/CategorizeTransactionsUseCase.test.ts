@@ -14,7 +14,7 @@ let w: World;
 let onDataChanged: ReturnType<typeof vi.fn<() => void>>;
 
 function useCase(): CategorizeTransactionsUseCase {
-  return new CategorizeTransactionsUseCase({ transactions: w.transactions, rules: w.rules, clock: w.clock, onDataChanged });
+  return new CategorizeTransactionsUseCase({ transactions: w.transactions, rules: w.rules, categories: w.categories, clock: w.clock, onDataChanged });
 }
 
 function put(id: string, overrides: Parameters<typeof tx>[0] = {}): void {
@@ -107,8 +107,19 @@ describe('CategorizeTransactionsUseCase', () => {
     await w.rules.save(rule({ id: 'r1' as RuleId, pattern: 'MERCADONA', categoryId: GROCERIES, enabled: false }));
     put('a', merca);
 
-    const result = await new CategorizeTransactionsUseCase({ transactions: w.transactions, rules: w.rules, clock: w.clock }).execute({ scope: 'all' });
+    const result = await new CategorizeTransactionsUseCase({ transactions: w.transactions, rules: w.rules, categories: w.categories, clock: w.clock }).execute({ scope: 'all' });
 
     expect(result.changed).toBe(0);
+  });
+
+  it('ignores rules whose category is archived', async () => {
+    const cat = w.state.categories.get(GROCERIES)!;
+    w.state.categories.set(GROCERIES, { ...cat, archived: true });
+    put('a', merca);
+
+    const result = await useCase().execute({ scope: 'all' });
+
+    expect(result.changed).toBe(0);
+    expect(w.state.transactions.get('a')?.categoryId).toBe(UNCATEGORIZED);
   });
 });
