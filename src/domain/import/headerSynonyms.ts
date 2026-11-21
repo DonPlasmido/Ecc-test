@@ -16,7 +16,7 @@ const SYNONYMS: Readonly<Record<Exclude<ColumnRole, 'ignore'>, readonly string[]
   amount: ['IMPORTE', 'IMPORTE EUR', 'CANTIDAD', 'AMOUNT', 'MONTO'],
   debit: ['DEBE', 'CARGO', 'CARGOS', 'DEBITO', 'ADEUDO', 'DEBIT'],
   credit: ['HABER', 'ABONO', 'ABONOS', 'CREDITO', 'INGRESO', 'INGRESOS', 'CREDIT'],
-  balance: ['SALDO', 'SALDO EUR', 'SALDO DISPONIBLE', 'SALDO CONTABLE', 'SALDO FINAL', 'BALANCE'],
+  balance: ['SALDO', 'SALDO EUR', 'SALDO DISPONIBLE', 'SALDO CONTABLE', 'SALDO FINAL', 'DISPONIBLE', 'BALANCE'],
 }
 
 const NON_ALPHANUMERIC = /[^\p{L}\p{N}]+/gu
