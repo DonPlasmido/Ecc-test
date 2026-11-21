@@ -51,7 +51,7 @@ describe('LearnRuleFromCorrectionUseCase.correct', () => {
 
     const result = await useCase().correct({ transactionId: 't0' as TransactionId, categoryId: LEISURE });
 
-    expect(result).toEqual({ ok: true, value: { suggestion: { pattern: 'NETFLIX.COM', operator: 'contains', categoryId: LEISURE, amountSign: 'any' }, affectedCount: 5 } });
+    expect(result).toEqual({ ok: true, value: { suggestion: { pattern: 'NETFLIX.COM', operator: 'contains', categoryId: LEISURE, amountSign: 'expense' }, affectedCount: 5 } });
     expect(w.state.transactions.get('t0')).toMatchObject({ categoryId: LEISURE, categorySource: 'manual', ruleId: null, updatedAt: w.clock.now() });
     expect(w.state.rules.size).toBe(0);
     expect(onDataChanged).toHaveBeenCalledTimes(1);
@@ -61,6 +61,8 @@ describe('LearnRuleFromCorrectionUseCase.correct', () => {
     put('t0', NETFLIX);
     put('t1', { ...NETFLIX, categoryId: GIFTS, categorySource: 'manual' });
     put('t2', NETFLIX);
+    // Historial ya acertado (manual, misma categoría) para que la sugerencia no choque con el regalo.
+    for (const id of ['t3', 't4', 't5']) put(id, { ...NETFLIX, categoryId: LEISURE, categorySource: 'manual' });
 
     const result = await useCase().correct({ transactionId: 't0' as TransactionId, categoryId: LEISURE });
 

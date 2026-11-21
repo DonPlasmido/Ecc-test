@@ -137,7 +137,7 @@ describe('suggestRule', () => {
 
   it('proposes the merchant token, dropping bank noise and numbers (AC-019)', () => {
     const suggestion = suggestRule(tx({ normalizedDescription: 'COMPRA TARJ NETFLIX.COM 1234' }), LEISURE)
-    expect(suggestion).toEqual({ pattern: 'NETFLIX.COM', operator: 'contains', categoryId: LEISURE, amountSign: 'any' })
+    expect(suggestion).toEqual({ pattern: 'NETFLIX.COM', operator: 'contains', categoryId: LEISURE, amountSign: 'expense' })
   })
 
   it('prefers the longest meaningful token when history cannot discriminate', () => {
@@ -170,21 +170,31 @@ describe('suggestRule', () => {
     expect(suggestRule(tx({ normalizedDescription: 'NETFLIX.COM 9' }), LEISURE, past)?.pattern).toBe('NETFLIX.COM')
   })
 
-  it('falls back to the full normalized concept when no candidate is precise enough', () => {
+  it('falls back to the longest digit-free window when no candidate is precise enough', () => {
     const past = history([
-      ['TIENDA PEPE', GROCERIES],
-      ['TIENDA PEPE', GROCERIES],
-      ['TIENDA PEPE', GROCERIES],
+      ['TIENDA ANA', GROCERIES],
+      ['TIENDA LUIS', GROCERIES],
+      ['PEPE BAZAR', GROCERIES],
+      ['PEPE KIOSKO', GROCERIES],
     ])
-    const suggestion = suggestRule(tx({ normalizedDescription: 'TIENDA PEPE' }), LEISURE, past)
-    expect(suggestion?.pattern).toBe('TIENDA PEPE')
+    const suggestion = suggestRule(tx({ normalizedDescription: 'TIENDA DE PEPE' }), LEISURE, past)
+    expect(suggestion?.pattern).toBe('TIENDA DE PEPE')
   })
 
-  it('discards candidates matching more than 5 % of a large history', () => {
-    const noise = Array.from({ length: 200 }, (_, i) => [`COMPRA TIENDA ${i}`, LEISURE] as [string, CategoryId])
-    const past = history([...noise, ['COMPRA LIBRERIA ALFA', LEISURE]])
-    const suggestion = suggestRule(tx({ normalizedDescription: 'COMPRA LIBRERIA BETA' }), LEISURE, past)
-    expect(suggestion?.pattern).toBe('LIBRERIA')
+  it('returns null when even the fallback would take over movements of other categories', () => {
+    const past = history([['TIENDA PEPE', GROCERIES], ['TIENDA PEPE', GROCERIES], ['TIENDA PEPE', GROCERIES]])
+    expect(suggestRule(tx({ normalizedDescription: 'TIENDA PEPE' }), LEISURE, past)).toBeNull()
+  })
+
+  it('does not reject a frequent merchant when everything it covers shares the category', () => {
+    const past = history(Array.from({ length: 200 }, (_, i) => [`COMPRA MERCADONA ${i}`, GROCERIES] as [string, CategoryId]))
+    expect(suggestRule(tx({ normalizedDescription: 'COMPRA MERCADONA 999' }), GROCERIES, past)?.pattern).toBe('MERCADONA')
+  })
+
+  it('rejects a pattern that covers other categories above the threshold in a large history', () => {
+    const noise = Array.from({ length: 200 }, (_, i) => [`COMPRA LIBRERIA ${i}`, SHOPPING] as [string, CategoryId])
+    const past = history([...noise, ['COMPRA PAPEL ALFA', LEISURE]])
+    expect(suggestRule(tx({ normalizedDescription: 'COMPRA LIBRERIA PAPEL BETA' }), LEISURE, past)?.pattern).not.toBe('LIBRERIA')
   })
 
   it('does not count the movement itself twice when it is part of the history', () => {
@@ -202,13 +212,15 @@ describe('suggestRule', () => {
     expect(suggestRule(self, GROCERIES, past)?.pattern).toBe('MERCADONA')
   })
 
-  it('fallback drops tokens containing digits', () => {
-    const past = history([['TIENDA PEPE', GROCERIES], ['TIENDA PEPE', GROCERIES], ['TIENDA PEPE', GROCERIES]])
-    const suggestion = suggestRule(tx({ normalizedDescription: 'TIENDA PEPE 28001 12/05' }), LEISURE, past)
-    expect(suggestion?.pattern).toBe('TIENDA PEPE')
+  it('fallback keeps a contiguous window that matches the movement itself and drops digit tokens', () => {
+    const past = history([['TIENDA ANA', GROCERIES], ['TIENDA LUIS', GROCERIES], ['PEPE BAZAR', GROCERIES], ['PEPE KIOSKO', GROCERIES]])
+    const t = tx({ normalizedDescription: 'TIENDA DE PEPE 28001 12/05' })
+    const suggestion = suggestRule(t, LEISURE, past)
+    expect(suggestion?.pattern).toBe('TIENDA DE PEPE')
+    expect(matchRule(t, [rule({ pattern: suggestion?.pattern ?? '' })])).not.toBeNull()
   })
 
-  it('prefers the simplest pattern among equally precise candidates', () => {
+  it('proposes aggregator plus next token among equally precise candidates', () => {
     const past = history([
       ['AMAZON PRIME ES', SUBSCRIPTIONS],
       ['AMAZON MARKETPLACE', SHOPPING],
@@ -216,7 +228,7 @@ describe('suggestRule', () => {
       ['AMAZON EU', SHOPPING],
     ])
     const suggestion = suggestRule(tx({ normalizedDescription: 'AMAZON PRIME ES' }), SUBSCRIPTIONS, past)
-    expect(suggestion?.pattern).toBe('PRIME')
+    expect(suggestion?.pattern).toBe('AMAZON PRIME')
   })
 
   it('returns null for the uncategorized target or when there is nothing to match on', () => {
