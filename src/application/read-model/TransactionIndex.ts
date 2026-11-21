@@ -42,6 +42,8 @@ export interface IndexAccountBalance {
   readonly asOf: IsoDate;
   /** `false` solo si el movimiento más reciente trae el saldo del extracto. */
   readonly estimated: boolean;
+  /** `true` si ningún movimiento de la cuenta trae saldo: `balance` es solo la suma de importes. */
+  readonly balanceUnknown?: true;
 }
 
 /**
@@ -331,6 +333,7 @@ class ColumnarTransactionIndex implements TransactionIndex {
         balance: { cents: (total === 0 ? 0 : total) as Cents },
         asOf: IsoDate.fromEpochDay(state.asOf[account] as number),
         estimated: !resolvedBalance || (state.laterRows[account] as number) > 0,
+        ...(resolvedBalance ? {} : { balanceUnknown: true as const }),
       });
     }
     return result;

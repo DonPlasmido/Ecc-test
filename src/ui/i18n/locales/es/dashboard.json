@@ -42,6 +42,7 @@
     "asOf": "a {{date}}",
     "estimated": "estimado",
     "estimatedNote": "Estimado: el último movimiento no traía saldo, así que sumamos los posteriores al último saldo conocido.",
+    "noStatementBalance": "Sin saldo en el extracto",
     "total": "Total en {{count}} cuentas",
     "none": "Tus extractos no traían saldo, así que no podemos mostrarlo.",
     "unknownAccount": "Cuenta"

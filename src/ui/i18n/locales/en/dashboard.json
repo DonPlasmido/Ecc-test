@@ -42,6 +42,7 @@
     "asOf": "as of {{date}}",
     "estimated": "estimated",
     "estimatedNote": "Estimated: the latest transaction had no balance, so we added the later ones to the last known balance.",
+    "noStatementBalance": "No balance in the statement",
     "total": "Total across {{count}} accounts",
     "none": "Your statements had no balance column, so we cannot show it.",
     "unknownAccount": "Account"
