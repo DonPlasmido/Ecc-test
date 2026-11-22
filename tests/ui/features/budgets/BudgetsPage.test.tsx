@@ -151,6 +151,21 @@ describe('BudgetsPage', () => {
     expect(budget).toMatchObject({ categoryId: cat('groceries'), monthlyLimit: { cents: 30_000 }, startMonth: MARCH, endMonth: null });
   });
 
+  it('keeps focus on the list heading after saving the first budget from the empty state', async () => {
+    const user = userEvent.setup();
+    renderPage(await containerWith());
+    await user.click(await screen.findByRole('button', { name: 'Añadir presupuesto' }));
+    const dialog = await screen.findByRole('dialog', { name: 'Nuevo presupuesto' });
+    await user.selectOptions(within(dialog).getByRole('combobox', { name: /categoría/i }), 'Supermercado');
+    await user.type(within(dialog).getByRole('textbox', { name: /límite mensual/i }), '300');
+
+    await user.click(within(dialog).getByRole('button', { name: 'Guardar presupuesto' }));
+
+    await budgetList();
+    const heading = screen.getByRole('heading', { name: 'Por categoría' });
+    await waitFor(() => expect(heading).toHaveFocus());
+  });
+
   it('does not offer categories that already have a budget', async () => {
     const user = userEvent.setup();
     const container = await containerWith();

@@ -264,6 +264,17 @@ describe('ImportPage: preview', () => {
   });
 });
 
+describe('ImportPage: focus', () => {
+  it('moves focus to the preview heading once the chosen file is read instead of dropping it on body', async () => {
+    const { user } = setup();
+
+    await chooseFile(user);
+
+    const heading = screen.getByRole('heading', { name: 'Vista previa' });
+    await waitFor(() => expect(heading).toHaveFocus());
+  });
+});
+
 describe('ImportPage: confirm', () => {
   it('commits with the edited mapping and shows the summary with focus on its heading', async () => {
     const { user, importStatement } = setup();

@@ -202,6 +202,36 @@ describe('SettingsPage: encrypted backup', () => {
   });
 });
 
+describe('SettingsPage: restore focus', () => {
+  afterEach(() => {
+    delete (HTMLDialogElement.prototype as Partial<HTMLDialogElement>).showModal;
+    delete (HTMLDialogElement.prototype as Partial<HTMLDialogElement>).close;
+  });
+
+  it('returns focus to the file input when the replace dialog is cancelled, even if the browser drops it on close', async () => {
+    // Arrange: un <dialog> real suelta el foco al cerrarse si su "elemento previo" era <body>.
+    HTMLDialogElement.prototype.showModal = function showModal(this: HTMLDialogElement) {
+      this.setAttribute('open', '');
+    };
+    HTMLDialogElement.prototype.close = function close(this: HTMLDialogElement) {
+      this.removeAttribute('open');
+      if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
+    };
+    const user = userEvent.setup();
+    renderWithProviders(<SettingsPage />, { container, route: '/ajustes' });
+    const input = screen.getByLabelText(FILE_LABEL);
+    fireEvent.change(input, { target: { files: [new File(['x'], 'copia.ccbackup')] } });
+    const confirm = await screen.findByRole('dialog', { name: '¿Reemplazar todos tus datos?' });
+
+    // Act
+    await user.click(within(confirm).getByRole('button', { name: 'Cancelar' }));
+
+    // Assert
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(input).toHaveFocus();
+  });
+});
+
 describe('SettingsPage: export password dialog', () => {
   it('shows the requirements, the no-recovery warning and a strength meter', async () => {
     // Arrange
