@@ -5,6 +5,7 @@ import { Skeleton } from '@/ui/components/Skeleton';
 import { BottomNav } from './BottomNav';
 import { ErrorBoundary } from './ErrorBoundary';
 import { IndexStatusBanner } from './IndexStatusBanner';
+import { UpdateBanner } from './UpdateBanner';
 
 function PageFallback() {
   return (
@@ -37,6 +38,7 @@ export function AppLayout() {
       </header>
       <main id="main" ref={mainRef} tabIndex={-1} className="container page">
         <IndexStatusBanner />
+        <UpdateBanner />
         <ErrorBoundary resetKey={location.pathname}>
           <Suspense fallback={<PageFallback />}>
             <Outlet />

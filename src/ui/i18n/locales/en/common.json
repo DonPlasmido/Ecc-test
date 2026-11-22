@@ -141,5 +141,10 @@
   "indexFailed": {
     "message": "Your transactions could not be loaded. We retry automatically; if it persists, reload the page.",
     "reload": "Reload"
+  },
+  "update": {
+    "message": "A new version is available",
+    "finishFirst": "A new version is available. Finish what you are doing, then press Reload.",
+    "reload": "Reload"
   }
 }
