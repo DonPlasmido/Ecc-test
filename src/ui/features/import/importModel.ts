@@ -8,6 +8,14 @@ import type { RowWarning } from '@/domain/import/RowWarning';
 import type { Money } from '@/domain/money/Money';
 import type { DomainError } from '@/domain/shared/DomainError';
 
+/** Nombre de la cuenta nueva por defecto: se guarda tal cual, sin depender del idioma activo. */
+export const DEFAULT_ACCOUNT_NAME = 'Principal';
+
+/** Nada importado, nada duplicado y todo con error: no es una importación «completada». */
+export function isTotalFailure(result: { inserted: number; duplicates: number; rowErrors: readonly unknown[] }): boolean {
+  return result.inserted === 0 && result.duplicates === 0 && result.rowErrors.length > 0;
+}
+
 /** Filas normalizadas que se enseñan en la tabla de vista previa (AC-006: primeras 20). */
 export const VISIBLE_PREVIEW_ROWS = 20;
 

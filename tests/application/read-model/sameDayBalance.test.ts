@@ -22,6 +22,7 @@ describe('saldo final con varios movimientos el mismo día', () => {
       transactions: w.transactions,
       profiles: w.profiles,
       rules: w.rules,
+      categories: w.categories,
       accounts: w.accounts,
       clock: w.clock,
       ids: w.ids,

@@ -40,7 +40,7 @@ export function BudgetsPage() {
   const { t: tErrors } = useTranslation('errors');
   const language = useLanguage();
   const categoryName = useCategoryName();
-  const { manageCatalog } = useContainer();
+  const { manageCatalog, onExternalChange } = useContainer();
   const { notify } = useNotifications();
   const [searchParams, setSearchParams] = useSearchParams();
   const currentMonth = yearMonthOf(new Date());
@@ -57,6 +57,9 @@ export function BudgetsPage() {
   const listHeadingRef = useRef<HTMLHeadingElement>(null);
   const result = useBudgetsData(month, revision);
 
+  // Otra pestaña cambió datos: se recargan presupuestos y gasto.
+  useEffect(() => onExternalChange(() => setRevision((n) => n + 1)), [onExternalChange]);
+
   // Stale-while-revalidate: se mantiene lo último mostrado del mismo mes mientras recarga (sin saltos ni foco perdido).
   if (result.status === 'success' && shown?.data !== result.data) setShown({ month, data: result.data });
   const isFresh = result.status === 'success';
@@ -72,7 +75,9 @@ export function BudgetsPage() {
     if (freshData === null) return;
     if (shouldFocusListRef.current) {
       shouldFocusListRef.current = false;
-      listHeadingRef.current?.focus();
+      // Solo si el botón que abrió el diálogo desapareció con la recarga (p. ej. el del estado vacío).
+      const active = document.activeElement;
+      if (!active || active === document.body || !active.isConnected) listHeadingRef.current?.focus();
     }
     const watched = watchedCategoryRef.current;
     if (watched === null) return;
@@ -92,6 +97,7 @@ export function BudgetsPage() {
   const handleSaved = (budget: Budget) => {
     setEditor(null);
     setRevision((n) => n + 1);
+    shouldFocusListRef.current = true;
     watchedCategoryRef.current = budget.categoryId;
     notify({ tone: 'success', message: t('toast.saved', { category: nameOfId(budget.categoryId) }) });
   };

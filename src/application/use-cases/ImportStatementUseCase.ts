@@ -6,7 +6,8 @@ import {
   type ImportResult,
   type ImportStatement,
 } from '@/application/ports/inbound/ImportStatement';
-import type { AccountRepository, RuleRepository } from '@/application/ports/outbound/CatalogRepositories';
+import type { AccountRepository, CategoryRepository, RuleRepository } from '@/application/ports/outbound/CatalogRepositories';
+import { listActiveRules } from '@/application/use-cases/applyRules';
 import type { ClockPort } from '@/application/ports/outbound/ClockPort';
 import type { IdGeneratorPort } from '@/application/ports/outbound/IdGeneratorPort';
 import type { ImportProfileRepository } from '@/application/ports/outbound/ImportProfileRepository';
@@ -33,6 +34,7 @@ export interface ImportStatementDeps {
   readonly transactions: TransactionRepository;
   readonly profiles: ImportProfileRepository;
   readonly rules: RuleRepository;
+  readonly categories: CategoryRepository;
   readonly accounts: AccountRepository;
   readonly clock: ClockPort;
   readonly ids: IdGeneratorPort;
@@ -108,7 +110,7 @@ export class ImportStatementUseCase implements ImportStatement {
     const keyed = assignDedupKeys(drafts);
     const existing = await this.deps.transactions.existingDedupKeys(keyed.map((d) => d.dedupKey));
     const fresh = keyed.filter((d) => !existing.has(d.dedupKey));
-    const rules = sortRules(await this.deps.rules.list());
+    const rules = sortRules(await listActiveRules(this.deps.rules, this.deps.categories));
     const batchId = this.deps.ids.next() as ImportBatchId;
     const transactions = fresh.map((d) => this.toTransaction(d, batchId, rules));
 

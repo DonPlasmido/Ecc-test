@@ -53,6 +53,20 @@ describe('App shell', () => {
     expect(window.location.hash).toBe('#/');
   });
 
+  it('moves focus to the h1 when the hash changes without using the navigation (browser Back)', async () => {
+    await renderApp('#/');
+    await act(async () => {
+      window.location.hash = '#/ajustes';
+    });
+    expect(await screen.findByRole('heading', { level: 1, name: 'Ajustes' }, { timeout: 3000 })).toBeInTheDocument();
+    await act(async () => {
+      window.history.back();
+    });
+
+    const heading = await screen.findByRole('heading', { level: 1, name: 'Panel' });
+    await waitFor(() => expect(heading).toHaveFocus());
+  });
+
   it('navigating moves focus to the new h1, updates the title and aria-current', async () => {
     const user = userEvent.setup();
     await renderApp();

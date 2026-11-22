@@ -141,5 +141,10 @@
   "indexFailed": {
     "message": "No se han podido cargar tus movimientos. Lo reintentamos automáticamente; si persiste, recarga la página.",
     "reload": "Recargar"
+  },
+  "update": {
+    "message": "Hay una versión nueva",
+    "finishFirst": "Hay una versión nueva. Termina lo que estás haciendo y pulsa Recargar.",
+    "reload": "Recargar"
   }
 }

@@ -33,7 +33,8 @@
   "category": {
     "notFound": "The category does not exist.",
     "invalidName": "Enter a name for the category.",
-    "inUse": "The category is in use. Archive it instead of deleting it."
+    "inUse": "The category is in use. Archive it instead of deleting it.",
+    "duplicateName": "A category with that name already exists."
   },
   "rule": {
     "notFound": "The rule does not exist.",

@@ -1,3 +1,4 @@
+import type { Ref } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { Account } from '@/domain/account/Account';
 import type { ColumnMapping } from '@/domain/import/ColumnMapping';
@@ -6,7 +7,7 @@ import { IconWarning } from '@/ui/components/icons';
 import type { AsyncResult } from '@/ui/hooks/useAsync';
 import { errorMessage } from '@/ui/i18n/errorMessage';
 import { AccountPicker } from './AccountPicker';
-import { buildPreviewModel, mappingError } from './importModel';
+import { buildPreviewModel, DEFAULT_ACCOUNT_NAME, mappingError } from './importModel';
 import { MappingEditor } from './MappingEditor';
 import { PreviewTable } from './PreviewTable';
 import { problemMessage } from './problemMessage';
@@ -26,6 +27,8 @@ type PreviewPanelProps = {
   onAccountChange: (choice: AccountChoice) => void;
   onConfirm: () => void;
   onCancel: () => void;
+  /** Destino del foco cuando acaba de llegar la vista previa. */
+  headingRef?: Ref<HTMLHeadingElement>;
 };
 
 function DetectionInfo({ draft }: { draft: ImportDraft }) {
@@ -78,7 +81,7 @@ function useBlockers(draft: ImportDraft, accounts: AsyncResult<readonly Account[
 }
 
 /** Vista previa editable: detección, mapeo, avisos, tabla normalizada, cuenta destino y confirmación. */
-export function PreviewPanel(props: PreviewPanelProps) {
+export function PreviewPanel({ headingRef, ...props }: PreviewPanelProps) {
   const { draft, accounts, accountChoice, isCommitting, problem } = props;
   const { t } = useTranslation('import');
   const canPreview = mappingError(draft.mapping) === null;
@@ -88,7 +91,7 @@ export function PreviewPanel(props: PreviewPanelProps) {
 
   return (
     <section className="card import-preview-card" aria-labelledby="import-preview-heading" aria-busy={isCommitting || undefined}>
-      <h2 className="card__title" id="import-preview-heading">
+      <h2 className="card__title" id="import-preview-heading" ref={headingRef} tabIndex={-1}>
         {t('detection.heading')}
       </h2>
       <DetectionInfo draft={draft} />
@@ -119,7 +122,7 @@ export function PreviewPanel(props: PreviewPanelProps) {
           <AccountPicker
             accounts={accounts.data}
             value={accountChoice}
-            defaultNewName={t('account.defaultName')}
+            defaultNewName={DEFAULT_ACCOUNT_NAME}
             isDisabled={isCommitting}
             onChange={props.onAccountChange}
           />

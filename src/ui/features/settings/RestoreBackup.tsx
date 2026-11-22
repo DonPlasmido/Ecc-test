@@ -1,10 +1,11 @@
-import { useId, useRef, useState, type ChangeEvent, type FormEvent } from 'react';
+import { useEffect, useId, useRef, useState, type ChangeEvent, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
-import { BACKUP_FILE_EXTENSION } from '@/application/ports/inbound/ExportEncryptedBackup';
+import { BACKUP_FILE_EXTENSION, BACKUP_MAGIC_TEXT } from '@/application/ports/inbound/ExportEncryptedBackup';
 import { Button } from '@/ui/components/Button';
 import { Dialog } from '@/ui/components/Dialog';
 import { useNotifications } from '@/ui/components/Toast';
 import { useContainer } from '@/ui/hooks/useContainer';
+import { domainError } from '@/domain/shared/DomainError';
 import { errorMessage } from '@/ui/i18n/errorMessage';
 import { formatDate, formatInteger } from '@/ui/i18n/format';
 import { useLanguage } from '@/ui/i18n/useLanguage';
@@ -23,16 +24,27 @@ type RestoreBackupProps = {
  */
 export function RestoreBackup({ onRestored }: RestoreBackupProps) {
   const { t } = useTranslation('settings');
+  const { t: tErrors } = useTranslation('errors');
   const [file, setFile] = useState<File | null>(null);
   const [step, setStep] = useState<'confirm' | 'password' | null>(null);
+  const shouldRefocus = useRef(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const hintId = `${INPUT_ID}-hint`;
 
-  const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
+  const [formatError, setFormatError] = useState<string | null>(null);
+
+  const handleChange = async (event: ChangeEvent<HTMLInputElement>) => {
     const chosen = event.target.files?.[0] ?? null;
     // Se vacía para que volver a elegir el mismo archivo dispare `change` otra vez.
     event.target.value = '';
+    setFormatError(null);
     if (!chosen) return;
+    // Cabecera comprobada ANTES de pedir confirmación y contraseña.
+    const head = await chosen.slice(0, BACKUP_MAGIC_TEXT.length).text().catch(() => '');
+    if (head !== BACKUP_MAGIC_TEXT) {
+      setFormatError(errorMessage(tErrors, domainError('backup.invalidFormat')));
+      return;
+    }
     setFile(chosen);
     setStep('confirm');
   };
@@ -40,8 +52,15 @@ export function RestoreBackup({ onRestored }: RestoreBackupProps) {
   const close = () => {
     setStep(null);
     setFile(null);
-    inputRef.current?.focus();
+    shouldRefocus.current = true;
   };
+
+  // Tras desmontar el diálogo: `dialog.close()` nativo suelta el foco en <body> si no venía de un elemento.
+  useEffect(() => {
+    if (!shouldRefocus.current || step !== null) return;
+    shouldRefocus.current = false;
+    inputRef.current?.focus();
+  }, [step]);
 
   return (
     <div className="field">
@@ -58,8 +77,13 @@ export function RestoreBackup({ onRestored }: RestoreBackupProps) {
         type="file"
         accept={`${BACKUP_FILE_EXTENSION},application/octet-stream`}
         aria-describedby={hintId}
-        onChange={handleChange}
+        onChange={(event) => void handleChange(event)}
       />
+      {formatError ? (
+        <p className="field__error" role="alert">
+          {formatError}
+        </p>
+      ) : null}
       {file && step === 'confirm' ? (
         <ConfirmReplaceDialog fileName={file.name} onCancel={close} onContinue={() => setStep('password')} />
       ) : null}

@@ -69,6 +69,7 @@ export function createFakeContainer(
     settings: overrides.settings ?? unprovided('settings'),
     storage: overrides.storage ?? unprovided('storage'),
     whenIndexIdle: overrides.whenIndexIdle ?? (() => Promise.resolve()),
+    onExternalChange: overrides.onExternalChange ?? (() => () => undefined),
     dispose: overrides.dispose ?? (() => undefined),
     indexStore: overrides.indexStore ?? createFakeIndexStore(),
   };

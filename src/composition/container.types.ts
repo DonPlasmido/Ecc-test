@@ -32,6 +32,8 @@ export interface AppContainer {
   readonly storage: StoragePersistencePort;
   /** Resuelve cuando el índice ya refleja todas las escrituras en curso (tests y flujos que esperan al índice). */
   whenIndexIdle(): Promise<void>;
+  /** Se invoca cuando OTRA pestaña cambia datos (restaurar, borrar todo, importar…); devuelve la baja. */
+  onExternalChange(listener: () => void): () => void;
   /** Libera recursos (cierra la base de datos). */
   dispose(): void;
 }

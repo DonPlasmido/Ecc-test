@@ -1,6 +1,7 @@
-import { useEffect, useRef, type ReactNode } from 'react';
+import { useContext, useEffect, useRef, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation } from 'react-router-dom';
+import { NavigationTrackerContext } from './navigationTracker';
 
 type PageProps = {
   /** Título ya traducido: `<h1>` único y `document.title` (a11y T3, T5). */
@@ -27,7 +28,9 @@ export function Page({ title, intro, children }: PageProps) {
   }, [t, title]);
 
   // Montaje: si se llega por navegación (no es la ubicación inicial del router), foco al h1.
-  const mountedByNavigation = useRef(location.key !== INITIAL_LOCATION_KEY);
+  // Atrás hacia la primera entrada del historial vuelve a tener la clave inicial: lo delata el seguimiento del layout.
+  const tracker = useContext(NavigationTrackerContext);
+  const mountedByNavigation = useRef(location.key !== INITIAL_LOCATION_KEY || tracker);
   const previousPathname = useRef<string | null>(null);
   useEffect(() => {
     const isFirstRun = previousPathname.current === null;

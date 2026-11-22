@@ -26,7 +26,7 @@ export interface CatalogHandle {
 
 /** Reglas y categorías de `manageCatalog`, con actualización local inmutable tras cada escritura. */
 export function useCatalog(): CatalogHandle {
-  const { manageCatalog } = useContainer();
+  const { manageCatalog, onExternalChange } = useContainer();
   const [attempt, setAttempt] = useState(0);
   const [state, setState] = useState<CatalogState>({ status: 'loading' });
 
@@ -46,6 +46,9 @@ export function useCatalog(): CatalogHandle {
       isActive = false;
     };
   }, [manageCatalog, attempt]);
+
+  // Otra pestaña cambió datos (restaurar, borrar todo…): se relee el catálogo sin parpadeo de «cargando».
+  useEffect(() => onExternalChange(() => setAttempt((n) => n + 1)), [onExternalChange]);
 
   const reload = useCallback(() => {
     setState({ status: 'loading' });

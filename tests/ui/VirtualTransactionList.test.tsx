@@ -136,6 +136,22 @@ describe('VirtualTransactionList', () => {
     expect(first).toHaveAttribute('tabindex', '-1');
   });
 
+  it('scrolls the newly focused row into the page viewport so the fixed nav cannot cover it (WCAG 2.4.11)', async () => {
+    const user = userEvent.setup();
+    const scrollIntoView = vi.fn();
+    Element.prototype.scrollIntoView = scrollIntoView;
+    renderList();
+    const [, second] = dataRows(screen.getByRole('grid'));
+    await user.tab();
+
+    await user.keyboard('{ArrowDown}');
+
+    expect(second).toHaveFocus();
+    expect(scrollIntoView).toHaveBeenCalledWith({ block: 'nearest' });
+    expect(scrollIntoView.mock.contexts.at(-1)).toBe(second);
+    delete (Element.prototype as Partial<Element>).scrollIntoView;
+  });
+
   it('jumps to the last of 10.000 rows with Ctrl+End and keeps the active row mounted', async () => {
     const user = userEvent.setup();
     renderList();
