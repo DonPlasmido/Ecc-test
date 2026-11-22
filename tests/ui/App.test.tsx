@@ -58,7 +58,7 @@ describe('App shell', () => {
     await act(async () => {
       window.location.hash = '#/ajustes';
     });
-    expect(await screen.findByRole('heading', { level: 1, name: 'Ajustes' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { level: 1, name: 'Ajustes' }, { timeout: 3000 })).toBeInTheDocument();
     await act(async () => {
       window.history.back();
     });

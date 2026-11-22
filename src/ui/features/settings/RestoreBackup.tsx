@@ -1,4 +1,4 @@
-import { useId, useRef, useState, type ChangeEvent, type FormEvent } from 'react';
+import { useEffect, useId, useRef, useState, type ChangeEvent, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BACKUP_FILE_EXTENSION } from '@/application/ports/inbound/ExportEncryptedBackup';
 import { Button } from '@/ui/components/Button';
@@ -25,6 +25,7 @@ export function RestoreBackup({ onRestored }: RestoreBackupProps) {
   const { t } = useTranslation('settings');
   const [file, setFile] = useState<File | null>(null);
   const [step, setStep] = useState<'confirm' | 'password' | null>(null);
+  const shouldRefocus = useRef(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const hintId = `${INPUT_ID}-hint`;
 
@@ -40,8 +41,15 @@ export function RestoreBackup({ onRestored }: RestoreBackupProps) {
   const close = () => {
     setStep(null);
     setFile(null);
-    inputRef.current?.focus();
+    shouldRefocus.current = true;
   };
+
+  // Tras desmontar el diálogo: `dialog.close()` nativo suelta el foco en <body> si no venía de un elemento.
+  useEffect(() => {
+    if (!shouldRefocus.current || step !== null) return;
+    shouldRefocus.current = false;
+    inputRef.current?.focus();
+  }, [step]);
 
   return (
     <div className="field">

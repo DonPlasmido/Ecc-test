@@ -72,7 +72,9 @@ export function BudgetsPage() {
     if (freshData === null) return;
     if (shouldFocusListRef.current) {
       shouldFocusListRef.current = false;
-      listHeadingRef.current?.focus();
+      // Solo si el botón que abrió el diálogo desapareció con la recarga (p. ej. el del estado vacío).
+      const active = document.activeElement;
+      if (!active || active === document.body || !active.isConnected) listHeadingRef.current?.focus();
     }
     const watched = watchedCategoryRef.current;
     if (watched === null) return;
@@ -92,6 +94,7 @@ export function BudgetsPage() {
   const handleSaved = (budget: Budget) => {
     setEditor(null);
     setRevision((n) => n + 1);
+    shouldFocusListRef.current = true;
     watchedCategoryRef.current = budget.categoryId;
     notify({ tone: 'success', message: t('toast.saved', { category: nameOfId(budget.categoryId) }) });
   };

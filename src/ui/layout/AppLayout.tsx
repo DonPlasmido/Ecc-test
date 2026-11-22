@@ -1,10 +1,11 @@
-import { Suspense, useRef, type MouseEvent } from 'react';
+import { Suspense, useRef, useState, type MouseEvent } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Skeleton } from '@/ui/components/Skeleton';
 import { BottomNav } from './BottomNav';
 import { ErrorBoundary } from './ErrorBoundary';
 import { IndexStatusBanner } from './IndexStatusBanner';
+import { NavigationTrackerContext } from './navigationTracker';
 
 function PageFallback() {
   return (
@@ -20,6 +21,14 @@ export function AppLayout() {
   const { t } = useTranslation();
   const mainRef = useRef<HTMLElement>(null);
   const location = useLocation();
+
+  // Estado derivado durante el render (patrón de React): la página nueva monta en este mismo commit y debe verlo.
+  const [lastPathname, setLastPathname] = useState(location.pathname);
+  const [hasNavigated, setHasNavigated] = useState(false);
+  if (lastPathname !== location.pathname) {
+    setLastPathname(location.pathname);
+    setHasNavigated(true);
+  }
 
   // Con hash router, `href="#main"` cambiaría la ruta: se enfoca `main` a mano (a11y T4).
   const handleSkip = (event: MouseEvent<HTMLAnchorElement>) => {
@@ -39,7 +48,9 @@ export function AppLayout() {
         <IndexStatusBanner />
         <ErrorBoundary resetKey={location.pathname}>
           <Suspense fallback={<PageFallback />}>
-            <Outlet />
+            <NavigationTrackerContext.Provider value={hasNavigated}>
+              <Outlet />
+            </NavigationTrackerContext.Provider>
           </Suspense>
         </ErrorBoundary>
       </main>
