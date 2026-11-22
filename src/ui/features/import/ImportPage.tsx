@@ -9,7 +9,7 @@ import { useContainer } from '@/ui/hooks/useContainer';
 import { Page } from '@/ui/layout/Page';
 import { FilePicker } from './FilePicker';
 import { ImportSummary } from './ImportSummary';
-import { buildPreviewModel, mappingError } from './importModel';
+import { buildPreviewModel, DEFAULT_ACCOUNT_NAME, isTotalFailure, mappingError } from './importModel';
 import { PreviewPanel } from './PreviewPanel';
 import { useImportFlow, type AccountChoice, type FileSource } from './useImportFlow';
 import './import.css';
@@ -43,7 +43,7 @@ export function ImportPage() {
   // `async`: un fallo síncrono del puerto también llega como estado de error (no rompe la pantalla).
   const accountsTask = useCallback(async () => manageCatalog.listAccounts(), [manageCatalog]);
   const accounts = useAsync(accountsTask);
-  const choice = effectiveChoice(accountChoice, accounts.status === 'success' ? accounts.data : null, t('account.defaultName'));
+  const choice = effectiveChoice(accountChoice, accounts.status === 'success' ? accounts.data : null, DEFAULT_ACCOUNT_NAME);
 
   const loadSource = useCallback(
     async (source: FileSource) => {
@@ -98,7 +98,13 @@ export function ImportPage() {
     // Una cuenta recién creada debe aparecer en la próxima importación.
     accounts.reload();
     announce(
-      t('summary.announce', { inserted: result.inserted, duplicates: result.duplicates, categorized: result.autoCategorized }),
+      isTotalFailure(result)
+        ? t('summary.announceFailed')
+        : [
+            t('summary.announceInserted', { count: result.inserted }),
+            t('summary.announceDuplicates', { count: result.duplicates }),
+            t('summary.announceCategorized', { count: result.autoCategorized }),
+          ].join(', ') + '.',
     );
   };
 

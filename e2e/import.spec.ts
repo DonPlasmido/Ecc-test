@@ -35,7 +35,7 @@ test.describe('Importar extracto (F1)', () => {
     await screen.chooseSample('bbva.xlsx')
     await expect(page.getByText(/Cabecera en la fila \d+ del archivo/)).toBeVisible()
     await expect(screen.previewTable.getByRole('row').nth(1)).toContainText('TRANSFERENCIA A CUENTA AHORRO')
-    await expect(page.getByRole('textbox', { name: /Nombre de la nueva cuenta/ })).toHaveValue('Cuenta principal')
+    await expect(page.getByRole('textbox', { name: /Nombre de la nueva cuenta/ })).toHaveValue('Principal')
     await expectNoA11yViolations(page)
 
     await screen.confirm()

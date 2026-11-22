@@ -62,7 +62,7 @@
       "text": "Export all your data to a password-encrypted file or restore an earlier backup."
     },
     "appearance": "Appearance",
-    "rulesLink": "Categorization rules"
+    "rulesLink": "Categorisation rules"
   },
   "actions": {
     "close": "Close",
@@ -111,7 +111,7 @@
     }
   },
   "categories": {
-    "uncategorized": "Uncategorized",
+    "uncategorized": "Uncategorised",
     "groceries": "Groceries",
     "restaurants": "Restaurants and cafés",
     "transport": "Transport",

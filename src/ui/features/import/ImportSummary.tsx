@@ -3,9 +3,10 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import type { ImportResult } from '@/application/ports/inbound/ImportStatement';
 import { Button } from '@/ui/components/Button';
-import { IconCheck } from '@/ui/components/icons';
+import { IconCheck, IconError } from '@/ui/components/icons';
 import { errorMessage } from '@/ui/i18n/errorMessage';
 import { ROUTES } from '@/ui/routes';
+import { isTotalFailure } from './importModel';
 
 type ImportSummaryProps = {
   fileName: string;
@@ -25,6 +26,7 @@ export function ImportSummary({ fileName, result, onImportAnother }: ImportSumma
     headingRef.current?.focus();
   }, []);
 
+  const isFailure = isTotalFailure(result);
   const figures = [
     { key: 'inserted', value: result.inserted },
     { key: 'duplicates', value: result.duplicates },
@@ -35,10 +37,10 @@ export function ImportSummary({ fileName, result, onImportAnother }: ImportSumma
   return (
     <section className="card import-summary" aria-labelledby="import-summary-heading">
       <div className="import-summary__header">
-        <IconCheck className="icon import-summary__icon" />
+        {isFailure ? <IconError className="icon import-summary__icon" /> : <IconCheck className="icon import-summary__icon" />}
         <div className="stack stack--tight">
           <h2 className="card__title" id="import-summary-heading" ref={headingRef} tabIndex={-1}>
-            {t('summary.heading')}
+            {isFailure ? t('summary.failedHeading') : t('summary.heading')}
           </h2>
           <p className="text-muted text-sm">{t('detection.fileName', { name: fileName })}</p>
         </div>
@@ -51,6 +53,7 @@ export function ImportSummary({ fileName, result, onImportAnother }: ImportSumma
           </div>
         ))}
       </dl>
+      {isFailure ? <p role="alert">{t('summary.failedText')}</p> : null}
       {result.inserted === 0 && result.duplicates > 0 ? <p>{t('summary.nothingNew')}</p> : null}
       {result.rowErrors.length > 0 ? (
         <div className="stack stack--tight">

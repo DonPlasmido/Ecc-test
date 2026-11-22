@@ -6,7 +6,7 @@ import { IconWarning } from '@/ui/components/icons';
 import type { AsyncResult } from '@/ui/hooks/useAsync';
 import { errorMessage } from '@/ui/i18n/errorMessage';
 import { AccountPicker } from './AccountPicker';
-import { buildPreviewModel, mappingError } from './importModel';
+import { buildPreviewModel, DEFAULT_ACCOUNT_NAME, mappingError } from './importModel';
 import { MappingEditor } from './MappingEditor';
 import { PreviewTable } from './PreviewTable';
 import { problemMessage } from './problemMessage';
@@ -119,7 +119,7 @@ export function PreviewPanel(props: PreviewPanelProps) {
           <AccountPicker
             accounts={accounts.data}
             value={accountChoice}
-            defaultNewName={t('account.defaultName')}
+            defaultNewName={DEFAULT_ACCOUNT_NAME}
             isDisabled={isCommitting}
             onChange={props.onAccountChange}
           />

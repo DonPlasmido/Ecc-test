@@ -65,7 +65,7 @@
     "updated": "Rule “{{pattern}}” saved",
     "deleted": "Rule “{{pattern}}” deleted",
     "deleteTitle": "Delete the rule?",
-    "deleteText": "The rule “{{pattern}}” will stop applying. Categorized transactions keep their category until you apply the rules again.",
+    "deleteText": "The rule “{{pattern}}” will stop applying. Categorised transactions keep their category until you apply the rules again.",
     "deleteConfirm": "Delete rule"
   },
   "ruleForm": {
@@ -91,7 +91,7 @@
     "samplesLabel": "Sample matching descriptions"
   },
   "apply": {
-    "text": "Apply all rules again to your transactions, except the ones you categorized by hand.",
+    "text": "Apply all rules again to your transactions, except the ones you categorised by hand.",
     "button": "Apply rules now",
     "running": "Applying rules…",
     "result_one": "Done: {{count}} transaction changed category.",
