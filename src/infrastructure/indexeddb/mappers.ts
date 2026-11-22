@@ -75,6 +75,7 @@ export function transactionToRecord(tx: Transaction): TransactionRecord {
     note: tx.note,
     dedupKey: tx.dedupKey,
     importBatchId: tx.importBatchId,
+    ...(tx.sourceLine === undefined ? {} : { sourceLine: tx.sourceLine }),
     createdAt: tx.createdAt,
     updatedAt: tx.updatedAt,
   };
@@ -100,6 +101,7 @@ export function transactionFromRecord(r: TransactionRecord): Transaction {
     note: read.text('note', r.note),
     dedupKey: read.text('dedupKey', r.dedupKey) as DedupKey,
     importBatchId: read.text('importBatchId', r.importBatchId) as ImportBatchId,
+    ...(typeof r.sourceLine === 'number' ? { sourceLine: r.sourceLine } : {}),
     createdAt: read.text('createdAt', r.createdAt),
     updatedAt: read.text('updatedAt', r.updatedAt),
   };

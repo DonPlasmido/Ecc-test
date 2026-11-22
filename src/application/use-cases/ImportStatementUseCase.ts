@@ -165,6 +165,7 @@ export class ImportStatementUseCase implements ImportStatement {
         note: '',
         dedupKey: d.dedupKey,
         importBatchId: batchId,
+        sourceLine: d.sourceLine,
         createdAt: now,
         updatedAt: now,
       },

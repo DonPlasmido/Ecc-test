@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { formatDate, formatMoney, formatMonth, formatPercentFromBasisPoints } from '@/ui/i18n/format';
+import {
+  formatBudgetPercent,
+  formatDate,
+  formatMoney,
+  formatMonth,
+  formatPercentFromBasisPoints,
+  formatVariationPercent,
+} from '@/ui/i18n/format';
 
 /** Normaliza espacios duros de `Intl` para comparar. */
 const plain = (text: string) => text.replace(/\s/g, ' ');
@@ -32,5 +39,24 @@ describe('format', () => {
     expect(formatMonth('2026-03', 'en', 'long')).toBe('March 2026');
     expect(plain(formatPercentFromBasisPoints(8_000, 'es'))).toBe('80 %');
     expect(formatPercentFromBasisPoints(13_500, 'en')).toBe('135%');
+  });
+
+  it('never rounds a budget percentage across its status boundary', () => {
+    const percent = (spent: number, limit: number, bp: number, status: 'ok' | 'near' | 'over') =>
+      plain(formatBudgetPercent({ spentCents: spent, limitCents: limit, usedBasisPoints: bp, status }, 'es'));
+    expect(percent(79_990, 100_013, 7_999, 'ok')).toBe('79 %');
+    expect(percent(80_000, 100_000, 8_000, 'near')).toBe('80 %');
+    expect(percent(80_000, 80_000, 10_000, 'near')).toBe('100 %');
+    expect(percent(80_000, 79_992, 10_001, 'over')).toBe('101 %');
+    expect(percent(80_000, 79_999, 10_000, 'over')).toBe('101 %');
+    expect(percent(54_000, 40_000, 13_500, 'over')).toBe('135 %');
+  });
+
+  it('keeps one decimal for small variations', () => {
+    expect(plain(formatVariationPercent(46, 'es'))).toBe('0,5 %');
+    expect(plain(formatVariationPercent(888, 'es'))).toBe('8,9 %');
+    expect(formatVariationPercent(888, 'en')).toBe('8.9%');
+    expect(plain(formatVariationPercent(1_000, 'es'))).toBe('10 %');
+    expect(plain(formatVariationPercent(9_700, 'es'))).toBe('97 %');
   });
 });

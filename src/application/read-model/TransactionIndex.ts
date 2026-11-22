@@ -42,6 +42,8 @@ export interface IndexAccountBalance {
   readonly asOf: IsoDate;
   /** `false` solo si el movimiento más reciente trae el saldo del extracto. */
   readonly estimated: boolean;
+  /** `true` si ningún movimiento de la cuenta trae saldo: `balance` es solo la suma de importes. */
+  readonly balanceUnknown?: true;
 }
 
 /**
@@ -82,8 +84,6 @@ export interface TransactionIndex {
 const INITIAL_CAPACITY = 1024;
 const BULK_UPSERT_THRESHOLD = 256;
 const MAX_SYMBOLS = 0xffff;
-const SLOT_RANGE = 4_294_967_296;
-const DAY_OFFSET = 1 << 20;
 const NO_BALANCE = Number.NaN;
 
 class SymbolTable {
@@ -125,6 +125,7 @@ class ColumnarTransactionIndex implements TransactionIndex {
   private monthKey = new Int32Array(INITIAL_CAPACITY);
   private cents = new Float64Array(INITIAL_CAPACITY);
   private balance = new Float64Array(INITIAL_CAPACITY);
+  private sourceLine = new Int32Array(INITIAL_CAPACITY);
   private categoryIdx = new Uint16Array(INITIAL_CAPACITY);
   private accountIdx = new Uint16Array(INITIAL_CAPACITY);
   private alive = new Uint8Array(INITIAL_CAPACITY);
@@ -132,6 +133,7 @@ class ColumnarTransactionIndex implements TransactionIndex {
   private orderLength = 0;
   private orderDirty = false;
   private readonly ids: string[] = [];
+  private readonly createdAt: string[] = [];
   private readonly normalized: string[] = [];
   private readonly searchText: string[] = [];
   private readonly slotById = new Map<string, number>();
@@ -331,6 +333,7 @@ class ColumnarTransactionIndex implements TransactionIndex {
         balance: { cents: (total === 0 ? 0 : total) as Cents },
         asOf: IsoDate.fromEpochDay(state.asOf[account] as number),
         estimated: !resolvedBalance || (state.laterRows[account] as number) > 0,
+        ...(resolvedBalance ? {} : { balanceUnknown: true as const }),
       });
     }
     return result;
@@ -432,6 +435,8 @@ class ColumnarTransactionIndex implements TransactionIndex {
     this.epochDay[slot] = day;
     this.monthKey[slot] = Number(tx.date.slice(0, 4)) * 12 + Number(tx.date.slice(5, 7)) - 1;
     this.cents[slot] = tx.amount.cents;
+    this.sourceLine[slot] = tx.sourceLine ?? 0;
+    this.createdAt[slot] = tx.createdAt;
     this.balance[slot] = tx.balance === null ? NO_BALANCE : tx.balance.cents;
     this.categoryIdx[slot] = this.categories.intern(tx.categoryId);
     this.accountIdx[slot] = this.accounts.intern(tx.accountId);
@@ -450,6 +455,7 @@ class ColumnarTransactionIndex implements TransactionIndex {
     this.monthKey = growTyped(this.monthKey, next, Int32Array);
     this.cents = growTyped(this.cents, next, Float64Array);
     this.balance = growTyped(this.balance, next, Float64Array);
+    this.sourceLine = growTyped(this.sourceLine, next, Int32Array);
     this.categoryIdx = growTyped(this.categoryIdx, next, Uint16Array);
     this.accountIdx = growTyped(this.accountIdx, next, Uint16Array);
     this.alive = growTyped(this.alive, next, Uint8Array);
@@ -464,18 +470,32 @@ class ColumnarTransactionIndex implements TransactionIndex {
 
   private ensureOrder(): void {
     if (!this.orderDirty) return;
-    const keys = new Float64Array(this.slotById.size);
+    const slots = new Uint32Array(this.slotById.size);
     let n = 0;
     for (let slot = 0; slot < this.usedSlots; slot += 1) {
       if (this.alive[slot] === 1) {
-        keys[n] = ((this.epochDay[slot] as number) + DAY_OFFSET) * SLOT_RANGE + slot;
+        slots[n] = slot;
         n += 1;
       }
     }
-    keys.sort();
-    for (let i = 0; i < n; i += 1) this.order[i] = (keys[i] as number) % SLOT_RANGE;
+    slots.sort((a, b) => this.compareSlots(a, b));
+    this.order.set(slots);
     this.orderLength = n;
     this.orderDirty = false;
+  }
+
+  /**
+   * Orden cronológico estable: día, momento de importación, línea del extracto y, por último, el slot.
+   * Así los movimientos del mismo día conservan el orden del extracto (clave para el saldo final).
+   */
+  private compareSlots(a: number, b: number): number {
+    const dayDiff = (this.epochDay[a] as number) - (this.epochDay[b] as number);
+    if (dayDiff !== 0) return dayDiff;
+    const createdA = this.createdAt[a] as string;
+    const createdB = this.createdAt[b] as string;
+    if (createdA !== createdB) return createdA < createdB ? -1 : 1;
+    const lineDiff = (this.sourceLine[a] as number) - (this.sourceLine[b] as number);
+    return lineDiff !== 0 ? lineDiff : a - b;
   }
 
   /** Primera posición cuyo día es ≥ `day`. */
@@ -490,29 +510,27 @@ class ColumnarTransactionIndex implements TransactionIndex {
     return lo;
   }
 
-  /** Primera posición cuya clave (día, slot) es ≥ la dada. */
-  private lowerBoundKey(day: number, slot: number): number {
+  /** Primera posición cuya clave de orden es ≥ la de `slot`. */
+  private lowerBoundKey(slot: number): number {
     let lo = 0;
     let hi = this.orderLength;
     while (lo < hi) {
       const mid = (lo + hi) >>> 1;
-      const midSlot = this.order[mid] as number;
-      const midDay = this.epochDay[midSlot] as number;
-      if (midDay < day || (midDay === day && midSlot < slot)) lo = mid + 1;
+      if (this.compareSlots(this.order[mid] as number, slot) < 0) lo = mid + 1;
       else hi = mid;
     }
     return lo;
   }
 
   private orderInsert(slot: number): void {
-    const pos = this.lowerBoundKey(this.epochDay[slot] as number, slot);
+    const pos = this.lowerBoundKey(slot);
     this.order.copyWithin(pos + 1, pos, this.orderLength);
     this.order[pos] = slot;
     this.orderLength += 1;
   }
 
   private orderRemove(slot: number): void {
-    const pos = this.lowerBoundKey(this.epochDay[slot] as number, slot);
+    const pos = this.lowerBoundKey(slot);
     this.order.copyWithin(pos, pos + 1, this.orderLength);
     this.orderLength -= 1;
   }

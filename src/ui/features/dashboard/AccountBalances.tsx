@@ -18,8 +18,9 @@ type AccountBalancesProps = {
 export function AccountBalances({ balances, accounts }: AccountBalancesProps) {
   const { t } = useTranslation('dashboard');
   const language = useLanguage();
-  const hasEstimate = balances.some((balance) => balance.estimated === true);
-  const total = balances.reduce((sum, balance) => sum + balance.balance.cents, 0);
+  const withStatement = balances.filter((balance) => balance.balanceUnknown !== true);
+  const hasEstimate = withStatement.some((balance) => balance.estimated === true);
+  const total = withStatement.reduce((sum, balance) => sum + balance.balance.cents, 0);
 
   return (
     <section className="dash-section dash-section--balances" aria-labelledby="dash-balances-title">
@@ -33,14 +34,19 @@ export function AccountBalances({ balances, accounts }: AccountBalancesProps) {
           {balances.map((balance) => {
             const account = accounts.get(balance.accountId);
             const name = account?.name ?? t('balances.unknownAccount');
-            const isEstimated = balance.estimated === true;
+            const isUnknown = balance.balanceUnknown === true;
+            const isEstimated = balance.estimated === true && !isUnknown;
             return (
               <li key={balance.accountId} className="dash-balances__row">
                 <span className="dash-balances__name">
                   <span className="truncate">{name}</span>
                   {account?.ibanLast4 ? <span className="dash-balances__iban tabular">···{account.ibanLast4}</span> : null}
                 </span>
-                <MoneyText value={balance.balance} className="dash-balances__amount figure figure--md" />
+                {isUnknown ? (
+                  <span className="dash-balances__amount dash-balances__unknown">{t('balances.noStatementBalance')}</span>
+                ) : (
+                  <MoneyText value={balance.balance} className="dash-balances__amount figure figure--md" />
+                )}
                 <span className="dash-balances__meta">
                   {balance.asOf ? t('balances.asOf', { date: formatDate(balance.asOf, language, 'medium') }) : null}
                   {isEstimated ? (
@@ -52,9 +58,9 @@ export function AccountBalances({ balances, accounts }: AccountBalancesProps) {
               </li>
             );
           })}
-          {balances.length > 1 ? (
+          {withStatement.length > 1 ? (
             <li className="dash-balances__row dash-balances__row--total">
-              <span className="dash-balances__name">{t('balances.total', { count: balances.length })}</span>
+              <span className="dash-balances__name">{t('balances.total', { count: withStatement.length })}</span>
               <MoneyText value={{ cents: total as Cents }} className="dash-balances__amount figure figure--md" />
             </li>
           ) : null}

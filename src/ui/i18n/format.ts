@@ -5,6 +5,9 @@ export const INTL_LOCALES: Readonly<Record<Language, string>> = { es: 'es-ES', e
 
 const CENTS_PER_EURO = 100;
 const BASIS_POINTS_PER_UNIT = 10_000;
+const BASIS_POINTS_PER_PERCENT = 100;
+const FULL_PERCENT = 100;
+const SMALL_VARIATION_BASIS_POINTS = 1_000;
 
 export type DateStyle = 'short' | 'medium' | 'long';
 
@@ -49,6 +52,42 @@ export function formatMoneyCompact(cents: number, language: Language): string {
 export function formatPercentFromBasisPoints(basisPoints: number, language: Language): string {
   return cached(`pct:${language}`, () =>
     new Intl.NumberFormat(INTL_LOCALES[language], { style: 'percent', maximumFractionDigits: 0 }),
+  ).format(basisPoints / BASIS_POINTS_PER_UNIT);
+}
+
+/** Datos de un presupuesto para mostrar su porcentaje sin contradecir el estado. */
+export interface BudgetPercentInput {
+  readonly spentCents: number;
+  readonly limitCents: number;
+  readonly usedBasisPoints: number;
+  readonly status: 'ok' | 'near' | 'over';
+}
+
+/**
+ * Porcentaje de un presupuesto coherente con su estado: dentro/cerca se trunca (79,99 % → 79 %, nunca
+ * «100 %» sin haber superado el límite); superado se redondea hacia arriba desde el gasto real (≥ 101 %).
+ */
+export function formatBudgetPercent(input: BudgetPercentInput, language: Language): string {
+  const { spentCents, limitCents, usedBasisPoints, status } = input;
+  const percent =
+    status !== 'over'
+      ? Math.floor(usedBasisPoints / BASIS_POINTS_PER_PERCENT)
+      : Math.max(
+          Math.floor(FULL_PERCENT) + 1,
+          limitCents > 0
+            ? Math.ceil((spentCents * FULL_PERCENT) / limitCents)
+            : Math.ceil(usedBasisPoints / BASIS_POINTS_PER_PERCENT),
+        );
+  return cached(`pct:${language}`, () =>
+    new Intl.NumberFormat(INTL_LOCALES[language], { style: 'percent', maximumFractionDigits: 0 }),
+  ).format(percent / FULL_PERCENT);
+}
+
+/** Variación entre meses: un decimal si |%| < 10 (0,5 % no se muestra como «0 %»). */
+export function formatVariationPercent(basisPoints: number, language: Language): string {
+  const small = Math.abs(basisPoints) < SMALL_VARIATION_BASIS_POINTS;
+  return cached(`pctvar:${small}:${language}`, () =>
+    new Intl.NumberFormat(INTL_LOCALES[language], { style: 'percent', maximumFractionDigits: small ? 1 : 0 }),
   ).format(basisPoints / BASIS_POINTS_PER_UNIT);
 }
 

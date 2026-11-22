@@ -179,6 +179,18 @@ describe('BudgetProgressBar', () => {
     expect(group.querySelector('.budget-meter__track')).toHaveAttribute('aria-hidden', 'true');
   });
 
+  it('never shows 100 % before the limit is exceeded, and rounds an overspend up', () => {
+    const { unmount } = renderWithProviders(
+      <BudgetProgressBar label="A" spent={money(79_999)} limit={money(80_000)} usedBasisPoints={9_999} status="near" />,
+    );
+    expect(screen.getByText(/99\s%/)).toBeInTheDocument();
+    unmount();
+    renderWithProviders(
+      <BudgetProgressBar label="B" spent={money(80_000)} limit={money(79_999)} usedBasisPoints={10_000} status="over" />,
+    );
+    expect(screen.getByText(/101\s%/)).toBeInTheDocument();
+  });
+
   it('uses the near status wording', () => {
     renderWithProviders(
       <BudgetProgressBar label="Ocio" spent={money(8_000)} limit={money(10_000)} usedBasisPoints={8_000} status="near" />,
