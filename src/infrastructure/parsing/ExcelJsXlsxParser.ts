@@ -51,11 +51,13 @@ function valueToCell(value: CellValue): RawCell {
 function sheetToRows(sheet: Worksheet): RawCell[][] {
   const width = sheet.columnCount;
   const rows: RawCell[][] = [];
-  sheet.eachRow({ includeEmpty: false }, (row) => {
+  // Las filas vacías se conservan: así el índice de fila + 1 es el número de fila de la hoja.
+  sheet.eachRow({ includeEmpty: true }, (row) => {
     const cells: RawCell[] = [];
     for (let col = 1; col <= width; col += 1) cells.push(valueToCell(row.getCell(col).value));
-    if (cells.some((cell) => cell.kind !== 'empty')) rows.push(cells);
+    rows.push(cells);
   });
+  while (rows.length > 0 && (rows[rows.length - 1] ?? []).every((cell) => cell.kind === 'empty')) rows.pop();
   return rows;
 }
 

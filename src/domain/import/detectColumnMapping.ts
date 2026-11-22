@@ -43,8 +43,14 @@ function rolesFromHeader(row: readonly RawCell[]): readonly ColumnRole[] {
     taken.add(role)
     return role
   })
-  if (!taken.has('amount')) return roles
-  return roles.map((role) => (role === 'debit' || role === 'credit' ? 'ignore' : role))
+  const dated = taken.has('date') ? roles : promoteValueDate(roles)
+  if (!taken.has('amount')) return dated
+  return dated.map((role) => (role === 'debit' || role === 'credit' ? 'ignore' : role))
+}
+
+/** Si el extracto solo trae fecha valor (p. ej. ING «F. VALOR»), esa columna es la fecha del movimiento. */
+function promoteValueDate(roles: readonly ColumnRole[]): readonly ColumnRole[] {
+  return roles.map((role) => (role === 'valueDate' ? 'date' : role))
 }
 
 function cellText(cell: RawCell | undefined): string {
