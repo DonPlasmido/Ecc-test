@@ -5,6 +5,8 @@ export type CategoryId = Brand<string, 'CategoryId'>;
 
 /** Categoría centinela "sin categoría"; evita `null` (IndexedDB no indexa `null`). */
 export const UNCATEGORIZED = '__uncategorized__' as CategoryId;
+/** Traspasos entre cuentas propias: no son gasto ni ingreso en el Panel. */
+export const TRANSFERS_CATEGORY_ID = 'cat-transfers' as CategoryId;
 
 /** Naturaleza de la categoría. */
 export type CategoryKind = 'expense' | 'income' | 'transfer';

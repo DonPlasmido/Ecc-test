@@ -115,4 +115,29 @@ describe('BuildDashboardUseCase', () => {
     });
     expect(data.spendingByCategory).toEqual([]);
   });
+
+  test('transfers between own accounts count neither as expense nor as income', async () => {
+    const data = await dashboardOver([
+      tx({ id: 'i', date: '2026-03-01', cents: 100000, cat: 'salary' }),
+      tx({ id: 'e', date: '2026-03-02', cents: -2000, cat: 'food' }),
+      tx({ id: 't1', date: '2026-03-03', cents: -240000, cat: 'cat-transfers' }),
+      tx({ id: 't2', date: '2026-03-04', cents: 50000, cat: 'cat-transfers' }),
+    ]).execute({ from: ym('2026-03'), to: ym('2026-03') });
+    expect(data.monthly[0]).toEqual({
+      month: '2026-03',
+      income: { cents: 100000 },
+      expense: { cents: 2000 },
+      net: { cents: 98000 },
+    });
+    expect(data.spendingByCategory).toEqual([{ categoryId: 'food', total: { cents: 2000 } }]);
+  });
+
+  test('spending by category is net of refunds, like budgets', async () => {
+    const data = await dashboardOver([
+      tx({ id: 'a', date: '2026-03-02', cents: -6998, cat: 'shopping' }),
+      tx({ id: 'b', date: '2026-03-03', cents: 4998, cat: 'shopping' }),
+      tx({ id: 'c', date: '2026-03-04', cents: 1000, cat: 'refund-only' }),
+    ]).execute({ from: ym('2026-03'), to: ym('2026-03') });
+    expect(data.spendingByCategory).toEqual([{ categoryId: 'shopping', total: { cents: 2000 } }]);
+  });
 });
