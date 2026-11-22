@@ -219,7 +219,7 @@ describe('SettingsPage: restore focus', () => {
     const user = userEvent.setup();
     renderWithProviders(<SettingsPage />, { container, route: '/ajustes' });
     const input = screen.getByLabelText(FILE_LABEL);
-    fireEvent.change(input, { target: { files: [new File(['x'], 'copia.ccbackup')] } });
+    fireEvent.change(input, { target: { files: [new File(['CCBK-contenido'], 'copia.ccbackup')] } });
     const confirm = await screen.findByRole('dialog', { name: '¿Reemplazar todos tus datos?' });
 
     // Act
