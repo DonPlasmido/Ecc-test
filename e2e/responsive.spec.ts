@@ -88,7 +88,7 @@ test('en los diálogos el orden del DOM de los botones del pie coincide con el v
     }),
   )
   expect(boxes).toHaveLength(2)
-  const [first, second] = boxes
+  const [first, second] = boxes as [{ x: number; y: number }, { x: number; y: number }]
   const isBefore = first.y < second.y || (first.y === second.y && first.x < second.x)
   expect(isBefore, 'el primer botón del DOM debe verse antes').toBe(true)
 })

@@ -60,7 +60,8 @@ export function Dialog({ isOpen, onClose, title, description, children, footer, 
     const opener = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     openModal(dialog);
     const unregisterHost = registerHost?.(dialog);
-    (initialFocusRef?.current ?? titleRef.current)?.focus();
+    // Sin desplazar: si no, un campo bajo el concepto abre el diálogo ya scrolleado y oculta fecha e importe.
+    (initialFocusRef?.current ?? titleRef.current)?.focus({ preventScroll: true });
 
     const handleCancel = (event: Event) => {
       event.preventDefault(); // React controla `isOpen`
