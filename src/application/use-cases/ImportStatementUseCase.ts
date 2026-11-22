@@ -1,3 +1,4 @@
+import type { DataChangedNotifier } from '@/application/ports/outbound/DataChange';
 import {
   IMPORT_PREVIEW_ROWS,
   type CommitImportInput,
@@ -5,7 +6,8 @@ import {
   type ImportResult,
   type ImportStatement,
 } from '@/application/ports/inbound/ImportStatement';
-import type { AccountRepository, RuleRepository } from '@/application/ports/outbound/CatalogRepositories';
+import type { AccountRepository, CategoryRepository, RuleRepository } from '@/application/ports/outbound/CatalogRepositories';
+import { listActiveRules } from '@/application/use-cases/applyRules';
 import type { ClockPort } from '@/application/ports/outbound/ClockPort';
 import type { IdGeneratorPort } from '@/application/ports/outbound/IdGeneratorPort';
 import type { ImportProfileRepository } from '@/application/ports/outbound/ImportProfileRepository';
@@ -32,10 +34,11 @@ export interface ImportStatementDeps {
   readonly transactions: TransactionRepository;
   readonly profiles: ImportProfileRepository;
   readonly rules: RuleRepository;
+  readonly categories: CategoryRepository;
   readonly accounts: AccountRepository;
   readonly clock: ClockPort;
   readonly ids: IdGeneratorPort;
-  readonly onDataChanged?: () => void;
+  readonly onDataChanged?: DataChangedNotifier;
 }
 
 interface RetainedPreview {
@@ -103,11 +106,11 @@ export class ImportStatementUseCase implements ImportStatement {
     const valid = validateMapping(input.mapping);
     if (!valid.ok) return valid;
 
-    const { drafts, rowErrors } = normalizeRows(retained.table, input.mapping, input.accountId);
+    const { drafts, rowErrors, warnings } = normalizeRows(retained.table, input.mapping, input.accountId);
     const keyed = assignDedupKeys(drafts);
     const existing = await this.deps.transactions.existingDedupKeys(keyed.map((d) => d.dedupKey));
     const fresh = keyed.filter((d) => !existing.has(d.dedupKey));
-    const rules = sortRules(await this.deps.rules.list());
+    const rules = sortRules(await listActiveRules(this.deps.rules, this.deps.categories));
     const batchId = this.deps.ids.next() as ImportBatchId;
     const transactions = fresh.map((d) => this.toTransaction(d, batchId, rules));
 
@@ -128,7 +131,7 @@ export class ImportStatementUseCase implements ImportStatement {
         return quotaErrorOrRethrow(error);
       }
       // Los movimientos ya están guardados: el índice debe enterarse pase lo que pase después.
-      this.deps.onDataChanged?.();
+      this.deps.onDataChanged?.({ upserted: transactions });
     }
     this.previews.delete(input.previewId);
     try {
@@ -143,6 +146,7 @@ export class ImportStatementUseCase implements ImportStatement {
       duplicates: keyed.length - fresh.length,
       autoCategorized: transactions.filter((t) => t.categorySource === 'rule').length,
       rowErrors,
+      warnings,
     });
   }
 
@@ -165,6 +169,7 @@ export class ImportStatementUseCase implements ImportStatement {
         note: '',
         dedupKey: d.dedupKey,
         importBatchId: batchId,
+        sourceLine: d.sourceLine,
         createdAt: now,
         updatedAt: now,
       },

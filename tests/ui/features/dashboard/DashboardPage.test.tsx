@@ -142,16 +142,17 @@ describe('DashboardPage', () => {
       );
     });
 
-    it('marks a balance that does not come from the statement as estimated (AC-028)', async () => {
+    it('shows «Sin saldo en el extracto» instead of a misleading computed balance (AC-028)', async () => {
       renderDashboard(container);
 
       const balances = await section('¿Cuánto tengo?');
-      const [checking, savings, total] = within(balances).getAllByRole('listitem');
+      const [checking, savings] = within(balances).getAllByRole('listitem');
       expect(plain(checking?.textContent)).toContain('Cuenta nómina···1234+3210,99 €');
       expect(checking).not.toHaveTextContent('estimado');
-      expect(savings).toHaveTextContent('estimado');
-      expect(plain(total?.textContent)).toContain('Total en 2 cuentas');
-      expect(within(balances).getByText(/^Estimado:/)).toBeInTheDocument();
+      expect(savings).toHaveTextContent('Sin saldo en el extracto');
+      expect(savings).not.toHaveTextContent('estimado');
+      expect(within(balances).queryByText(/^Total en/)).not.toBeInTheDocument();
+      expect(within(balances).queryByText(/^Estimado:/)).not.toBeInTheDocument();
     });
 
     it('moves to another month with the picker and keeps it in the URL', async () => {

@@ -75,6 +75,23 @@ describe('createTransactionIndex', () => {
   describe('filters', () => {
     const index = indexOf(SAMPLE);
 
+    test('text search follows upserts and deletes and never matches across rows', () => {
+      const live = indexOf([
+        tx({ id: 'r1', date: '2026-01-01', desc: 'Alfa' }),
+        tx({ id: 'r2', date: '2026-01-02', desc: 'Beta' }),
+        tx({ id: 'r3', date: '2026-01-03', desc: 'Gamma alfa' }),
+      ]);
+      expect(query(live, { text: 'alfa' })).toEqual(['r3', 'r1']);
+      expect(query(live, { text: 'alfabeta' })).toEqual([]);
+      live.applyUpserts([tx({ id: 'r2', date: '2026-01-02', desc: 'Alfa nueva' })]);
+      expect(query(live, { text: 'alfa' })).toEqual(['r3', 'r2', 'r1']);
+      live.applyDeletes(['r3' as TransactionId]);
+      live.applyUpserts([tx({ id: 'r4', date: '2026-01-04', desc: 'Delta' })]);
+      expect(query(live, { text: 'alfa' })).toEqual(['r2', 'r1']);
+      expect(query(live, { text: 'delta' })).toEqual(['r4']);
+      expect(query(live, { text: 'gamma' })).toEqual([]);
+    });
+
     test('text matches substrings ignoring case and accents', () => {
       expect(query(index, { text: 'mercadona' })).toEqual(['t1']);
       expect(query(index, { text: 'nomina' })).toEqual(['t2']);
@@ -335,13 +352,13 @@ describe('createTransactionIndex', () => {
       ]);
     });
 
-    test('without any known balance sums every amount as an estimate', () => {
+    test('without any known balance flags the relative sum as balanceUnknown', () => {
       const index = indexOf([
         tx({ id: 'b1', date: '2026-01-01', cents: -100 }),
         tx({ id: 'b2', date: '2026-01-02', cents: -200 }),
       ]);
       expect(index.latestBalances()).toEqual([
-        { accountId: 'a1', balance: { cents: -300 }, asOf: '2026-01-02', estimated: true },
+        { accountId: 'a1', balance: { cents: -300 }, asOf: '2026-01-02', estimated: true, balanceUnknown: true },
       ]);
     });
 

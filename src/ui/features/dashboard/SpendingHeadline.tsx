@@ -3,7 +3,7 @@ import type { MonthlySummary } from '@/application/ports/inbound/BuildDashboard'
 import type { YearMonth } from '@/domain/date/YearMonth';
 import type { Cents } from '@/domain/money/Money';
 import { MoneyText } from '@/ui/components/MoneyText';
-import { formatMoney, formatMonth, formatPercentFromBasisPoints } from '@/ui/i18n/format';
+import { formatMoney, formatMonth, formatVariationPercent } from '@/ui/i18n/format';
 import { useLanguage } from '@/ui/i18n/useLanguage';
 import { shiftMonth, spendingVariation, summaryFor, type SpendingTrend } from './dashboardModel';
 
@@ -29,7 +29,7 @@ export function SpendingHeadline({ month, monthly }: SpendingHeadlineProps) {
   const variation = spendingVariation(current.expense, previous.expense);
   const monthName = formatMonth(month, language, 'long');
   const previousName = formatMonth(previousMonth, language, 'long');
-  const percent = formatPercentFromBasisPoints(variation.basisPoints ?? 0, language);
+  const percent = formatVariationPercent(variation.basisPoints ?? 0, language);
   const showDelta = variation.trend === 'more' || variation.trend === 'less';
 
   return (

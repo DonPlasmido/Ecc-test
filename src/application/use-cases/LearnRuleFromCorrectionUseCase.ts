@@ -1,3 +1,4 @@
+import type { DataChangedNotifier } from '@/application/ports/outbound/DataChange';
 import type {
   AcceptSuggestionInput,
   AcceptSuggestionOutput,
@@ -12,7 +13,7 @@ import type { TransactionRepository } from '@/application/ports/outbound/Transac
 import type { TransactionIndex } from '@/application/read-model/TransactionIndex';
 import { reapplyRules } from '@/application/use-cases/applyRules';
 import type { Rule, RuleId } from '@/domain/rule/Rule';
-import { suggestRule, type RuleSuggestion } from '@/domain/rule/ruleSuggestion';
+import { suggestRule, suggestionPatterns, type RuleSuggestion } from '@/domain/rule/ruleSuggestion';
 import { domainError, type DomainError } from '@/domain/shared/DomainError';
 import { matchesRulePattern } from '@/domain/rule/wordMatch';
 import { normalizeText } from '@/domain/shared/normalizeText';
@@ -30,7 +31,7 @@ export interface LearnRuleDeps {
   readonly categories: CategoryRepository;
   readonly clock: ClockPort;
   readonly ids: IdGeneratorPort;
-  readonly onDataChanged?: () => void;
+  readonly onDataChanged?: DataChangedNotifier;
 }
 
 /** Aprende reglas de las correcciones manuales: corrige, propone y, solo si se acepta, crea. */
@@ -46,9 +47,13 @@ export class LearnRuleFromCorrectionUseCase implements LearnRuleFromCorrection {
     const corrected = recategorize(found, input.categoryId, 'manual', null, clock.now());
     await transactions.updateMany([corrected]);
     this.deps.index.applyUpserts([corrected]);
-    onDataChanged?.();
+    onDataChanged?.({ upserted: [corrected] });
 
-    const history = this.deps.index.historyRows().filter((row) => row.id !== corrected.id);
+    // Solo cuentan las filas que contienen algún patrón candidato: no se copia el histórico entero.
+    const patterns = suggestionPatterns(corrected);
+    const history = this.deps.index
+      .historyRows((description) => patterns.some((pattern) => description.includes(pattern)))
+      .filter((row) => row.id !== corrected.id);
     const suggestion = suggestRule(corrected, input.categoryId, history);
     if (suggestion === null) return ok({ suggestion: null, affectedCount: 0 });
     const candidate = this.buildRule(suggestion, 'preview' as RuleId, await this.nextPriority());
@@ -69,17 +74,21 @@ export class LearnRuleFromCorrectionUseCase implements LearnRuleFromCorrection {
     await rules.save(rule);
     if (!input.applyToExisting) return ok({ ruleId: rule.id, recategorized: 0 });
 
+    let written: readonly Transaction[] | undefined = [];
     try {
       const candidates = await transactions.getByIds(this.candidateIds(rule));
       const affected = this.recategorizedBy(candidates, await rules.list(), rule.id);
       if (affected.length > 0) {
+        written = undefined; // si la escritura falla no se sabe qué llegó a persistirse
         await transactions.updateMany(affected);
+        written = affected;
         this.deps.index.applyUpserts(affected);
       }
       return ok({ ruleId: rule.id, recategorized: affected.length });
     } finally {
-      // La regla ya está guardada: el índice se reconcilia aunque la recategorización falle.
-      onDataChanged?.();
+      // La regla ya está guardada: el índice se reconcilia aunque la recategorización falle
+      // (sin detalle → reconciliación completa; con detalle → solo lo escrito).
+      onDataChanged?.(written === undefined ? undefined : { upserted: written });
     }
   }
 

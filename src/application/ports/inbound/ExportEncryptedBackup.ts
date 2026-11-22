@@ -7,6 +7,9 @@ export const MIN_BACKUP_PASSWORD_LENGTH = 12;
 /** Extensión del archivo de copia cifrada. */
 export const BACKUP_FILE_EXTENSION = '.ccbackup';
 
+/** Primeros bytes («CCBK») de todo sobre de copia; permite rechazar otros archivos antes de pedir la contraseña. */
+export const BACKUP_MAGIC_TEXT = 'CCBK';
+
 /** Entrada de la exportación. La contraseña nunca se guarda ni se registra. */
 export interface ExportBackupInput {
   readonly password: string;

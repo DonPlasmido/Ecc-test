@@ -49,12 +49,13 @@ export function ExportBackupDialog({ onClose, onExported }: ExportBackupDialogPr
   const [problem, setProblem] = useState<PasswordProblem | null>(null);
   const [failure, setFailure] = useState<string | null>(null);
   const [isBusy, setIsBusy] = useState(false);
+  const isSubmittingRef = useRef(false);
   const formId = `${baseId}-form`;
   const strengthId = `${baseId}-strength`;
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (isBusy) return;
+    if (isSubmittingRef.current) return;
     const found = exportPasswordProblem(password, confirmation);
     setProblem(found);
     setFailure(null);
@@ -62,8 +63,10 @@ export function ExportBackupDialog({ onClose, onExported }: ExportBackupDialogPr
       (found.kind === 'tooShort' ? passwordRef : confirmationRef).current?.focus();
       return;
     }
+    isSubmittingRef.current = true;
     setIsBusy(true);
     const result = await exportEncryptedBackup.execute({ password }).catch(() => null);
+    isSubmittingRef.current = false;
     setIsBusy(false);
     if (!result?.ok) {
       setFailure(errorMessage(t, result?.error));

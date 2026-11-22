@@ -175,12 +175,11 @@ describe('SettingsPage: encrypted backup', () => {
     renderWithProviders(<SettingsPage />, { container, route: '/ajustes' });
 
     // Act
-    const restore = await startRestore(user, new File(['fecha;concepto;importe'], 'extracto.ccbackup'));
-    await user.type(within(restore).getByLabelText('Contraseña'), PASSWORD);
-    await user.click(within(restore).getByRole('button', { name: 'Restaurar copia' }));
+    await user.upload(screen.getByLabelText(FILE_LABEL), new File(['fecha;concepto;importe'], 'extracto.ccbackup'));
 
-    // Assert
-    expect(await alertIn(restore)).toHaveTextContent('El archivo no es una copia de Cuentas Claras.');
+    // Assert: se rechaza antes de pedir confirmación o contraseña
+    expect(await screen.findByText('El archivo no es una copia de Cuentas Claras.')).toBeInTheDocument();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
   it('asks for confirmation before replacing data and cancelling does nothing', async () => {
@@ -190,7 +189,7 @@ describe('SettingsPage: encrypted backup', () => {
     renderWithProviders(<SettingsPage />, { container, route: '/ajustes' });
 
     // Act
-    await user.upload(screen.getByLabelText(FILE_LABEL), new File(['x'], 'copia.ccbackup'));
+    await user.upload(screen.getByLabelText(FILE_LABEL), new File(['CCBKx'], 'copia.ccbackup'));
     const confirm = await screen.findByRole('dialog', { name: '¿Reemplazar todos tus datos?' });
 
     // Assert
@@ -199,6 +198,36 @@ describe('SettingsPage: encrypted backup', () => {
     await user.click(within(confirm).getByRole('button', { name: 'Cancelar' }));
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     expect(importSpy).not.toHaveBeenCalled();
+  });
+});
+
+describe('SettingsPage: restore focus', () => {
+  afterEach(() => {
+    delete (HTMLDialogElement.prototype as Partial<HTMLDialogElement>).showModal;
+    delete (HTMLDialogElement.prototype as Partial<HTMLDialogElement>).close;
+  });
+
+  it('returns focus to the file input when the replace dialog is cancelled, even if the browser drops it on close', async () => {
+    // Arrange: un <dialog> real suelta el foco al cerrarse si su "elemento previo" era <body>.
+    HTMLDialogElement.prototype.showModal = function showModal(this: HTMLDialogElement) {
+      this.setAttribute('open', '');
+    };
+    HTMLDialogElement.prototype.close = function close(this: HTMLDialogElement) {
+      this.removeAttribute('open');
+      if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
+    };
+    const user = userEvent.setup();
+    renderWithProviders(<SettingsPage />, { container, route: '/ajustes' });
+    const input = screen.getByLabelText(FILE_LABEL);
+    fireEvent.change(input, { target: { files: [new File(['CCBK-contenido'], 'copia.ccbackup')] } });
+    const confirm = await screen.findByRole('dialog', { name: '¿Reemplazar todos tus datos?' });
+
+    // Act
+    await user.click(within(confirm).getByRole('button', { name: 'Cancelar' }));
+
+    // Assert
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(input).toHaveFocus();
   });
 });
 

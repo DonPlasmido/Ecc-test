@@ -45,6 +45,7 @@
     "createTitle": "New budget",
     "editTitle": "Edit {{category}} budget",
     "description": "The limit applies every month from {{month}}.",
+    "startMonth": "Apply from",
     "category": "Category",
     "categoryPlaceholder": "Choose a category",
     "categoryHint": "Only expense categories without a budget are listed.",

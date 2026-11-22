@@ -1,8 +1,9 @@
+import type { DataChange } from '@/application/ports/outbound/DataChange';
 import type { TransactionRepository } from '@/application/ports/outbound/TransactionRepository';
 import type { TransactionIndex } from '@/application/read-model/TransactionIndex';
 import type { WritableTransactionIndexStore } from '@/application/read-model/TransactionIndexStore';
 import { domainError } from '@/domain/shared/DomainError';
-import type { TransactionId } from '@/domain/transaction/Transaction';
+import type { Transaction, TransactionId } from '@/domain/transaction/Transaction';
 
 /**
  * Mantiene el índice en memoria alineado con el repositorio. Las escrituras de los casos de uso avisan
@@ -18,6 +19,9 @@ export class IndexSync {
   private readonly known = new Set<string>();
   private running: Promise<void> = Promise.resolve();
   private pending = false;
+  /** Hay avisos sin detalle pendientes: hace falta una reconciliación completa. */
+  private pendingFull = false;
+  private pendingUpserts: Transaction[] = [];
   private active = false;
 
   constructor(
@@ -44,8 +48,13 @@ export class IndexSync {
     }
   }
 
-  /** Callback para `onDataChanged`: programa una reconciliación. */
-  readonly notifyDataChanged = (): void => {
+  /**
+   * Callback para `onDataChanged`. Con `change.upserted` solo se aplican esos movimientos al índice (sin
+   * recorrer el repositorio); sin detalle se programa una reconciliación completa.
+   */
+  readonly notifyDataChanged = (change?: DataChange): void => {
+    if (change === undefined) this.pendingFull = true;
+    else for (const tx of change.upserted) this.pendingUpserts.push(tx);
     this.pending = true;
     if (this.active) return;
     this.active = true;
@@ -61,7 +70,13 @@ export class IndexSync {
     try {
       while (this.pending) {
         this.pending = false;
-        await this.reconcileWithRetry();
+        if (this.pendingFull) {
+          this.pendingFull = false;
+          this.pendingUpserts = [];
+          await this.reconcileWithRetry();
+        } else {
+          this.applyPendingUpserts();
+        }
       }
     } finally {
       this.active = false;
@@ -85,6 +100,15 @@ export class IndexSync {
         await wait(delay);
       }
     }
+  }
+
+  /** Camino incremental: los movimientos ya están persistidos; el índice solo se pone al día con ellos. */
+  private applyPendingUpserts(): void {
+    const upserts = this.pendingUpserts;
+    this.pendingUpserts = [];
+    if (upserts.length === 0) return;
+    this.index.applyUpserts(upserts);
+    for (const tx of upserts) this.known.add(tx.id);
   }
 
   private fail(phase: 'hydrate' | 'reconcile', error: unknown): void {

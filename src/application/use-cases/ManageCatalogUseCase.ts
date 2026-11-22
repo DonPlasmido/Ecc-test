@@ -42,7 +42,16 @@ const fail = (code: DomainErrorCode, field?: string): Result<never, DomainError>
 
 /** CRUD de cuentas, categorías, reglas y presupuestos con sus invariantes. */
 export class ManageCatalogUseCase implements ManageCatalog {
+  /** Cola de escrituras: la comprobación de unicidad y el guardado no se intercalan entre envíos simultáneos. */
+  private queue: Promise<unknown> = Promise.resolve();
+
   constructor(private readonly deps: ManageCatalogDeps) {}
+
+  private serialized<T>(task: () => Promise<T>): Promise<T> {
+    const run = this.queue.then(task, task);
+    this.queue = run.catch(() => undefined);
+    return run;
+  }
 
   listAccounts(): Promise<readonly Account[]> {
     return this.deps.accounts.list();
@@ -78,11 +87,18 @@ export class ManageCatalogUseCase implements ManageCatalog {
     return this.deps.categories.list();
   }
 
-  async saveCategory(input: SaveCategoryInput): Promise<Result<Category, DomainError>> {
+  saveCategory(input: SaveCategoryInput): Promise<Result<Category, DomainError>> {
+    return this.serialized(() => this.doSaveCategory(input));
+  }
+
+  private async doSaveCategory(input: SaveCategoryInput): Promise<Result<Category, DomainError>> {
     const name = input.name.trim();
     if (name === '') return fail('category.invalidName', 'name');
     const existing = input.id === undefined ? null : await this.findCategory(input.id);
     if (input.id !== undefined && existing === null) return fail('category.notFound');
+    const wanted = normalizeText(name);
+    const categories = await this.deps.categories.list();
+    if (categories.some((c) => c.id !== input.id && normalizeText(c.name) === wanted)) return fail('category.duplicateName', 'name');
     const category: Category = {
       id: input.id ?? (this.deps.ids.next() as CategoryId),
       name,
@@ -92,6 +108,7 @@ export class ManageCatalogUseCase implements ManageCatalog {
       archived: input.archived,
     };
     await this.deps.categories.save(category);
+    if (category.archived && existing?.archived !== true) await this.disableRulesOf(category.id);
     this.changed();
     return ok(category);
   }
@@ -114,7 +131,11 @@ export class ManageCatalogUseCase implements ManageCatalog {
     return this.deps.rules.list();
   }
 
-  async saveRule(input: SaveRuleInput): Promise<Result<Rule, DomainError>> {
+  saveRule(input: SaveRuleInput): Promise<Result<Rule, DomainError>> {
+    return this.serialized(() => this.doSaveRule(input));
+  }
+
+  private async doSaveRule(input: SaveRuleInput): Promise<Result<Rule, DomainError>> {
     const pattern = normalizeText(input.pattern);
     if (pattern.length < MIN_PATTERN_LENGTH) return fail('rule.invalidPattern', 'pattern');
     if ((await this.findCategory(input.categoryId)) === null) return fail('category.notFound');
@@ -161,7 +182,11 @@ export class ManageCatalogUseCase implements ManageCatalog {
     return this.deps.budgets.list();
   }
 
-  async saveBudget(input: SaveBudgetInput): Promise<Result<Budget, DomainError>> {
+  saveBudget(input: SaveBudgetInput): Promise<Result<Budget, DomainError>> {
+    return this.serialized(() => this.doSaveBudget(input));
+  }
+
+  private async doSaveBudget(input: SaveBudgetInput): Promise<Result<Budget, DomainError>> {
     if (input.monthlyLimit.cents <= 0) return fail('budget.invalidLimit', 'monthlyLimit');
     if (input.endMonth !== null && input.endMonth < input.startMonth) return fail('budget.invalidRange', 'endMonth');
     if ((await this.findCategory(input.categoryId)) === null) return fail('category.notFound');
@@ -186,6 +211,12 @@ export class ManageCatalogUseCase implements ManageCatalog {
     await this.deps.budgets.delete(id);
     this.changed();
     return ok(undefined);
+  }
+
+  /** Una categoría archivada no recibe movimientos: sus reglas quedan desactivadas. */
+  private async disableRulesOf(id: CategoryId): Promise<void> {
+    const affected = (await this.deps.rules.list()).filter((r) => r.categoryId === id && r.enabled);
+    if (affected.length > 0) await this.deps.rules.saveMany(affected.map((r) => ({ ...r, enabled: false })));
   }
 
   private async findAccount(id: AccountId): Promise<Account | null> {

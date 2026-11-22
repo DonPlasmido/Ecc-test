@@ -1,3 +1,4 @@
+import { unwrap } from 'idb';
 import type { TransactionRepository } from '@/application/ports/outbound/TransactionRepository';
 import { DEFAULT_SCAN_BATCH_SIZE } from '@/application/ports/outbound/TransactionRepository';
 import type { ImportBatch, ImportBatchId } from '@/domain/import/ImportBatch';
@@ -48,6 +49,11 @@ export class IdbTransactionRepository implements TransactionRepository {
     const unique = [...new Set(keys)];
     if (unique.length === 0) return new Set();
     const tx = this.db.transaction('transactions', 'readonly');
+    // Almacén vacío (primera importación): ninguna clave puede existir, se evitan N consultas.
+    if ((await tx.store.count()) === 0) {
+      await tx.done;
+      return new Set();
+    }
     const index = tx.store.index('byDedupKey');
     const hits = await Promise.all(unique.map((key) => index.getKey(key)));
     await tx.done;
@@ -56,9 +62,11 @@ export class IdbTransactionRepository implements TransactionRepository {
 
   async insertImport(batch: ImportBatch, txs: readonly Transaction[]): Promise<void> {
     const tx = this.db.transaction(['transactions', 'importBatches'], 'readwrite');
-    const transactions = tx.objectStore('transactions');
     const writes: Promise<unknown>[] = [tx.objectStore('importBatches').add(batch)];
-    for (const t of txs) writes.push(transactions.add(transactionToRecord(t)));
+    // Peticiones nativas sin promesa por fila (con 100k filas el envoltorio de `idb` pesa segundos). Un error
+    // de petición aborta la transacción y `tx.done` lo propaga: sigue siendo todo o nada.
+    const store = unwrap(tx.objectStore('transactions'));
+    for (const t of txs) store.add(transactionToRecord(t));
     await this.commit(tx, writes);
   }
 

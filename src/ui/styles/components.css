@@ -118,6 +118,12 @@
   min-height: var(--control-height-sm);
   padding-inline: var(--space-3);
   font-size: var(--text-sm);
+  /* Reflow (1.4.10): una etiqueta larga pasa a varias líneas en lugar de desbordar a 320 px. */
+  max-width: 100%;
+  padding-block: var(--space-1);
+  line-height: var(--leading-tight);
+  white-space: normal;
+  text-align: center;
 }
 
 /* El botón pequeño mantiene 44 px de zona táctil sin crecer visualmente */
@@ -599,6 +605,7 @@ button.chip:disabled {
 
 .budget-meter__legend {
   display: flex;
+  flex-wrap: wrap; /* a 320 px la insignia de estado baja de línea en vez de desbordar la tarjeta (1.4.10) */
   align-items: baseline;
   justify-content: space-between;
   gap: var(--space-2);
@@ -756,7 +763,8 @@ button.chip:disabled {
 
 .dialog__footer {
   display: flex;
-  flex-direction: column-reverse;
+  /* Mismo orden que el DOM (Cancelar y luego la acción): el orden de tabulación sigue al visual. */
+  flex-direction: column;
   gap: var(--space-2);
   padding: var(--space-3) var(--space-4) max(var(--space-4), env(safe-area-inset-bottom));
   border-top: var(--border-width) solid var(--color-border);

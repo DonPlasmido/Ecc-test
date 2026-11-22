@@ -1,4 +1,4 @@
-import { screen, waitFor, within } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeAll, describe, expect, it } from 'vitest';
 import type { AppContainer } from '@/composition/container.types';
@@ -151,6 +151,56 @@ describe('BudgetsPage', () => {
     expect(budget).toMatchObject({ categoryId: cat('groceries'), monthlyLimit: { cents: 30_000 }, startMonth: MARCH, endMonth: null });
   });
 
+  it('keeps focus on the list heading after saving the first budget from the empty state', async () => {
+    const user = userEvent.setup();
+    renderPage(await containerWith());
+    await user.click(await screen.findByRole('button', { name: 'Añadir presupuesto' }));
+    const dialog = await screen.findByRole('dialog', { name: 'Nuevo presupuesto' });
+    await user.selectOptions(within(dialog).getByRole('combobox', { name: /categoría/i }), 'Supermercado');
+    await user.type(within(dialog).getByRole('textbox', { name: /límite mensual/i }), '300');
+
+    await user.click(within(dialog).getByRole('button', { name: 'Guardar presupuesto' }));
+
+    await budgetList();
+    const heading = screen.getByRole('heading', { name: 'Por categoría' });
+    await waitFor(() => expect(heading).toHaveFocus());
+  });
+
+  it('creates only one budget when the form is submitted twice in the same tick', async () => {
+    const user = userEvent.setup();
+    const container = await containerWith();
+    renderPage(container);
+    await user.click(await screen.findByRole('button', { name: 'Añadir presupuesto' }));
+    const dialog = await screen.findByRole('dialog', { name: 'Nuevo presupuesto' });
+    await user.selectOptions(within(dialog).getByRole('combobox', { name: /categoría/i }), 'Supermercado');
+    await user.type(within(dialog).getByRole('textbox', { name: /límite mensual/i }), '300');
+
+    const form = dialog.querySelector('form') as HTMLFormElement;
+    fireEvent.submit(form);
+    fireEvent.submit(form);
+
+    await budgetList();
+    await waitFor(async () => expect(await container.manageCatalog.listBudgets()).toHaveLength(1));
+  });
+
+  it('lets a new budget start in an earlier month than the one being viewed', async () => {
+    const user = userEvent.setup();
+    const container = await containerWith();
+    renderPage(container);
+    await user.click(await screen.findByRole('button', { name: 'Añadir presupuesto' }));
+    const dialog = await screen.findByRole('dialog', { name: 'Nuevo presupuesto' });
+    await user.selectOptions(within(dialog).getByRole('combobox', { name: /aplicar desde/i }), '2025-12');
+    await user.selectOptions(within(dialog).getByRole('combobox', { name: /categoría/i }), 'Supermercado');
+    await user.type(within(dialog).getByRole('textbox', { name: /límite mensual/i }), '300');
+
+    await user.click(within(dialog).getByRole('button', { name: 'Guardar presupuesto' }));
+
+    await waitFor(async () => {
+      const [budget] = await container.manageCatalog.listBudgets();
+      expect(budget?.startMonth).toBe('2025-12');
+    });
+  });
+
   it('does not offer categories that already have a budget', async () => {
     const user = userEvent.setup();
     const container = await containerWith();
@@ -213,6 +263,22 @@ describe('BudgetsPage', () => {
     expect(await screen.findByRole('heading', { name: /sin presupuestos en marzo de 2026/i })).toBeInTheDocument();
     expect(await container.manageCatalog.listBudgets()).toEqual([]);
     expect(screen.getByText('Presupuesto de Supermercado borrado.')).toBeInTheDocument();
+  });
+
+  it('averages suggestions only over the months that have data', async () => {
+    // Arrange: diciembre y febrero con gasto, enero vacío
+    const container = await containerWith([
+      spend({ slug: 'groceries', date: '2025-12-10', cents: 20_000 }),
+      spend({ slug: 'groceries', date: '2026-02-10', cents: 20_000 }),
+    ]);
+    await container.whenIndexIdle();
+    renderPage(container);
+
+    // Act
+    const suggestions = await screen.findByRole('region', { name: /sugerencias según tu gasto/i });
+
+    // Assert
+    expect(nbsp(within(suggestions).getAllByRole('listitem')[0]?.textContent ?? '')).toContain('200,00 € al mes');
   });
 
   it('suggests limits from the average spending of the previous three months', async () => {

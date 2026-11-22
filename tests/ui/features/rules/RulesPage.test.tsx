@@ -2,6 +2,7 @@ import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it } from 'vitest';
 import type { AppContainer } from '@/composition/container.types';
+import type { RuleId } from '@/domain/rule/Rule';
 import { UNCATEGORIZED } from '@/domain/category/Category';
 import { RulesPage } from '@/ui/features/rules/RulesPage';
 import { createFakeContainer } from '../../fakeContainer';
@@ -177,6 +178,33 @@ describe('RulesPage: rules', () => {
     expect(manual?.categoryId).toBe(cat('gifts'));
   });
 
+  it('clears the stale «Hecho» result when a rule is edited afterwards', async () => {
+    const user = userEvent.setup();
+    renderPage();
+    await ruleList();
+    await user.click(screen.getByRole('button', { name: 'Aplicar reglas ahora' }));
+    await waitFor(() => expect(document.querySelector('.rules-apply__result')).not.toBeNull());
+
+    await user.click(screen.getByRole('button', { name: 'Editar regla «CENTRAL»' }));
+    const dialog = screen.getByRole('dialog', { name: 'Editar regla' });
+    await user.type(within(dialog).getByRole('textbox', { name: /Texto del concepto/ }), ' x');
+    await user.click(within(dialog).getByRole('button', { name: 'Guardar regla' }));
+
+    await waitFor(() => expect(document.querySelector('.rules-apply__result')).toBeNull());
+  });
+
+  it('reloads the catalog when another tab changes data', async () => {
+    let notify: () => void = () => undefined;
+    container = { ...container, onExternalChange: (listener) => ((notify = listener), () => undefined) };
+    renderPage();
+    await ruleList();
+
+    await container.manageCatalog.deleteRule('rule-central' as RuleId);
+    notify();
+
+    await waitFor(async () => expect(ruleTexts(await ruleList())).toEqual(['Regla 1 de 1: Contiene «MERCADONA»']));
+  });
+
   it('shows an empty state when there are no rules', async () => {
     container = await createRulesContainer({ rules: [] });
     renderPage();
@@ -291,6 +319,8 @@ describe('RulesPage: categories', () => {
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
     const groceries = (await container.manageCatalog.listCategories()).find((c) => c.id === cat('groceries'));
     expect(groceries?.archived).toBe(true);
+    expect((await container.manageCatalog.listRules()).find((r) => r.id === 'rule-mercadona')?.enabled).toBe(false);
+    expect((await screen.findAllByText(/desactivada/i)).length).toBeGreaterThan(0);
     expect((await container.manageCatalog.listCategories()).some((c) => c.id === UNCATEGORIZED)).toBe(true);
   });
 });

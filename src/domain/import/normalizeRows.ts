@@ -1,5 +1,5 @@
 import type { AccountId } from '@/domain/account/Account'
-import type { IsoDate } from '@/domain/date/IsoDate'
+import { isoDateFromParts, type IsoDate } from '@/domain/date/IsoDate'
 import { parseSpanishDate } from '@/domain/date/parseSpanishDate'
 import type { ColumnMapping, ColumnRole, NormalizedRows } from '@/domain/import/ColumnMapping'
 import { validateMapping } from '@/domain/import/detectColumnMapping'
@@ -17,6 +17,10 @@ import type { TransactionDraft } from '@/domain/transaction/Transaction'
 const FLOAT_TOLERANCE = 1e-6
 
 type Row = readonly RawCell[]
+
+const MAX_REPORTED_LENGTH = 50
+/** Filas de resumen al final del extracto («TOTAL INGRESOS», «SALDO FINAL»…): no son movimientos. */
+const SUMMARY_LABEL = /^(?:TOTAL(?:ES)?|SALDO (?:INICIAL|FINAL)|RESUMEN)(?: |$)/u
 
 function cellText(cell: RawCell | undefined): string {
   if (cell === undefined || cell.kind === 'empty') return ''
@@ -39,8 +43,28 @@ function parseAmountCell(cell: RawCell | undefined): Result<Money, DomainError> 
   return invalidAmount(cell)
 }
 
+/** Números de serie de Excel plausibles como fecha (1954-2119): descarta importes y códigos sueltos. */
+const EXCEL_SERIAL_MIN = 20000
+const EXCEL_SERIAL_MAX = 80000
+/** Época de los números de serie de Excel (1900 con el error del año bisiesto ya absorbido). */
+const EXCEL_EPOCH_UTC_MS = Date.UTC(1899, 11, 30)
+const MS_PER_DAY = 86_400_000
+
+/**
+ * Una celda numérica en la columna de fecha es un número de serie de Excel (formato General). Se resuelve aquí
+ * y no en el parser porque solo el mapeo sabe qué columna es la fecha; el parser no puede distinguirla de un importe.
+ */
+function excelSerialToDate(serial: number): Result<IsoDate, DomainError> {
+  if (!Number.isFinite(serial) || serial < EXCEL_SERIAL_MIN || serial > EXCEL_SERIAL_MAX) {
+    return err(domainError('date.invalidFormat', { field: 'date', value: String(serial).slice(0, MAX_REPORTED_LENGTH) }))
+  }
+  const utc = new Date(EXCEL_EPOCH_UTC_MS + Math.floor(serial) * MS_PER_DAY)
+  return isoDateFromParts(utc.getUTCFullYear(), utc.getUTCMonth() + 1, utc.getUTCDate())
+}
+
 function parseDateCell(cell: RawCell | undefined): Result<IsoDate, DomainError> {
   if (cell?.kind === 'date') return ok(cell.value)
+  if (cell?.kind === 'number') return excelSerialToDate(cell.value)
   if (cell?.kind === 'text') return parseSpanishDate(cell.value)
   return err(domainError('date.invalidFormat', { field: 'date', value: cellText(cell).slice(0, 50) }))
 }
@@ -105,7 +129,6 @@ function toDraft(row: Row, mapping: ColumnMapping, accountId: AccountId, line: n
 }
 
 const AMOUNT_ROLES: readonly ColumnRole[] = ['amount', 'debit', 'credit']
-const MAX_REPORTED_LENGTH = 50
 
 function ambiguousAmountWarnings(row: Row, mapping: ColumnMapping, line: number): readonly RowWarning[] {
   return AMOUNT_ROLES.flatMap((role): RowWarning[] => {
@@ -113,6 +136,14 @@ function ambiguousAmountWarnings(row: Row, mapping: ColumnMapping, line: number)
     if (cell?.kind !== 'text' || !isAmbiguousAmount(cell.value)) return []
     return [{ line, code: 'ambiguousAmount', value: cell.value.trim().slice(0, MAX_REPORTED_LENGTH) }]
   })
+}
+
+/** Fila sin fecha cuya descripción es una etiqueta de resumen: se ignora con un aviso informativo. */
+function summaryRowWarning(row: Row, mapping: ColumnMapping, line: number): RowWarning | null {
+  if (cellText(row[mapping.columns.indexOf('date')]) !== '') return null
+  const label = cellText(row[mapping.columns.indexOf('description')])
+  if (!SUMMARY_LABEL.test(normalizeText(label))) return null
+  return { line, code: 'summaryRowIgnored', value: label.slice(0, MAX_REPORTED_LENGTH) }
 }
 
 /** Convierte las filas de datos en borradores válidos; las filas malas se descartan con su `RowError`. */
@@ -125,6 +156,11 @@ export function normalizeRows(table: RawTable, mapping: ColumnMapping, accountId
   table.rows.forEach((row, index) => {
     if (index <= mapping.headerRowIndex || row.every((cell) => cellText(cell) === '')) return
     const line = index + 1
+    const summary = summaryRowWarning(row, mapping, line)
+    if (summary !== null) {
+      warnings.push(summary)
+      return
+    }
     const result = toDraft(row, mapping, accountId, line)
     if (result.ok) {
       drafts.push(result.value)

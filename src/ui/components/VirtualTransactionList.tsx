@@ -170,7 +170,11 @@ export function VirtualTransactionList({
   useLayoutEffect(() => {
     if (!shouldFocusActive.current) return;
     shouldFocusActive.current = false;
-    gridRef.current?.querySelector<HTMLElement>(`[data-index="${activeIndex}"]`)?.focus({ preventScroll: true });
+    const row = gridRef.current?.querySelector<HTMLElement>(`[data-index="${activeIndex}"]`);
+    row?.focus({ preventScroll: true });
+    // La lista desplaza solo su contenedor: se acerca también la página para que la fila no quede bajo la
+    // navegación fija (el `scroll-padding` de <html> reserva ese hueco, WCAG 2.4.11).
+    row?.scrollIntoView?.({ block: 'nearest' });
   }, [activeIndex]);
 
   const moveTo = (index: number) => {

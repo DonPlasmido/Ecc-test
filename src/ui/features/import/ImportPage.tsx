@@ -9,7 +9,7 @@ import { useContainer } from '@/ui/hooks/useContainer';
 import { Page } from '@/ui/layout/Page';
 import { FilePicker } from './FilePicker';
 import { ImportSummary } from './ImportSummary';
-import { buildPreviewModel, mappingError } from './importModel';
+import { buildPreviewModel, DEFAULT_ACCOUNT_NAME, isTotalFailure, mappingError } from './importModel';
 import { PreviewPanel } from './PreviewPanel';
 import { useImportFlow, type AccountChoice, type FileSource } from './useImportFlow';
 import './import.css';
@@ -39,11 +39,12 @@ export function ImportPage() {
   const { state, load, updateDraft, commit, reset } = useImportFlow();
   const [accountChoice, setAccountChoice] = useState<AccountChoice | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const previewHeadingRef = useRef<HTMLHeadingElement>(null);
 
   // `async`: un fallo síncrono del puerto también llega como estado de error (no rompe la pantalla).
   const accountsTask = useCallback(async () => manageCatalog.listAccounts(), [manageCatalog]);
   const accounts = useAsync(accountsTask);
-  const choice = effectiveChoice(accountChoice, accounts.status === 'success' ? accounts.data : null, t('account.defaultName'));
+  const choice = effectiveChoice(accountChoice, accounts.status === 'success' ? accounts.data : null, DEFAULT_ACCOUNT_NAME);
 
   const loadSource = useCallback(
     async (source: FileSource) => {
@@ -82,6 +83,16 @@ export function ImportPage() {
     void handleSample();
   }, [wantsSample, setSearchParams, handleSample]);
 
+  // El selector se deshabilita mientras lee y el navegador suelta el foco en <body>: al terminar se recoloca
+  // en la vista previa (o en el selector si falló) solo si el foco se había perdido.
+  const isReading = state.step === 'select' && state.isReading;
+  const hasProblem = state.step === 'select' && state.problem !== null;
+  useEffect(() => {
+    if (isReading || (document.activeElement && document.activeElement !== document.body)) return;
+    if (state.step === 'preview') previewHeadingRef.current?.focus();
+    else if (state.step === 'select' && hasProblem) fileInputRef.current?.focus();
+  }, [state.step, isReading, hasProblem]);
+
   const handleMappingChange = (mapping: ColumnMapping) => {
     if (state.step !== 'preview') return;
     updateDraft((draft) => ({ ...draft, mapping }));
@@ -98,7 +109,13 @@ export function ImportPage() {
     // Una cuenta recién creada debe aparecer en la próxima importación.
     accounts.reload();
     announce(
-      t('summary.announce', { inserted: result.inserted, duplicates: result.duplicates, categorized: result.autoCategorized }),
+      isTotalFailure(result)
+        ? t('summary.announceFailed')
+        : [
+            t('summary.announceInserted', { count: result.inserted }),
+            t('summary.announceDuplicates', { count: result.duplicates }),
+            t('summary.announceCategorized', { count: result.autoCategorized }),
+          ].join(', ') + '.',
     );
   };
 
@@ -139,6 +156,7 @@ export function ImportPage() {
           onAccountChange={setAccountChoice}
           onConfirm={handleConfirm}
           onCancel={handleCancel}
+          headingRef={previewHeadingRef}
         />
       ) : null}
     </Page>

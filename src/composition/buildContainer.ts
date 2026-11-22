@@ -27,6 +27,7 @@ import { ManageCatalogUseCase } from '@/application/use-cases/ManageCatalogUseCa
 import { QueryTransactionsUseCase } from '@/application/use-cases/QueryTransactionsUseCase';
 import { DEFAULT_CATEGORIES } from '@/domain/category/defaultCategories';
 import type { AppContainer } from './container.types';
+import type { CrossTabChangesPort } from '@/application/ports/outbound/CrossTabChangesPort';
 import { IndexSync } from './IndexSync';
 
 /** Puertos de salida ya construidos (reales o fakes) que el cableado necesita. */
@@ -44,6 +45,8 @@ export interface ContainerPorts {
   readonly clock: ClockPort;
   readonly ids: IdGeneratorPort;
   readonly storage: StoragePersistencePort;
+  /** Aviso entre pestañas; sin él la app funciona igual pero sin sincronizar pestañas. */
+  readonly crossTab?: CrossTabChangesPort;
   readonly dispose?: () => void;
 }
 
@@ -64,7 +67,16 @@ export async function buildContainer(ports: ContainerPorts): Promise<AppContaine
   const indexStore = createTransactionIndexStore(index);
   const sync = new IndexSync(ports.transactions, index, indexStore);
   await sync.hydrate();
-  const onDataChanged = sync.notifyDataChanged;
+  const externalListeners = new Set<() => void>();
+  const stopListening = ports.crossTab?.subscribe(() => {
+    // Otra pestaña escribió: se reconcilia el índice y la UI recarga catálogo (sin reenviar el aviso).
+    sync.notifyDataChanged();
+    for (const listener of [...externalListeners]) listener();
+  });
+  const onDataChanged = (): void => {
+    sync.notifyDataChanged();
+    ports.crossTab?.publish();
+  };
   const { transactions, rules, categories, clock, ids } = ports;
 
   void ports.storage.requestPersistence().catch(() => false);
@@ -75,12 +87,13 @@ export async function buildContainer(ports: ContainerPorts): Promise<AppContaine
       transactions,
       profiles: ports.profiles,
       rules,
+      categories,
       accounts: ports.accounts,
       clock,
       ids,
       onDataChanged,
     }),
-    categorizeTransactions: new CategorizeTransactionsUseCase({ transactions, rules, clock, onDataChanged }),
+    categorizeTransactions: new CategorizeTransactionsUseCase({ transactions, rules, categories, clock, onDataChanged }),
     learnRuleFromCorrection: new LearnRuleFromCorrectionUseCase({ transactions, index, rules, categories, clock, ids, onDataChanged }),
     evaluateBudgets: new EvaluateBudgetsUseCase({ budgets: ports.budgets, transactions }),
     buildDashboard: new BuildDashboardUseCase({ index }),
@@ -107,6 +120,14 @@ export async function buildContainer(ports: ContainerPorts): Promise<AppContaine
     settings: ports.settings,
     storage: ports.storage,
     whenIndexIdle: () => sync.whenIdle(),
-    dispose: () => ports.dispose?.(),
+    onExternalChange: (listener) => {
+      externalListeners.add(listener);
+      return () => externalListeners.delete(listener);
+    },
+    dispose: () => {
+      stopListening?.();
+      ports.crossTab?.dispose();
+      ports.dispose?.();
+    },
   };
 }

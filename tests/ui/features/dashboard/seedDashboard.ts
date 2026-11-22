@@ -30,7 +30,7 @@ type Row = readonly [account: AccountId, date: string, cents: number, category: 
  *   sin categoría 10,00 → gastos 590,56 €, ahorro 1.409,44 €.
  * - Febrero: nómina +2.000,00; supermercado 300,00 → marzo gasta un 97 % más (+290,56 €).
  * - Octubre 2025: ocio 45,00. Resto de los 12 meses, sin movimientos (deben salir a 0).
- * - Cuenta corriente: el último movimiento trae saldo (3.210,99 €). Ahorro: sin saldo → «estimado».
+ * - Cuenta corriente: el último movimiento trae saldo (3.210,99 €). Ahorro: sin saldo → «Sin saldo en el extracto».
  */
 const ROWS: readonly Row[] = [
   [CHECKING, '2025-10-12', -4500, cat('leisure')],

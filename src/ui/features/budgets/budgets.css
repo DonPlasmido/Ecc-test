@@ -87,6 +87,7 @@
   --card-accent: var(--color-positive);
 
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--space-3);
   padding: var(--space-4);
   padding-inline-start: calc(var(--space-4) + 2px);

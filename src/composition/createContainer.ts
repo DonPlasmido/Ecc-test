@@ -11,11 +11,15 @@ import { IdbSettingsRepository } from '@/infrastructure/indexeddb/IdbSettingsRep
 import { IdbTransactionRepository } from '@/infrastructure/indexeddb/IdbTransactionRepository';
 import { openDatabase } from '@/infrastructure/indexeddb/openDatabase';
 import { CompositeStatementParser } from '@/infrastructure/parsing/CompositeStatementParser';
+import { BroadcastChannelChanges } from '@/infrastructure/system/BroadcastChannelChanges';
 import { CryptoRandomIdGenerator } from '@/infrastructure/system/CryptoRandomIdGenerator';
 import { NavigatorStoragePersistence } from '@/infrastructure/system/NavigatorStoragePersistence';
 import { SystemClock } from '@/infrastructure/system/SystemClock';
 import { buildContainer } from './buildContainer';
 import type { AppContainer } from './container.types';
+
+/** Canal de aviso entre pestañas de la app. */
+const CROSS_TAB_CHANNEL = 'cuentas-claras';
 
 export interface CreateContainerOptions {
   /** Nombre de la base IndexedDB (por defecto la de producción). */
@@ -42,6 +46,7 @@ export async function createContainer(options: CreateContainerOptions = {}): Pro
     clock,
     ids: new CryptoRandomIdGenerator(),
     storage: new NavigatorStoragePersistence(),
+    crossTab: new BroadcastChannelChanges(CROSS_TAB_CHANNEL),
     dispose: () => db.close(),
   });
 }

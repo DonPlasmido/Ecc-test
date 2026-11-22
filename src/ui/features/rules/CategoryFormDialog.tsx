@@ -74,15 +74,18 @@ function CategoryForm({ formId, category, categories, nameRef, onSavingChange, o
   const [isArchived, setIsArchived] = useState(category?.archived ?? false);
   const [nameError, setNameError] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
+  const isSubmittingRef = useRef(false);
   const isFixed = category !== null && isFixedCategory(category.id);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (isSubmittingRef.current) return;
     if (name.trim() === '') {
       setNameError(t('categoryForm.nameRequired'));
       nameRef.current?.focus();
       return;
     }
+    isSubmittingRef.current = true;
     onSavingChange(true);
     try {
       // Sin cambios en el nombre traducido se envía el guardado: la categoría por defecto sigue traduciéndose.
@@ -107,6 +110,7 @@ function CategoryForm({ formId, category, categories, nameRef, onSavingChange, o
     } catch {
       setFormError(errorMessage(t, null));
     } finally {
+      isSubmittingRef.current = false;
       onSavingChange(false);
     }
   };

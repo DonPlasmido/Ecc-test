@@ -264,6 +264,17 @@ describe('ImportPage: preview', () => {
   });
 });
 
+describe('ImportPage: focus', () => {
+  it('moves focus to the preview heading once the chosen file is read instead of dropping it on body', async () => {
+    const { user } = setup();
+
+    await chooseFile(user);
+
+    const heading = screen.getByRole('heading', { name: 'Vista previa' });
+    await waitFor(() => expect(heading).toHaveFocus());
+  });
+});
+
 describe('ImportPage: confirm', () => {
   it('commits with the edited mapping and shows the summary with focus on its heading', async () => {
     const { user, importStatement } = setup();
@@ -285,14 +296,32 @@ describe('ImportPage: confirm', () => {
     expect(within(summary).getByText('Categorizados por reglas').nextElementSibling).toHaveTextContent('1');
     expect(within(summary).getByText('Línea 3: La fecha «31/02/2026» no existe.')).toBeInTheDocument();
     expect(within(summary).getByRole('link', { name: 'Ver movimientos' })).toHaveAttribute('href', '/movimientos');
-    expect(await screen.findByText(/Importados 2 movimientos, 1 duplicados omitidos y 1 categorizados/)).toBeInTheDocument();
+    expect(await screen.findByText(/Importados 2 movimientos, 1 duplicado omitido, 1 categorizado por reglas/)).toBeInTheDocument();
+  });
+
+  it('reports a clear error instead of «completada» when nothing was imported and every row failed', async () => {
+    const failed: ImportResult = {
+      ...RESULT,
+      inserted: 0,
+      duplicates: 0,
+      autoCategorized: 0,
+      rowErrors: [{ line: 2, error: domainError('date.invalidDate', { value: '31/02/2026' }) }],
+    };
+    const { user } = setup({ commit: () => Promise.resolve(ok(failed)) });
+    await chooseFile(user);
+
+    await user.click(screen.getByRole('button', { name: 'Importar' }));
+
+    expect(await screen.findByRole('heading', { name: 'No se ha importado ningún movimiento' })).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'Importación completada' })).not.toBeInTheDocument();
+    expect(screen.queryByText(/Importados 0 movimientos/)).not.toBeInTheDocument();
   });
 
   it('creates the destination account when there is none yet', async () => {
     const { user, importStatement, manageCatalog } = setup({ accounts: [] });
     await chooseFile(user);
     const name = screen.getByRole('textbox', { name: /Nombre de la nueva cuenta/ });
-    expect(name).toHaveValue('Cuenta principal');
+    expect(name).toHaveValue('Principal');
     await user.clear(name);
     expect(screen.getByRole('button', { name: 'Importar' })).toBeDisabled();
     await user.type(name, 'Ahorro');
