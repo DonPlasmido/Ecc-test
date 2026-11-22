@@ -215,6 +215,22 @@ describe('BudgetsPage', () => {
     expect(screen.getByText('Presupuesto de Supermercado borrado.')).toBeInTheDocument();
   });
 
+  it('averages suggestions only over the months that have data', async () => {
+    // Arrange: diciembre y febrero con gasto, enero vacío
+    const container = await containerWith([
+      spend({ slug: 'groceries', date: '2025-12-10', cents: 20_000 }),
+      spend({ slug: 'groceries', date: '2026-02-10', cents: 20_000 }),
+    ]);
+    await container.whenIndexIdle();
+    renderPage(container);
+
+    // Act
+    const suggestions = await screen.findByRole('region', { name: /sugerencias según tu gasto/i });
+
+    // Assert
+    expect(nbsp(within(suggestions).getAllByRole('listitem')[0]?.textContent ?? '')).toContain('200,00 € al mes');
+  });
+
   it('suggests limits from the average spending of the previous three months', async () => {
     // Arrange: 600 € en supermercado y 90 € en transporte entre diciembre y febrero
     const user = userEvent.setup();
