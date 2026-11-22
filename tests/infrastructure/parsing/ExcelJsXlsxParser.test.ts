@@ -113,7 +113,7 @@ describe('ExcelJsXlsxParser.parse', () => {
     ]);
   });
 
-  test('preserves leading empty columns and skips fully empty rows', async () => {
+  test('preserves leading empty columns and keeps empty rows so row index + 1 is the sheet row', async () => {
     const file = await xlsxFile('a.xlsx', (s) => {
       s.getCell('B1').value = 'Fecha';
       s.getCell('C1').value = 'Importe';
@@ -125,6 +125,8 @@ describe('ExcelJsXlsxParser.parse', () => {
 
     expect(result.ok && result.value.rows).toEqual([
       [{ kind: 'empty' }, { kind: 'text', value: 'Fecha' }, { kind: 'text', value: 'Importe' }],
+      [{ kind: 'empty' }, { kind: 'empty' }, { kind: 'empty' }],
+      [{ kind: 'empty' }, { kind: 'empty' }, { kind: 'empty' }],
       [{ kind: 'empty' }, { kind: 'text', value: '01/01/2025' }, { kind: 'number', value: 5 }],
     ]);
   });

@@ -40,6 +40,11 @@ function detectDelimiter(text: string): string {
   return best;
 }
 
+/** Quita las líneas vacías del final (p. ej. el salto de línea último del archivo). */
+function dropTrailingBlankRows(rows: string[][]): void {
+  while (rows.length > 0 && (rows[rows.length - 1] ?? []).every((cell) => cell.trim() === '')) rows.pop();
+}
+
 function toCell(value: string): RawCell {
   const text = value.trim();
   return text === '' ? { kind: 'empty' } : { kind: 'text', value: text };
@@ -60,11 +65,12 @@ export class PapaCsvParser implements StatementParserPort {
     if (text.trim() === '') return failure('import.emptyFile');
     if (HTML_START.test(text)) return failure('import.unsupportedFormat', { field: 'html' });
 
+    // Las líneas vacías se conservan: así el índice de fila + 1 es la línea del archivo (cabecera y errores).
     const parsed = Papa.parse<string[]>(text, {
       delimiter: detectDelimiter(text),
-      skipEmptyLines: 'greedy',
       preview: MAX_ROWS + 1,
     });
+    dropTrailingBlankRows(parsed.data);
     if (parsed.errors.some((e) => e.code === 'MissingQuotes')) return failure('import.corruptFile');
     if (parsed.data.length > MAX_ROWS) {
       return failure('import.unsupportedFormat', { field: 'rows', expected: MAX_ROWS });
