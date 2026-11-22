@@ -13,7 +13,10 @@ import { useContainer } from '@/ui/hooks/useContainer';
 import { errorMessage } from '@/ui/i18n/errorMessage';
 import { formatMonth } from '@/ui/i18n/format';
 import { useLanguage } from '@/ui/i18n/useLanguage';
-import { limitToInput, parseLimitInput } from './budgetsModel';
+import { limitToInput, parseLimitInput, shiftMonth } from './budgetsModel';
+
+/** Cuántos meses hacia atrás se puede empezar un presupuesto nuevo (para extractos antiguos). */
+const START_MONTHS_BACK = 24;
 
 /** Qué se edita: alta (con valores sugeridos opcionales) o edición de un presupuesto existente. */
 export type BudgetEditor =
@@ -117,7 +120,10 @@ function BudgetForm({ formId, editor, month, categories, firstFieldRef, onSaving
   const [errors, setErrors] = useState<FormErrors>(NO_ERRORS);
   const categoryRef = useRef<HTMLSelectElement | null>(null);
   const limitRef = useRef<HTMLInputElement | null>(null);
-  const startMonth = editor.kind === 'edit' ? editor.budget.startMonth : month;
+  const isSubmittingRef = useRef(false);
+  const [chosenStart, setChosenStart] = useState<YearMonth>(month);
+  const startMonth = editor.kind === 'edit' ? editor.budget.startMonth : chosenStart;
+  const startOptions = Array.from({ length: START_MONTHS_BACK + 1 }, (_, i) => shiftMonth(month, -i));
   const focusLimitFirst = isEdit || initialCategory !== '';
   const sortedCategories = [...categories].sort((a, b) => categoryName(a).localeCompare(categoryName(b), language));
 
@@ -134,6 +140,7 @@ function BudgetForm({ formId, editor, month, categories, firstFieldRef, onSaving
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (isSubmittingRef.current) return;
     const limit = parseLimitInput(limitText);
     const validation: FormErrors = {
       category: !isEdit && categoryId === '' ? t('form.errors.categoryRequired') : null,
@@ -145,6 +152,7 @@ function BudgetForm({ formId, editor, month, categories, firstFieldRef, onSaving
       focusFirstError(validation);
       return;
     }
+    isSubmittingRef.current = true;
     onSavingChange(true);
     try {
       const result = await manageCatalog.saveBudget({
@@ -164,6 +172,7 @@ function BudgetForm({ formId, editor, month, categories, firstFieldRef, onSaving
     } catch {
       setErrors({ ...NO_ERRORS, form: errorMessage(tErrors, null) });
     } finally {
+      isSubmittingRef.current = false;
       onSavingChange(false);
     }
   };
@@ -176,6 +185,25 @@ function BudgetForm({ formId, editor, month, categories, firstFieldRef, onSaving
           {errors.form}
         </p>
       ) : null}
+      {isEdit ? null : (
+        <Field label={t('form.startMonth')}>
+          {(control) => (
+            <select
+              {...control}
+              name="startMonth"
+              className="select"
+              value={chosenStart}
+              onChange={(event) => setChosenStart(event.target.value as YearMonth)}
+            >
+              {startOptions.map((option) => (
+                <option key={option} value={option}>
+                  {formatMonth(option, language, 'long')}
+                </option>
+              ))}
+            </select>
+          )}
+        </Field>
+      )}
       {isEdit ? null : (
         <Field label={t('form.category')} hint={t('form.categoryHint')} error={errors.category} isRequired>
           {(control) => (

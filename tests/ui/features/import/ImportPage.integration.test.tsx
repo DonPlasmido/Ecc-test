@@ -75,7 +75,7 @@ describe('ImportPage with the real use case and sample statements', () => {
 
     expect(figure('Movimientos importados')).toBe(String(SAMPLE_TRANSACTIONS));
     const accounts = await container.manageCatalog.listAccounts();
-    expect(accounts.map((account) => account.name)).toEqual(['Cuenta principal']);
+    expect(accounts.map((account) => account.name)).toEqual(['Principal']);
   });
 
   it('previews the real BBVA sample when opened from the dashboard link (?ejemplo=1)', async () => {

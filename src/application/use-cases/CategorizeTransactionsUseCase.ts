@@ -4,10 +4,10 @@ import type {
   CategorizeScope,
   CategorizeTransactions,
 } from '@/application/ports/inbound/CategorizeTransactions';
-import type { RuleRepository } from '@/application/ports/outbound/CatalogRepositories';
+import type { CategoryRepository, RuleRepository } from '@/application/ports/outbound/CatalogRepositories';
 import type { ClockPort } from '@/application/ports/outbound/ClockPort';
 import type { TransactionRepository } from '@/application/ports/outbound/TransactionRepository';
-import { readAll, reapplyRules } from '@/application/use-cases/applyRules';
+import { listActiveRules, readAll, reapplyRules } from '@/application/use-cases/applyRules';
 import { UNCATEGORIZED } from '@/domain/category/Category';
 import type { Transaction } from '@/domain/transaction/Transaction';
 
@@ -17,6 +17,7 @@ const SAMPLE_SIZE = 10;
 export interface CategorizeTransactionsDeps {
   readonly transactions: TransactionRepository;
   readonly rules: RuleRepository;
+  readonly categories: CategoryRepository;
   readonly clock: ClockPort;
   readonly onDataChanged?: () => void;
 }
@@ -26,9 +27,9 @@ export class CategorizeTransactionsUseCase implements CategorizeTransactions {
   constructor(private readonly deps: CategorizeTransactionsDeps) {}
 
   async execute(input: CategorizeInput): Promise<CategorizeOutput> {
-    const { transactions, rules, clock, onDataChanged } = this.deps;
+    const { transactions, rules, categories, clock, onDataChanged } = this.deps;
     const candidates = await this.candidates(input.scope);
-    const ruleList = await rules.list();
+    const ruleList = await listActiveRules(rules, categories);
     const now = clock.now();
     const updated = candidates.flatMap((tx) => {
       const next = reapplyRules(tx, ruleList, now);

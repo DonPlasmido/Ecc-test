@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import type { Rule } from '@/domain/rule/Rule';
 import { Button } from '@/ui/components/Button';
 import { useNotifications } from '@/ui/components/Toast';
 import { useContainer } from '@/ui/hooks/useContainer';
@@ -11,17 +12,24 @@ type ApplyState =
   | { readonly status: 'error' };
 
 /** «Aplicar reglas ahora»: recategoriza todo lo no manual y resume cuántos movimientos cambiaron. */
-export function ApplyRules() {
+export function ApplyRules({ rules }: { rules: readonly Rule[] }) {
   const { t } = useTranslation('rules');
   const { categorizeTransactions } = useContainer();
   const { announce } = useNotifications();
   const [state, setState] = useState<ApplyState>({ status: 'idle' });
+  const [resultRules, setResultRules] = useState(rules);
+  // El resultado «Hecho» describe las reglas de entonces: si cambian, queda obsoleto.
+  if (resultRules !== rules) {
+    setResultRules(rules);
+    if (state.status === 'done' || state.status === 'error') setState({ status: 'idle' });
+  }
 
   const handleApply = async () => {
     setState({ status: 'running' });
     announce(t('apply.running'));
     try {
       const { changed } = await categorizeTransactions.execute({ scope: 'all' });
+      setResultRules(rules);
       setState({ status: 'done', changed });
       announce(t('apply.result', { count: changed }));
     } catch {

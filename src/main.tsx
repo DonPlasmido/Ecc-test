@@ -6,6 +6,7 @@ import type { AppContainer } from '@/composition/container.types';
 import type { DomainError } from '@/domain/shared/DomainError';
 import { App } from '@/ui/App';
 import { initI18n } from '@/ui/i18n/i18n';
+import { offerUpdate } from '@/ui/pwa/updateOffer';
 import { BootError } from '@/ui/layout/BootError';
 import { applyTheme, readThemePreference } from '@/ui/theme/theme';
 import '@/ui/styles/tokens.css';
@@ -51,8 +52,10 @@ async function bootstrap(): Promise<void> {
   }
 }
 
-registerSW({
+const updateServiceWorker = registerSW({
   immediate: true,
+  // Modo `prompt`: no se recarga sola; la UI muestra «Hay una versión nueva · Recargar».
+  onNeedRefresh: () => offerUpdate(() => void updateServiceWorker(true)),
   // Sin esto, un fallo de registro o actualización del service worker sería invisible (silent-failures 7).
   onRegisterError: (error: unknown) => console.error('Service worker registration failed', error),
 });

@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import type { Rule } from '@/domain/rule/Rule';
 import type { Category } from '@/domain/category/Category';
 import { Button } from '@/ui/components/Button';
 import { CategoryChip, useCategoryName } from '@/ui/components/CategoryChip';
@@ -15,6 +16,8 @@ import { IconPlus } from './rulesIcons';
 
 type CategoriesSectionProps = {
   categories: readonly Category[];
+  rules: readonly Rule[];
+  onRulesChange: (update: (rules: readonly Rule[]) => readonly Rule[]) => void;
   onCategoriesChange: (update: (categories: readonly Category[]) => readonly Category[]) => void;
 };
 
@@ -27,7 +30,7 @@ type Deleting =
   | null;
 
 /** Categorías: color y nombre, alta, edición (renombrar, color, archivar) y borrado. */
-export function CategoriesSection({ categories, onCategoriesChange }: CategoriesSectionProps) {
+export function CategoriesSection({ categories, rules, onRulesChange, onCategoriesChange }: CategoriesSectionProps) {
   const { t, i18n } = useTranslation('rules');
   const { manageCatalog } = useContainer();
   const { notify } = useNotifications();
@@ -39,8 +42,18 @@ export function CategoriesSection({ categories, onCategoriesChange }: Categories
   const addButtonRef = useRef<HTMLButtonElement>(null);
   const deletingName = deleting ? categoryName(deleting.category) : '';
 
+  /** Archivar desactiva las reglas de la categoría (lo hace el caso de uso): refleja el cambio y avisa. */
+  const reflectDisabledRules = (saved: Category, wasArchived: boolean) => {
+    if (!saved.archived || wasArchived) return;
+    const disabled = rules.filter((r) => r.categoryId === saved.id && r.enabled).length;
+    if (disabled === 0) return;
+    onRulesChange((current) => current.map((r) => (r.categoryId === saved.id ? { ...r, enabled: false } : r)));
+    notify({ tone: 'warning', message: t('categories.rulesDisabled', { count: disabled }) });
+  };
+
   const handleSaved = (saved: Category, isNew: boolean) => {
     onCategoriesChange((current) => upsertById(current, saved));
+    reflectDisabledRules(saved, editing?.category?.archived ?? false);
     setEditing(null);
     notify({ tone: 'success', message: t(isNew ? 'categories.created' : 'categories.updated', { name: categoryName(saved) }) });
   };
@@ -79,6 +92,7 @@ export function CategoriesSection({ categories, onCategoriesChange }: Categories
         return;
       }
       onCategoriesChange((current) => upsertById(current, result.value));
+      reflectDisabledRules(result.value, category.archived);
       notify({ tone: 'success', message: t('categories.archivedDone', { name: deletingName }) });
       setDeleting(null);
     } catch {
