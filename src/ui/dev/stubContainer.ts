@@ -51,6 +51,7 @@ export function createStubContainer(): AppContainer {
     settings: notWired('settings'),
     storage: notWired('storage'),
     whenIndexIdle: () => Promise.resolve(),
+    onExternalChange: () => () => undefined,
     dispose: () => undefined,
     indexStore: idleIndexStore,
   };

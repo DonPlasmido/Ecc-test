@@ -40,7 +40,7 @@ export function BudgetsPage() {
   const { t: tErrors } = useTranslation('errors');
   const language = useLanguage();
   const categoryName = useCategoryName();
-  const { manageCatalog } = useContainer();
+  const { manageCatalog, onExternalChange } = useContainer();
   const { notify } = useNotifications();
   const [searchParams, setSearchParams] = useSearchParams();
   const currentMonth = yearMonthOf(new Date());
@@ -56,6 +56,9 @@ export function BudgetsPage() {
   const [shown, setShown] = useState<ShownData | null>(null);
   const listHeadingRef = useRef<HTMLHeadingElement>(null);
   const result = useBudgetsData(month, revision);
+
+  // Otra pestaña cambió datos: se recargan presupuestos y gasto.
+  useEffect(() => onExternalChange(() => setRevision((n) => n + 1)), [onExternalChange]);
 
   // Stale-while-revalidate: se mantiene lo último mostrado del mismo mes mientras recarga (sin saltos ni foco perdido).
   if (result.status === 'success' && shown?.data !== result.data) setShown({ month, data: result.data });

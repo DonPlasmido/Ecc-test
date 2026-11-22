@@ -2,6 +2,7 @@ import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it } from 'vitest';
 import type { AppContainer } from '@/composition/container.types';
+import type { RuleId } from '@/domain/rule/Rule';
 import { UNCATEGORIZED } from '@/domain/category/Category';
 import { RulesPage } from '@/ui/features/rules/RulesPage';
 import { createFakeContainer } from '../../fakeContainer';
@@ -190,6 +191,18 @@ describe('RulesPage: rules', () => {
     await user.click(within(dialog).getByRole('button', { name: 'Guardar regla' }));
 
     await waitFor(() => expect(document.querySelector('.rules-apply__result')).toBeNull());
+  });
+
+  it('reloads the catalog when another tab changes data', async () => {
+    let notify: () => void = () => undefined;
+    container = { ...container, onExternalChange: (listener) => ((notify = listener), () => undefined) };
+    renderPage();
+    await ruleList();
+
+    await container.manageCatalog.deleteRule('rule-central' as RuleId);
+    notify();
+
+    await waitFor(async () => expect(ruleTexts(await ruleList())).toEqual(['Regla 1 de 1: Contiene «MERCADONA»']));
   });
 
   it('shows an empty state when there are no rules', async () => {
