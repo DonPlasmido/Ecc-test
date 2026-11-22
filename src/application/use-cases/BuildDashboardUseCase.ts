@@ -8,7 +8,7 @@ import {
 } from '@/application/ports/inbound/BuildDashboard';
 import { monthFromNumber, monthNumber } from '@/application/read-model/monthMath';
 import type { MonthCategoryTotals, TransactionIndex } from '@/application/read-model/TransactionIndex';
-import type { CategoryId } from '@/domain/category/Category';
+import { TRANSFERS_CATEGORY_ID, type CategoryId } from '@/domain/category/Category';
 import type { YearMonth } from '@/domain/date/YearMonth';
 import type { Cents } from '@/domain/money/Money';
 
@@ -33,7 +33,8 @@ function monthlySummaries(totals: MonthCategoryTotals, first: number, last: numb
     const month = monthFromNumber(n);
     let income = 0;
     let expense = 0;
-    for (const cell of totals.get(month)?.values() ?? []) {
+    for (const [categoryId, cell] of totals.get(month) ?? []) {
+      if (categoryId === TRANSFERS_CATEGORY_ID) continue;
       income += cell.income.cents;
       expense += cell.expense.cents;
     }
@@ -42,11 +43,14 @@ function monthlySummaries(totals: MonthCategoryTotals, first: number, last: numb
   return result;
 }
 
+/** Gasto neto por categoría y mes (gastos − devoluciones), igual que en presupuestos; sin traspasos. */
 function spendingByCategory(totals: MonthCategoryTotals): CategoryTotal[] {
   const sums = new Map<CategoryId, number>();
   for (const byCategory of totals.values()) {
     for (const [categoryId, cell] of byCategory) {
-      if (cell.expense.cents > 0) sums.set(categoryId, (sums.get(categoryId) ?? 0) + cell.expense.cents);
+      if (categoryId === TRANSFERS_CATEGORY_ID) continue;
+      const net = cell.expense.cents - cell.income.cents;
+      if (net > 0) sums.set(categoryId, (sums.get(categoryId) ?? 0) + net);
     }
   }
   return [...sums.entries()]

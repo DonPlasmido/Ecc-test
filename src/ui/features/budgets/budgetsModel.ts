@@ -1,4 +1,4 @@
-import type { CategoryTotal } from '@/application/ports/inbound/BuildDashboard';
+import type { CategoryTotal, MonthlySummary } from '@/application/ports/inbound/BuildDashboard';
 import type { BudgetEvaluation } from '@/application/ports/inbound/EvaluateBudgets';
 import type { Budget, BudgetId } from '@/domain/budget/Budget';
 import type { BudgetStatus } from '@/domain/budget/budgetStatus';
@@ -94,6 +94,11 @@ export function availableCategories(
       .map((b) => b.categoryId),
   );
   return categories.filter((c) => isBudgetableCategory(c) && !taken.has(c.id));
+}
+
+/** Meses de la serie con algún movimiento (la media de sugerencias no cuenta los vacíos); al menos 1. */
+export function monthsWithData(monthly: readonly MonthlySummary[]): number {
+  return Math.max(1, monthly.filter((m) => m.income.cents > 0 || m.expense.cents > 0).length);
 }
 
 /** Sugerencia de límite: gasto medio mensual redondeado hacia arriba al euro. */

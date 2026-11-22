@@ -45,10 +45,16 @@ describe('PapaCsvParser.parse', () => {
     expect(rows[1]).toEqual(['01/01/2025', 'PAGO; TARJETA\nLINEA 2', '-5,00']);
   });
 
-  test('handles CRLF line endings and skips blank lines', async () => {
+  test('handles CRLF line endings and keeps blank lines so row index + 1 is the file line', async () => {
     const rows = await parseRows('a.csv', 'a;b\r\n1;2\r\n\r\n3;4\r\n');
 
-    expect(rows).toEqual([['a', 'b'], ['1', '2'], ['3', '4']]);
+    expect(rows).toEqual([['a', 'b'], ['1', '2'], [''], ['3', '4']]);
+  });
+
+  test('drops trailing blank lines but keeps a blank line between preamble and header', async () => {
+    const rows = await parseRows('a.csv', 'Titular;X\n\nFecha;Concepto\n01/01/2025;A\n\n\n');
+
+    expect(rows).toEqual([['Titular', 'X'], [''], ['Fecha', 'Concepto'], ['01/01/2025', 'A']]);
   });
 
   test('keeps preamble lines before the header as rows', async () => {
@@ -177,8 +183,8 @@ describe('PapaCsvParser delimiter detection with bank preambles', () => {
 
     const rows = await parseRows('bbva.csv', text);
 
-    expect(rows[2]).toEqual(['F.Valor', 'Fecha', 'Concepto', 'Importe', 'Divisa', 'Disponible', 'Observaciones']);
-    expect(rows[3]).toEqual(['28/10/2026', '28/10/2026', 'ALQUILER', '-1.200,00', 'EUR', '1.767,93', '']);
+    expect(rows[3]).toEqual(['F.Valor', 'Fecha', 'Concepto', 'Importe', 'Divisa', 'Disponible', 'Observaciones']);
+    expect(rows[4]).toEqual(['28/10/2026', '28/10/2026', 'ALQUILER', '-1.200,00', 'EUR', '1.767,93', '']);
   });
 
   test('keeps the semicolon delimiter with a one-line preamble', async () => {

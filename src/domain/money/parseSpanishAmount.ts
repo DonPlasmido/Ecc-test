@@ -12,6 +12,8 @@ const INTEGER_PART = /^(?:\d{1,3}(?:\.\d{3})+|\d+)$/u
 const SIGN_AND_SPACE = /[-+()\s]/gu
 /** Un solo punto seguido de exactamente 3 dígitos: 12.345 puede ser 12,345 (inglés) o 12345 (miles español). */
 const DOT_THREE_DIGITS = /^\d{1,3}\.\d{3}$/u
+/** Miles con coma y decimales con punto (1,850.00): con los dos separadores no hay ambigüedad posible. */
+const ENGLISH_THOUSANDS = /^(\d{1,3}(?:,\d{3})+)\.(\d{1,2})$/u
 const ONE_OR_TWO_DIGITS = /^\d{1,2}$/u
 
 interface SignedBody {
@@ -50,6 +52,8 @@ function splitSign(cleaned: string): SignedBody | null {
 
 /** Devuelve [parteEntera, decimales] o `null` si el formato no es válido. */
 function splitDigits(body: string): readonly [string, string] | null {
+  const english = ENGLISH_THOUSANDS.exec(body)
+  if (english !== null) return [(english[1] ?? '').replaceAll(',', '.'), english[2] ?? '']
   const commaParts = body.split(',')
   if (commaParts.length > 2) return null
   if (commaParts.length === 2) {

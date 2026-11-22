@@ -335,13 +335,13 @@ describe('createTransactionIndex', () => {
       ]);
     });
 
-    test('without any known balance sums every amount as an estimate', () => {
+    test('without any known balance flags the relative sum as balanceUnknown', () => {
       const index = indexOf([
         tx({ id: 'b1', date: '2026-01-01', cents: -100 }),
         tx({ id: 'b2', date: '2026-01-02', cents: -200 }),
       ]);
       expect(index.latestBalances()).toEqual([
-        { accountId: 'a1', balance: { cents: -300 }, asOf: '2026-01-02', estimated: true },
+        { accountId: 'a1', balance: { cents: -300 }, asOf: '2026-01-02', estimated: true, balanceUnknown: true },
       ]);
     });
 

@@ -6,7 +6,7 @@ import type { YearMonth } from '@/domain/date/YearMonth';
 import { useAsync, type AsyncResult } from '@/ui/hooks/useAsync';
 import { useContainer } from '@/ui/hooks/useContainer';
 import { useTransactionIndex } from '@/ui/hooks/useTransactionIndex';
-import { availableCategories, shiftMonth, suggestLimits, SUGGESTION_MONTHS, type BudgetSuggestion } from './budgetsModel';
+import { availableCategories, shiftMonth, monthsWithData, suggestLimits, SUGGESTION_MONTHS, type BudgetSuggestion } from './budgetsModel';
 
 /** Todo lo que necesita la pantalla para un mes. */
 export interface BudgetsData {
@@ -40,7 +40,12 @@ export function useBudgetsData(month: YearMonth, revision: number): AsyncResult<
       to: shiftMonth(month, -1),
     });
     const eligible = availableCategories(categories, budgets, month, null);
-    return { evaluations, budgets, categories, suggestions: suggestLimits(dashboard.spendingByCategory, eligible) };
+    return {
+      evaluations,
+      budgets,
+      categories,
+      suggestions: suggestLimits(dashboard.spendingByCategory, eligible, monthsWithData(dashboard.monthly)),
+    };
   }, [evaluateBudgets, manageCatalog, buildDashboard, month, revision, version]);
 
   return useAsync(task);

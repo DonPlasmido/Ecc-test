@@ -105,7 +105,7 @@ export class ImportStatementUseCase implements ImportStatement {
     const valid = validateMapping(input.mapping);
     if (!valid.ok) return valid;
 
-    const { drafts, rowErrors } = normalizeRows(retained.table, input.mapping, input.accountId);
+    const { drafts, rowErrors, warnings } = normalizeRows(retained.table, input.mapping, input.accountId);
     const keyed = assignDedupKeys(drafts);
     const existing = await this.deps.transactions.existingDedupKeys(keyed.map((d) => d.dedupKey));
     const fresh = keyed.filter((d) => !existing.has(d.dedupKey));
@@ -145,6 +145,7 @@ export class ImportStatementUseCase implements ImportStatement {
       duplicates: keyed.length - fresh.length,
       autoCategorized: transactions.filter((t) => t.categorySource === 'rule').length,
       rowErrors,
+      warnings,
     });
   }
 
@@ -167,6 +168,7 @@ export class ImportStatementUseCase implements ImportStatement {
         note: '',
         dedupKey: d.dedupKey,
         importBatchId: batchId,
+        sourceLine: d.sourceLine,
         createdAt: now,
         updatedAt: now,
       },

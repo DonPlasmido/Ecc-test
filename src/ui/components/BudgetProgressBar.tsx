@@ -2,7 +2,7 @@ import { useId, type CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { BudgetStatus } from '@/domain/budget/budgetStatus';
 import type { Money } from '@/domain/money/Money';
-import { formatMoney, formatPercentFromBasisPoints } from '@/ui/i18n/format';
+import { formatBudgetPercent, formatMoney } from '@/ui/i18n/format';
 import { useLanguage } from '@/ui/i18n/useLanguage';
 import { IconCheck, IconError, IconWarning } from './icons';
 
@@ -54,7 +54,12 @@ export function BudgetProgressBar({ label, spent, limit, usedBasisPoints, status
       </div>
       <p className="budget-meter__legend text-muted">
         <span>{amounts}</span>
-        <span>{formatPercentFromBasisPoints(usedBasisPoints, language)}</span>
+        <span>
+          {formatBudgetPercent(
+            { spentCents: spent.cents, limitCents: limit.cents, usedBasisPoints, status },
+            language,
+          )}
+        </span>
       </p>
     </div>
   );

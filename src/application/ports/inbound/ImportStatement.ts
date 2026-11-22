@@ -3,6 +3,7 @@ import type { ColumnMapping } from '@/domain/import/ColumnMapping';
 import type { ImportBatchId } from '@/domain/import/ImportBatch';
 import type { RawTable } from '@/domain/import/RawTable';
 import type { RowError } from '@/domain/import/RowError';
+import type { RowWarning } from '@/domain/import/RowWarning';
 import type { StatementFile } from '@/domain/import/StatementFile';
 import type { DomainError } from '@/domain/shared/DomainError';
 import type { Result } from '@/domain/shared/Result';
@@ -38,6 +39,8 @@ export interface ImportResult {
   readonly duplicates: number;
   readonly autoCategorized: number;
   readonly rowErrors: readonly RowError[];
+  /** Avisos informativos de filas aceptadas o ignoradas (p. ej. «TOTAL» de resumen). Ausente = ninguno. */
+  readonly warnings?: readonly RowWarning[];
 }
 
 /** Importar extracto en dos pasos: vista previa y confirmación. */
