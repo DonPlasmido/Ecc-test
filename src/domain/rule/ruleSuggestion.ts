@@ -140,6 +140,17 @@ export function suggestRule(
   return { pattern: best.pattern, operator: 'contains', categoryId: newCategoryId, amountSign: signOf(tx.amount.cents) }
 }
 
+/**
+ * Patrones que `suggestRule` puntuará para `tx` (candidatos y último recurso). Una fila del histórico solo
+ * puede sumar si su descripción contiene alguno, así que sirve para no recorrer el histórico entero.
+ */
+export function suggestionPatterns(tx: Pick<Transaction, 'normalizedDescription'>): readonly string[] {
+  const normalized = tx.normalizedDescription
+  const patterns = candidatePatterns(normalized).map((candidate) => candidate.pattern)
+  const fallback = longestDigitFreeWindow(normalized)
+  return fallback === null ? patterns : [...patterns, fallback]
+}
+
 function trimNoise(tokens: readonly string[]): readonly string[] {
   let from = 0
   let to = tokens.length

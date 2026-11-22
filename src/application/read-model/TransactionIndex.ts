@@ -72,8 +72,11 @@ export interface TransactionIndex {
   countMatching(predicate: IndexRowPredicate): number;
   /** Ids de las filas que cumplen el predicado (sin leer del repositorio). */
   idsMatching(predicate: IndexRowPredicate): readonly TransactionId[];
-  /** Descripción normalizada y categoría de todas las filas vivas (histórico ligero para sugerir reglas). */
-  historyRows(): readonly IndexHistoryRow[];
+  /**
+   * Descripción normalizada y categoría de las filas vivas (histórico ligero para sugerir reglas).
+   * Con `include`, solo las filas cuya descripción normalizada lo cumple (no se crean objetos para el resto).
+   */
+  historyRows(include?: (normalizedDescription: string) => boolean): readonly IndexHistoryRow[];
   /** Avisa tras cada cambio; devuelve la función para cancelar. */
   onChange(listener: () => void): () => void;
   readonly size: number;
@@ -299,10 +302,11 @@ class ColumnarTransactionIndex implements TransactionIndex {
     return result;
   }
 
-  historyRows(): readonly IndexHistoryRow[] {
+  historyRows(include?: (normalizedDescription: string) => boolean): readonly IndexHistoryRow[] {
     const rows: IndexHistoryRow[] = [];
     for (let slot = 0; slot < this.usedSlots; slot += 1) {
       if (this.alive[slot] !== 1) continue;
+      if (include !== undefined && !include(this.normalized[slot] as string)) continue;
       rows.push({
         id: this.ids[slot] as TransactionId,
         normalizedDescription: this.normalized[slot] as string,

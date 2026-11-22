@@ -1,3 +1,4 @@
+import type { DataChangedNotifier } from '@/application/ports/outbound/DataChange';
 import {
   IMPORT_PREVIEW_ROWS,
   type CommitImportInput,
@@ -35,7 +36,7 @@ export interface ImportStatementDeps {
   readonly accounts: AccountRepository;
   readonly clock: ClockPort;
   readonly ids: IdGeneratorPort;
-  readonly onDataChanged?: () => void;
+  readonly onDataChanged?: DataChangedNotifier;
 }
 
 interface RetainedPreview {
@@ -128,7 +129,7 @@ export class ImportStatementUseCase implements ImportStatement {
         return quotaErrorOrRethrow(error);
       }
       // Los movimientos ya están guardados: el índice debe enterarse pase lo que pase después.
-      this.deps.onDataChanged?.();
+      this.deps.onDataChanged?.({ upserted: transactions });
     }
     this.previews.delete(input.previewId);
     try {

@@ -1,3 +1,4 @@
+import type { DataChangedNotifier } from '@/application/ports/outbound/DataChange';
 import type {
   CategorizeInput,
   CategorizeOutput,
@@ -18,7 +19,7 @@ export interface CategorizeTransactionsDeps {
   readonly transactions: TransactionRepository;
   readonly rules: RuleRepository;
   readonly clock: ClockPort;
-  readonly onDataChanged?: () => void;
+  readonly onDataChanged?: DataChangedNotifier;
 }
 
 /** Aplica las reglas a movimientos `'none'` y `'rule'`; los `'manual'` nunca se tocan. */
@@ -36,7 +37,7 @@ export class CategorizeTransactionsUseCase implements CategorizeTransactions {
     });
     if (updated.length > 0 && input.dryRun !== true) {
       await transactions.updateMany(updated);
-      onDataChanged?.();
+      onDataChanged?.({ upserted: updated });
     }
     return { changed: updated.length, sampleIds: updated.slice(0, SAMPLE_SIZE).map((t) => t.id) };
   }

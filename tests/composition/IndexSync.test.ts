@@ -59,3 +59,41 @@ describe('IndexSync: fallos visibles y recuperables (silent-failures ALTA-1/2)',
     expect(index.size).toBe(2)
   })
 })
+
+describe('IndexSync: camino incremental', () => {
+  it('applies only the notified transactions without scanning the repository', async () => {
+    const { state, index, sync } = setup()
+    await sync.hydrate()
+    const scan = vi.spyOn(InMemoryTransactionRepository.prototype, 'scan')
+    const added = tx({ id: 't4' })
+    state.transactions.set(added.id, added)
+    sync.notifyDataChanged({ upserted: [added] })
+    await sync.whenIdle()
+    expect(index.size).toBe(4)
+    expect(scan).not.toHaveBeenCalled()
+    scan.mockRestore()
+  })
+
+  it('still removes incrementally-added rows deleted later by a full reconciliation', async () => {
+    const { state, index, sync } = setup()
+    await sync.hydrate()
+    const added = tx({ id: 't4' })
+    state.transactions.set(added.id, added)
+    sync.notifyDataChanged({ upserted: [added] })
+    await sync.whenIdle()
+    state.transactions.delete(added.id)
+    sync.notifyDataChanged()
+    await sync.whenIdle()
+    expect(index.size).toBe(3)
+  })
+
+  it('a notification without detail among incremental ones triggers a full reconciliation', async () => {
+    const { state, index, sync } = setup()
+    await sync.hydrate()
+    state.transactions.delete('t1' as Transaction['id'])
+    sync.notifyDataChanged({ upserted: [] })
+    sync.notifyDataChanged()
+    await sync.whenIdle()
+    expect(index.size).toBe(2)
+  })
+})

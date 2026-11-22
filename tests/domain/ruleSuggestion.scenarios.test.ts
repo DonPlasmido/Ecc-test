@@ -154,3 +154,12 @@ describe('suggestRule: 35 escenarios de calidad', () => {
     expect(suggestion.amountSign).toBe(cents < 0 ? 'expense' : 'income')
   })
 })
+
+describe('suggestionPatterns', () => {
+  it('returns candidate patterns, and nothing for noise-only text', async () => {
+    const { suggestionPatterns } = await import('@/domain/rule/ruleSuggestion')
+    const patterns = suggestionPatterns({ normalizedDescription: 'COMPRA TARJ MERCADONA MADRID 4821' })
+    expect(patterns).toContain('MERCADONA')
+    expect(suggestionPatterns({ normalizedDescription: 'COMPRA 123' })).toEqual([])
+  })
+})
