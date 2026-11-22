@@ -88,6 +88,8 @@ const INITIAL_CAPACITY = 1024;
 const BULK_UPSERT_THRESHOLD = 256;
 const MAX_SYMBOLS = 0xffff;
 const NO_BALANCE = Number.NaN;
+/** Separa filas en el pajar de búsqueda; no puede aparecer en un texto normalizado. */
+const ROW_SEPARATOR = '\u0001';
 
 class SymbolTable {
   private readonly indexByName = new Map<string, number>();
@@ -139,6 +141,9 @@ class ColumnarTransactionIndex implements TransactionIndex {
   private readonly createdAt: string[] = [];
   private readonly normalized: string[] = [];
   private readonly searchText: string[] = [];
+  /** Todas las filas de `searchText` unidas por `ROW_SEPARATOR` (se reconstruye perezosamente tras cambios). */
+  private haystack: string | null = null;
+  private haystackStarts = new Int32Array(0);
   private readonly slotById = new Map<string, number>();
   private readonly freeSlots: number[] = [];
   private usedSlots = 0;
@@ -180,6 +185,7 @@ class ColumnarTransactionIndex implements TransactionIndex {
       this.ids[slot] = '';
       this.normalized[slot] = '';
       this.searchText[slot] = '';
+      this.haystack = null;
       this.slotById.delete(id);
       this.freeSlots.push(slot);
       removed += 1;
@@ -198,7 +204,8 @@ class ColumnarTransactionIndex implements TransactionIndex {
     const hi = f.to === undefined ? this.orderLength : this.lowerBoundDay(IsoDate.toEpochDay(f.to) + 1);
     if (lo >= hi) return new Uint32Array(0);
     const text = f.text === undefined ? '' : normalizeText(f.text);
-    const rows = this.scanRange(lo, hi, f, text, categoryMask, accountMask, sort !== 'dateAsc');
+    const textMask = text === '' ? null : this.textMatches(text);
+    const rows = this.scanRange(lo, hi, f, textMask, categoryMask, accountMask, sort !== 'dateAsc');
     if (sort === 'amountDesc' || sort === 'amountAsc') this.sortByAmount(rows, sort === 'amountDesc');
     return rows;
   }
@@ -371,11 +378,51 @@ class ColumnarTransactionIndex implements TransactionIndex {
     return cells;
   }
 
+  /**
+   * Máscara por slot de las filas cuyo texto de búsqueda contiene `text`. Una sola búsqueda `indexOf` sobre
+   * el pajar (rápida, sin recorrer las filas una a una) y cada acierto se asigna a su fila por búsqueda binaria.
+   */
+  private textMatches(text: string): Uint8Array {
+    const mask = new Uint8Array(this.usedSlots);
+    if (text.includes(ROW_SEPARATOR)) return mask;
+    const haystack = this.ensureHaystack();
+    const starts = this.haystackStarts;
+    let from = 0;
+    let found = haystack.indexOf(text, from);
+    while (found !== -1) {
+      let lo = 0;
+      let hi = this.usedSlots - 1;
+      while (lo < hi) {
+        const mid = (lo + hi + 1) >>> 1;
+        if ((starts[mid] as number) <= found) lo = mid;
+        else hi = mid - 1;
+      }
+      mask[lo] = 1;
+      from = starts[lo + 1] as number;
+      found = haystack.indexOf(text, from);
+    }
+    return mask;
+  }
+
+  private ensureHaystack(): string {
+    if (this.haystack !== null && this.haystackStarts.length === this.usedSlots + 1) return this.haystack;
+    const starts = new Int32Array(this.usedSlots + 1);
+    let offset = 0;
+    for (let slot = 0; slot < this.usedSlots; slot += 1) {
+      starts[slot] = offset;
+      offset += (this.searchText[slot] as string).length + 1;
+    }
+    starts[this.usedSlots] = offset;
+    this.haystackStarts = starts;
+    this.haystack = this.searchText.slice(0, this.usedSlots).join(ROW_SEPARATOR) + ROW_SEPARATOR;
+    return this.haystack;
+  }
+
   private scanRange(
     lo: number,
     hi: number,
     f: TransactionFilter,
-    text: string,
+    textMask: Uint8Array | null,
     categoryMask: Uint8Array | null,
     accountMask: Uint8Array | null,
     descending: boolean,
@@ -384,7 +431,7 @@ class ColumnarTransactionIndex implements TransactionIndex {
     const signMode = f.sign === 'expense' ? -1 : f.sign === 'income' ? 1 : 0;
     const min = f.minCents ?? 0;
     const max = f.maxCents ?? Number.POSITIVE_INFINITY;
-    const { cents, order, categoryIdx, accountIdx, searchText } = this;
+    const { cents, order, categoryIdx, accountIdx } = this;
     let count = 0;
     for (let step = 0; step < hi - lo; step += 1) {
       const slot = order[descending ? hi - 1 - step : lo + step] as number;
@@ -394,7 +441,7 @@ class ColumnarTransactionIndex implements TransactionIndex {
       if (magnitude < min || magnitude > max) continue;
       if (categoryMask && categoryMask[categoryIdx[slot] as number] === 0) continue;
       if (accountMask && accountMask[accountIdx[slot] as number] === 0) continue;
-      if (text !== '' && !(searchText[slot] as string).includes(text)) continue;
+      if (textMask !== null && textMask[slot] === 0) continue;
       out[count] = slot;
       count += 1;
     }
@@ -444,6 +491,7 @@ class ColumnarTransactionIndex implements TransactionIndex {
     this.balance[slot] = tx.balance === null ? NO_BALANCE : tx.balance.cents;
     this.categoryIdx[slot] = this.categories.intern(tx.categoryId);
     this.accountIdx[slot] = this.accounts.intern(tx.accountId);
+    this.haystack = null;
     this.alive[slot] = 1;
     this.ids[slot] = tx.id;
     this.normalized[slot] = tx.normalizedDescription;
